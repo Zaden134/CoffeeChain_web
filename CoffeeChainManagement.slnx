@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/backend/">
+    <Project Path="src/backend/CoffeeChainManagement.Api/CoffeeChainManagement.Api.csproj" />
+    <Project Path="src/backend/CoffeeChainManagement.Application/CoffeeChainManagement.Application.csproj" />
+    <Project Path="src/backend/CoffeeChainManagement.Domain/CoffeeChainManagement.Domain.csproj" />
+    <Project Path="src/backend/CoffeeChainManagement.Infrastructure/CoffeeChainManagement.Infrastructure.csproj" />
+  </Folder>
+</Solution>

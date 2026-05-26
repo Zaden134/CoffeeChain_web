@@ -1,0 +1,146 @@
+.hero,
+.panel,
+.kpi-card {
+  border-radius: 24px;
+  background: rgba(255, 252, 248, 0.88);
+  box-shadow: 0 18px 40px rgba(113, 77, 42, 0.08);
+  border: 1px solid rgba(142, 94, 52, 0.12);
+}
+
+.hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: center;
+  padding: 28px;
+  margin-bottom: 24px;
+}
+
+.hero h2,
+.panel h3 {
+  margin: 0;
+}
+
+.hero button {
+  border: 0;
+  border-radius: 999px;
+  padding: 14px 22px;
+  background: #4f2d16;
+  color: #fff;
+  cursor: pointer;
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: #9f6a33;
+  font-size: 0.78rem;
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.kpi-card {
+  padding: 22px;
+}
+
+.kpi-card span {
+  display: block;
+  color: #74553b;
+  margin-bottom: 10px;
+}
+
+.kpi-card strong {
+  font-size: 1.7rem;
+  color: #2a190d;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 18px;
+}
+
+.panel {
+  padding: 24px;
+}
+
+.panel-head,
+.branch-item,
+.product-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.panel-head {
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.branch-list,
+.product-list {
+  display: grid;
+  gap: 16px;
+}
+
+.branch-item,
+.product-item {
+  align-items: center;
+  padding: 14px 0;
+  border-top: 1px solid rgba(96, 65, 40, 0.12);
+}
+
+.branch-item:first-child,
+.product-item:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.branch-item p,
+.product-item p {
+  margin: 4px 0 0;
+  color: #7a624e;
+}
+
+.branch-meta {
+  text-align: right;
+}
+
+.product-item img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 18px;
+}
+
+.error {
+  color: #8a1f11;
+}
+
+@media (max-width: 1200px) {
+  .kpis,
+  .grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero,
+  .panel-head,
+  .branch-item,
+  .product-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .kpis,
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup>
+    <!-- Tat audit feed trong giai doan setup vi may hien tai khong goi duoc NuGet vulnerability endpoint. -->
+    <NuGetAudit>false</NuGetAudit>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1900</WarningsNotAsErrors>
+  </PropertyGroup>
+</Project>

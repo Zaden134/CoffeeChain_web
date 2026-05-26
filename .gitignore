@@ -1,0 +1,23 @@
+# Build outputs
+bin/
+obj/
+dist/
+
+# Node / Angular
+node_modules/
+.angular/
+npm-debug.log*
+
+# IDE
+.vs/
+.vscode/
+*.user
+*.suo
+
+# OS / temp
+Thumbs.db
+.DS_Store
+
+# Environment
+.env
+.env.*

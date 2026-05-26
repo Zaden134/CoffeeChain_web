@@ -1,0 +1,17 @@
+@CoffeeChainManagement.Api_HostAddress = http://localhost:8080
+
+### Health check
+GET {{CoffeeChainManagement.Api_HostAddress}}/health
+Accept: application/json
+
+### Dashboard overview
+GET {{CoffeeChainManagement.Api_HostAddress}}/api/dashboard/overview
+Accept: application/json
+
+### Branch list
+GET {{CoffeeChainManagement.Api_HostAddress}}/api/branches
+Accept: application/json
+
+### Product list
+GET {{CoffeeChainManagement.Api_HostAddress}}/api/products
+Accept: application/json
