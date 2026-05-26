@@ -1,0 +1,31 @@
+<section class="page-card">
+  <div class="page-head">
+    <div>
+      <h2>Kho hang</h2>
+      <p>Bo cuc nay bam sat mau tham chieu. API inventory co the noi vao day o buoc tiep theo.</p>
+    </div>
+    <span class="chip">Canh bao sap het</span>
+  </div>
+
+  <div class="table">
+    @for (item of inventoryItems; track item.name + item.branch) {
+      <div class="row">
+        <div>
+          <strong>{{ item.name }}</strong>
+          <p>{{ item.branch }}</p>
+        </div>
+        <div>
+          <span>Ton kho</span>
+          <strong>{{ item.stock }}</strong>
+        </div>
+        <div>
+          <span>Muc canh bao</span>
+          <strong>{{ item.reorder }}</strong>
+        </div>
+        <div>
+          <span class="status" [class.warn]="item.status === 'Low stock'">{{ item.status }}</span>
+        </div>
+      </div>
+    }
+  </div>
+</section>

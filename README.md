@@ -1,13 +1,15 @@
 # Coffee Chain Management
 
-Monorepo khoi tao cho do an tot nghiep quan ly va ban ca phe chuoi cua hang.
+Monorepo cho do an tot nghiep quan ly va ban ca phe chuoi cua hang.
 
 ## Stack
 
 - Backend: ASP.NET Core Web API `.NET 8`
 - Frontend: `Angular 21`
 - Database: `PostgreSQL`
-- Container: `Docker` + `docker-compose`
+- ORM: `EF Core + Npgsql`
+- Auth: `JWT Bearer`
+- Container: `Docker` + `docker compose`
 - Source control: `Git` + `GitHub`
 
 ## Cau truc thu muc
@@ -26,6 +28,7 @@ Monorepo khoi tao cho do an tot nghiep quan ly va ban ca phe chuoi cua hang.
 |   |-- backend.Dockerfile
 |   `-- frontend.Dockerfile
 |-- docs
+|-- dotnet-tools.json
 |-- CoffeeChainManagement.slnx
 `-- docker-compose.yml
 ```
@@ -34,18 +37,22 @@ Monorepo khoi tao cho do an tot nghiep quan ly va ban ca phe chuoi cua hang.
 
 - `Domain`: entity va enum cua nghiep vu quan ly chi nhanh, menu, POS, kho.
 - `Application`: DTO va interface/use case de frontend/API goi vao.
-- `Infrastructure`: implementation tam bang in-memory, sau nay doi sang PostgreSQL/EF Core.
-- `Api`: endpoint REST, swagger, CORS, health check.
+- `Infrastructure`: `EF Core + Npgsql`, migrations, seed data, JWT auth implementation.
+- `Api`: endpoint REST, swagger, CORS, auth middleware, startup migration/seed.
 
 ## Chay local khong dung Docker
 
 ### Backend
 
 ```powershell
+dotnet tool restore
 dotnet run --project .\src\backend\CoffeeChainManagement.Api
 ```
 
-API mac dinh: `http://localhost:8080` neu chay bang Docker, hoac theo port do ASP.NET cap neu chay thu cong.
+App startup se tu dong:
+
+- Apply migration EF Core vao PostgreSQL
+- Seed du lieu dev neu database dang rong
 
 ### Frontend
 
@@ -56,6 +63,22 @@ npm.cmd start
 ```
 
 Frontend mac dinh: `http://localhost:4200`
+
+## EF Core migrations
+
+Tao migration moi:
+
+```powershell
+dotnet tool restore
+dotnet dotnet-ef migrations add <MigrationName> --project .\src\backend\CoffeeChainManagement.Infrastructure --startup-project .\src\backend\CoffeeChainManagement.Api --output-dir Persistence\Migrations
+```
+
+Apply migration thu cong:
+
+```powershell
+dotnet tool restore
+dotnet dotnet-ef database update --project .\src\backend\CoffeeChainManagement.Infrastructure --startup-project .\src\backend\CoffeeChainManagement.Api
+```
 
 ## Chay bang Docker
 
@@ -84,12 +107,29 @@ docker compose up --build
 - `BranchManager`: login, xem dashboard, chi nhanh, san pham
 - `Cashier`: login, xem dashboard, san pham
 
+## Frontend hien tai
+
+- Login page goi `POST /api/auth/login`
+- `AuthStore` luu JWT + profile vao `localStorage`
+- `authGuard` chan route noi bo
+- `guestGuard` chan quay lai trang login khi da dang nhap
+- `authInterceptor` tu dong gan bearer token
+- Shell va sitemap frontend duoc phat trien theo mau tham chieu trong file zip:
+- `Dashboard`
+- `Chi nhanh`
+- `San pham`
+- `Kho hang`
+- `Nhan vien`
+- `Bao cao`
+- `Khuyen mai`
+
 ## Ghi chu cho ban va team
 
-- Mình da them comment ngan o dau nhieu file de nhin vao biet file do phuc vu gi.
-- Hien tai `Infrastructure` da dung `EF Core + Npgsql` va seed dev data vao PostgreSQL luc app startup.
+- Minh da them comment ngan o dau nhieu file de nhin vao biet file do phuc vu gi.
+- Hien tai `Infrastructure` da dung `EF Core + Npgsql`, migration files va seed dev data vao PostgreSQL luc app startup.
 - Auth dang dung JWT bearer token va role authorization tren cac endpoint chinh.
-- App startup dang dung `EnsureCreated()` de khoi tao schema nhanh cho dev. Neu can pipeline chuan production, buoc tiep theo la doi sang migration.
+- App startup da tach ro `MigrateAsync()` va `SeedAsync()`.
+- Frontend da co login flow, guard, interceptor va bo cuc quan tri theo mau tham chieu.
 
 ## GitHub va Docker Hub
 
@@ -97,7 +137,7 @@ docker compose up --build
 
 ```powershell
 git add .
-git commit -m "Add PostgreSQL, EF Core, Npgsql and JWT auth"
+git commit -m "Add EF Core migrations and Angular auth shell"
 git push -u origin main
 ```
 

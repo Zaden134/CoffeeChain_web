@@ -1,0 +1,131 @@
+.login-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at top, rgba(255, 209, 158, 0.55), transparent 35%),
+    linear-gradient(135deg, #fff7ef 0%, #f7eee3 48%, #efe1d0 100%);
+}
+
+.login-card {
+  width: min(100%, 980px);
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 30px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(88, 57, 27, 0.14);
+}
+
+.hero {
+  padding: 48px;
+  background: linear-gradient(180deg, #4d2d17 0%, #7b4820 100%);
+  color: #fff8f1;
+}
+
+.logo {
+  width: 74px;
+  height: 74px;
+  border-radius: 24px;
+  display: grid;
+  place-items: center;
+  background: #c97a28;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.hero h1 {
+  margin: 24px 0 12px;
+  font-size: 2.4rem;
+}
+
+.hero p {
+  margin: 0;
+  max-width: 320px;
+  color: rgba(255, 248, 241, 0.82);
+  line-height: 1.7;
+}
+
+.form-card {
+  padding: 40px;
+}
+
+.form-card h2 {
+  margin-top: 0;
+  margin-bottom: 24px;
+}
+
+.form {
+  display: grid;
+  gap: 18px;
+}
+
+label {
+  display: grid;
+  gap: 8px;
+}
+
+input {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(115, 81, 49, 0.18);
+  background: #f8f5f1;
+}
+
+.password-field {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+}
+
+.password-field button,
+.submit {
+  border: 0;
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.password-field button {
+  padding: 0 16px;
+  background: #efe2d2;
+  color: #73461d;
+  font-weight: 600;
+}
+
+.submit {
+  padding: 14px 18px;
+  background: #b4631c;
+  color: white;
+  font-weight: 700;
+}
+
+.submit:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.error {
+  margin: 0;
+  color: #a52718;
+  font-size: 0.95rem;
+}
+
+.demo {
+  margin-top: 24px;
+  padding: 16px;
+  border-radius: 16px;
+  background: #f7f1e8;
+  color: #65482a;
+}
+
+.demo p {
+  margin: 6px 0;
+}
+
+@media (max-width: 900px) {
+  .login-card {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,55 @@
+<div class="layout">
+  @if (sidebarOpen()) {
+    <button class="backdrop" type="button" (click)="closeSidebar()"></button>
+  }
+
+  <aside class="sidebar" [class.open]="sidebarOpen()">
+    <div class="brand">
+      <div class="brand-mark">CP</div>
+      <div>
+        <strong>CoffeePOS</strong>
+        <p>Chuoi cua hang ca phe</p>
+      </div>
+      <button class="sidebar-close" type="button" (click)="closeSidebar()">x</button>
+    </div>
+
+    <nav class="nav">
+      @for (item of navigation(); track item.path) {
+        <a
+          [routerLink]="item.path"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: item.path === '/' }"
+          class="nav-item"
+          (click)="closeSidebar()">
+          <span>{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+
+    <div class="profile">
+      <div class="avatar">{{ user()?.fullName?.slice(0, 1) ?? 'U' }}</div>
+      <div class="profile-text">
+        <strong>{{ user()?.fullName }}</strong>
+        <p>{{ user()?.role }}</p>
+      </div>
+      <button type="button" class="logout" (click)="logout()">Dang xuat</button>
+    </div>
+  </aside>
+
+  <div class="content-wrap">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button type="button" class="menu-button" (click)="toggleSidebar()">Menu</button>
+        <div>
+          <h1>He thong quan ly chuoi cua hang ca phe</h1>
+          <p>Van hanh, kho, nhan su va doanh thu trong mot giao dien.</p>
+        </div>
+      </div>
+      <div class="status">Online</div>
+    </header>
+
+    <main class="page-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

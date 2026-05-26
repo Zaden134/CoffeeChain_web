@@ -21,6 +21,13 @@
   margin: 0;
 }
 
+.hero-copy {
+  margin: 10px 0 0;
+  color: #74553b;
+  max-width: 560px;
+  line-height: 1.6;
+}
+
 .hero button {
   border: 0;
   border-radius: 999px;
@@ -121,6 +128,54 @@
 
 .error {
   color: #8a1f11;
+}
+
+.activity-panel {
+  margin-top: 18px;
+}
+
+.activity-list {
+  display: grid;
+  gap: 16px;
+}
+
+.activity-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 14px;
+  align-items: start;
+  padding-top: 14px;
+  border-top: 1px solid rgba(96, 65, 40, 0.12);
+}
+
+.activity-item:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.activity-dot {
+  width: 10px;
+  height: 10px;
+  margin-top: 8px;
+  border-radius: 50%;
+  background: #4f2d16;
+}
+
+.activity-dot.success {
+  background: #2e9d62;
+}
+
+.activity-dot.warning {
+  background: #da8a24;
+}
+
+.activity-dot.info {
+  background: #3d77d1;
+}
+
+.activity-copy p {
+  margin: 4px 0 0;
+  color: #7a624e;
 }
 
 @media (max-width: 1200px) {

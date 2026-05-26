@@ -1,18 +1,21 @@
-@if (state.loading) {
+@if (state().loading) {
   <section class="panel">
     <p>Dang tai dashboard...</p>
   </section>
-} @else if (state.error) {
+} @else if (state().error) {
   <section class="panel error">
-    <p>{{ state.error }}</p>
+    <p>{{ state().error }}</p>
   </section>
-} @else if (state.data; as data) {
+} @else if (state().data; as data) {
   <section class="hero">
     <div>
       <p class="eyebrow">Tong quan he thong</p>
       <h2>Van hanh chuoi ca phe theo thoi gian thuc</h2>
+      <p class="hero-copy">
+        Bieu do duoc tinh tu PostgreSQL va nhan du lieu qua JWT-protected API.
+      </p>
     </div>
-    <button type="button">Dong bo POS</button>
+    <button type="button" (click)="store.load()">Lam moi dashboard</button>
   </section>
 
   <section class="kpis">
@@ -76,5 +79,25 @@
         }
       </div>
     </article>
+  </section>
+
+  <section class="panel activity-panel">
+    <div class="panel-head">
+      <h3>Hoat dong gan day</h3>
+      <span>Cap nhat noi bo</span>
+    </div>
+
+    <div class="activity-list">
+      @for (activity of activities; track activity.action) {
+        <div class="activity-item">
+          <span class="activity-dot" [class]="activity.status"></span>
+          <div class="activity-copy">
+            <strong>{{ activity.action }}</strong>
+            <p>{{ activity.detail }}</p>
+          </div>
+          <small>{{ activity.time }}</small>
+        </div>
+      }
+    </div>
   </section>
 }

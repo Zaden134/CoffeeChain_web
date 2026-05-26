@@ -1,0 +1,56 @@
+<div class="login-shell">
+  <section class="login-card">
+    <div class="hero">
+      <div class="logo">CP</div>
+      <h1>CoffeePOS</h1>
+      <p>He thong quan ly chuoi cua hang ca phe</p>
+    </div>
+
+    <div class="form-card">
+      <h2>Dang nhap</h2>
+
+      <form (ngSubmit)="submit()" class="form">
+        <label>
+          <span>Username</span>
+          <input
+            [ngModel]="username()"
+            (ngModelChange)="username.set($event)"
+            name="username"
+            type="text"
+            placeholder="admin"
+            required />
+        </label>
+
+        <label>
+          <span>Mat khau</span>
+          <div class="password-field">
+            <input
+              [ngModel]="password()"
+              (ngModelChange)="password.set($event)"
+              name="password"
+              [type]="showPassword() ? 'text' : 'password'"
+              placeholder="Nhap mat khau"
+              required />
+            <button type="button" (click)="showPassword.set(!showPassword())">
+              {{ showPassword() ? 'An' : 'Hien' }}
+            </button>
+          </div>
+        </label>
+
+        @if (error()) {
+          <p class="error">{{ error() }}</p>
+        }
+
+        <button class="submit" type="submit" [disabled]="authStore.state().loading">
+          {{ authStore.state().loading ? 'Dang dang nhap...' : 'Dang nhap' }}
+        </button>
+      </form>
+
+      <div class="demo">
+        <p><strong>Demo admin:</strong> admin / Admin@123</p>
+        <p><strong>Demo manager:</strong> manager.q1 / Manager@123</p>
+        <p><strong>Demo cashier:</strong> cashier.q1 / Cashier@123</p>
+      </div>
+    </div>
+  </section>
+</div>

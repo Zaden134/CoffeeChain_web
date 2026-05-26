@@ -12,8 +12,6 @@ public sealed class CoffeeChainDbSeeder(
 {
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
-        await dbContext.Database.EnsureCreatedAsync(cancellationToken);
-
         if (await dbContext.Branches.AnyAsync(cancellationToken))
         {
             return;

@@ -1,18 +1,12 @@
-import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 
-import { DashboardPage } from './features/dashboard/dashboard-page';
-import { DashboardStore } from './features/dashboard/dashboard.store';
-
-// App la layout tong cua web admin, giu shell va noi cac feature page chinh.
+// App root chi giu router outlet, layout va auth duoc tach ra theo route.
 @Component({
   selector: 'ccm-root',
   standalone: true,
-  imports: [CommonModule, DashboardPage],
-  providers: [DashboardStore],
+  imports: [RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App {
-  protected readonly store = inject(DashboardStore);
-}
+export class App {}

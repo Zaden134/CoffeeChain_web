@@ -1,0 +1,46 @@
+.page-card {
+  padding: 24px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(92, 64, 35, 0.12);
+  box-shadow: 0 18px 40px rgba(88, 57, 27, 0.08);
+}
+
+.page-head p,
+.promotion-card p {
+  margin: 6px 0 0;
+  color: #7a624e;
+}
+
+.promotion-list {
+  display: grid;
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.promotion-card {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 18px;
+  align-items: center;
+  padding: 18px;
+  border-radius: 18px;
+  background: #fff8f1;
+  border: 1px solid rgba(92, 64, 35, 0.12);
+}
+
+.discount {
+  padding: 8px 12px;
+  border-radius: 14px;
+  background: #ffe5c3;
+  color: #8d4d13;
+  font-weight: 700;
+}
+
+.status {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #efe2d2;
+  color: #5f3814;
+  font-weight: 700;
+}

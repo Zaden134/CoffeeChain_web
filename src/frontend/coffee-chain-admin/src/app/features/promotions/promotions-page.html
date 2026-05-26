@@ -1,0 +1,21 @@
+<section class="page-card">
+  <div class="page-head">
+    <div>
+      <h2>Khuyen mai</h2>
+      <p>Trang quan tri campaign theo bo cuc cua mau tham chieu.</p>
+    </div>
+  </div>
+
+  <div class="promotion-list">
+    @for (promotion of promotions; track promotion.name) {
+      <article class="promotion-card">
+        <div>
+          <strong>{{ promotion.name }}</strong>
+          <p>{{ promotion.range }}</p>
+        </div>
+        <div class="discount">{{ promotion.discount }}</div>
+        <span class="status">{{ promotion.status }}</span>
+      </article>
+    }
+  </div>
+</section>

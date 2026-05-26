@@ -1,0 +1,54 @@
+.page-card {
+  padding: 24px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(92, 64, 35, 0.12);
+  box-shadow: 0 18px 40px rgba(88, 57, 27, 0.08);
+}
+
+.page-head p,
+.copy p {
+  margin: 6px 0 0;
+  color: #7a624e;
+}
+
+.employee-list {
+  display: grid;
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.employee-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 14px;
+  align-items: center;
+  padding: 18px;
+  border-radius: 18px;
+  background: #fff8f1;
+  border: 1px solid rgba(92, 64, 35, 0.12);
+}
+
+.avatar {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #ffe5c3;
+  color: #8d4d13;
+  font-weight: 700;
+}
+
+.status {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #dcf6e5;
+  color: #1f7a43;
+  font-weight: 700;
+}
+
+.status.pending {
+  background: #fbe1b8;
+  color: #a35d0d;
+}

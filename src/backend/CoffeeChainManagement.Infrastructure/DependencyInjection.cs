@@ -35,6 +35,7 @@ public static class DependencyInjection
 
         services.AddScoped<IPasswordHasher<Employee>, PasswordHasher<Employee>>();
         services.AddScoped<CoffeeChainDbSeeder>();
+        services.AddScoped<IDatabaseInitializer, DatabaseInitializer>();
 
         services.AddScoped<IDashboardService, PostgresDashboardService>();
         services.AddScoped<IBranchService, PostgresBranchService>();
@@ -47,7 +48,8 @@ public static class DependencyInjection
     public static async Task InitializeDatabaseAsync(this IServiceProvider serviceProvider, CancellationToken cancellationToken = default)
     {
         using var scope = serviceProvider.CreateScope();
-        var seeder = scope.ServiceProvider.GetRequiredService<CoffeeChainDbSeeder>();
-        await seeder.SeedAsync(cancellationToken);
+        var initializer = scope.ServiceProvider.GetRequiredService<IDatabaseInitializer>();
+        await initializer.MigrateAsync(cancellationToken);
+        await initializer.SeedAsync(cancellationToken);
     }
 }
