@@ -4,6 +4,15 @@
 GET {{CoffeeChainManagement.Api_HostAddress}}/health
 Accept: application/json
 
+### Login admin
+POST {{CoffeeChainManagement.Api_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "Admin@123"
+}
+
 ### Dashboard overview
 GET {{CoffeeChainManagement.Api_HostAddress}}/api/dashboard/overview
 Accept: application/json

@@ -66,26 +66,38 @@ docker compose up --build
 ## API mau de frontend dung ngay
 
 - `GET /health`
+- `POST /api/auth/login`
+- `GET /api/auth/me`
 - `GET /api/dashboard/overview`
 - `GET /api/branches`
 - `GET /api/products`
 
+## Tai khoan seed mac dinh
+
+- `admin / Admin@123` -> role `Administrator`
+- `manager.q1 / Manager@123` -> role `BranchManager`
+- `cashier.q1 / Cashier@123` -> role `Cashier`
+
+## Phan quyen hien tai
+
+- `Administrator`: login, xem dashboard, chi nhanh, san pham
+- `BranchManager`: login, xem dashboard, chi nhanh, san pham
+- `Cashier`: login, xem dashboard, san pham
+
 ## Ghi chu cho ban va team
 
 - Mình da them comment ngan o dau nhieu file de nhin vao biet file do phuc vu gi.
-- Hien tai `Infrastructure` dang dung du lieu mau in-memory de setup nhanh va tranh phu thuoc package/database ngay buoc dau.
-- Khi ban muon, buoc tiep theo hop ly la them `Entity Framework Core + Npgsql + JWT Auth + role-based authorization`.
+- Hien tai `Infrastructure` da dung `EF Core + Npgsql` va seed dev data vao PostgreSQL luc app startup.
+- Auth dang dung JWT bearer token va role authorization tren cac endpoint chinh.
+- App startup dang dung `EnsureCreated()` de khoi tao schema nhanh cho dev. Neu can pipeline chuan production, buoc tiep theo la doi sang migration.
 
 ## GitHub va Docker Hub
 
 ### GitHub
 
 ```powershell
-git init
 git add .
-git commit -m "Initial coffee chain management setup"
-git branch -M main
-git remote add origin https://github.com/zaden134/<ten-repo>.git
+git commit -m "Add PostgreSQL, EF Core, Npgsql and JWT auth"
 git push -u origin main
 ```
 

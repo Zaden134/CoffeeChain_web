@@ -6,9 +6,11 @@ namespace CoffeeChainManagement.Domain.Entities;
 // Employee gom thong tin nhan vien va vai tro de sau nay mo rong phan quyen.
 public sealed class Employee : BaseEntity
 {
-    public required Guid BranchId { get; init; }
-    public required string FullName { get; init; }
-    public required string Email { get; init; }
-    public required UserRole Role { get; init; }
-    public bool IsActive { get; init; } = true;
+    public Guid? BranchId { get; set; }
+    public required string Username { get; set; }
+    public required string FullName { get; set; }
+    public required string Email { get; set; }
+    public required string PasswordHash { get; set; }
+    public required UserRole Role { get; set; }
+    public bool IsActive { get; set; } = true;
 }
