@@ -1,3 +1,9 @@
+.page-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 0.9fr;
+  gap: 18px;
+}
+
 .page-card {
   padding: 24px;
   border-radius: 24px;
@@ -6,10 +12,38 @@
   box-shadow: 0 18px 40px rgba(88, 57, 27, 0.08);
 }
 
+.page-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
 .page-head p,
-.copy p {
+.copy p,
+.copy small {
   margin: 6px 0 0;
   color: #7a624e;
+}
+
+.page-head button,
+.actions button,
+.primary {
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+.page-head button,
+.primary,
+.actions button {
+  background: #b4631c;
+  color: #fff;
+}
+
+.actions .danger {
+  background: #a52718;
 }
 
 .employee-list {
@@ -20,7 +54,7 @@
 
 .employee-card {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr auto auto;
   gap: 14px;
   align-items: center;
   padding: 18px;
@@ -48,7 +82,47 @@
   font-weight: 700;
 }
 
-.status.pending {
-  background: #fbe1b8;
-  color: #a35d0d;
+.status.inactive {
+  background: #f8dddd;
+  color: #a52718;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.form {
+  display: grid;
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.form label {
+  display: grid;
+  gap: 8px;
+}
+
+.form input,
+.form select {
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(115, 81, 49, 0.18);
+  background: #f8f5f1;
+}
+
+.checkbox {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+}
+
+.error {
+  margin: 0;
+  color: #a52718;
+}
+
+@media (max-width: 1100px) {
+  .page-grid {
+    grid-template-columns: 1fr;
+  }
 }

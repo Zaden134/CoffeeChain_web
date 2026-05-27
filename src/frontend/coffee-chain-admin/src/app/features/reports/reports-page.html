@@ -1,23 +1,76 @@
-<section class="page-card">
-  <div class="page-head">
-    <div>
-      <h2>Bao cao</h2>
-      <p>Khung bao cao tong hop theo bo cuc giao dien mau.</p>
+@if (state().loading) {
+  <section class="page-card">
+    <p>Dang tai bao cao...</p>
+  </section>
+} @else if (state().error) {
+  <section class="page-card error">
+    <p>{{ state().error }}</p>
+  </section>
+} @else if (state().data; as data) {
+  <section class="page-card">
+    <div class="page-head">
+      <div>
+        <h2>Bao cao tong hop</h2>
+        <p>Tong hop KPI va diem can xu ly dua tren du lieu dashboard thuc.</p>
+      </div>
+      <button type="button" (click)="store.load()">Lam moi</button>
     </div>
-  </div>
 
-  <div class="grid">
-    @for (card of reportCards; track card.label) {
-      <article class="stat-card">
-        <span>{{ card.label }}</span>
-        <strong>
-          @if (card.kind === 'currency') {
-            {{ card.value | currency:'VND':'symbol':'1.0-0' }}
-          } @else {
-            {{ card.value | percent:'1.0-1' }}
-          }
-        </strong>
+    <div class="grid">
+      @for (card of reportCards(); track card.label) {
+        <article class="stat-card">
+          <span>{{ card.label }}</span>
+          <strong>
+            @if (card.kind === 'currency') {
+              {{ card.value | currency:'VND':'symbol':'1.0-0' }}
+            } @else {
+              {{ card.value | number:'1.0-2' }}
+            }
+          </strong>
+        </article>
+      }
+    </div>
+
+    <div class="report-grid">
+      <article class="list-card">
+        <div class="section-head">
+          <h3>Chi nhanh can uu tien</h3>
+          <span>{{ data.topBranches.length }} chi nhanh</span>
+        </div>
+
+        @for (branch of data.topBranches; track branch.id) {
+          <div class="list-item">
+            <div>
+              <strong>{{ branch.name }}</strong>
+              <p>{{ branch.managerName }} · {{ branch.address }}</p>
+            </div>
+            <div class="meta">
+              <span>{{ branch.revenueToday | currency:'VND':'symbol':'1.0-0' }}</span>
+              <small>{{ branch.lowStockItems }} canh bao kho</small>
+            </div>
+          </div>
+        }
       </article>
-    }
-  </div>
-</section>
+
+      <article class="list-card">
+        <div class="section-head">
+          <h3>San pham dang ban tot</h3>
+          <span>{{ data.bestSellingProducts.length }} mon</span>
+        </div>
+
+        @for (product of data.bestSellingProducts; track product.id) {
+          <div class="list-item product-item">
+            <div>
+              <strong>{{ product.name }}</strong>
+              <p>{{ product.category }} · SKU {{ product.sku }}</p>
+            </div>
+            <div class="meta">
+              <span>{{ product.soldQuantity }} ly</span>
+              <small>{{ product.price | currency:'VND':'symbol':'1.0-0' }}</small>
+            </div>
+          </div>
+        }
+      </article>
+    </div>
+  </section>
+}

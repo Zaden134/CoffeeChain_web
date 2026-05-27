@@ -32,6 +32,7 @@ export class AuthStore {
   readonly user = computed(() => this.state().user);
   readonly isAuthenticated = computed(() => Boolean(this.state().token && this.state().user));
   readonly role = computed(() => this.state().user?.role ?? null);
+  readonly branchId = computed(() => this.state().user?.branchId ?? null);
 
   login(username: string, password: string): Promise<AuthResponse> {
     this.state.update((state) => ({ ...state, loading: true }));
@@ -73,6 +74,39 @@ export class AuthStore {
 
   logout(): void {
     this.clear(true);
+  }
+
+  can(permission: string, branchId?: string | null): boolean {
+    const role = this.role();
+    const currentBranchId = this.branchId();
+
+    if (!role) {
+      return false;
+    }
+
+    if (role === 'Administrator') {
+      return true;
+    }
+
+    const sameBranch = !branchId || currentBranchId === branchId;
+
+    switch (permission) {
+      case 'employees.read':
+      case 'inventory.read':
+      case 'recruitment.read':
+      case 'promotions.write':
+        return role === 'BranchManager';
+      case 'employees.write':
+      case 'inventory.write':
+      case 'recruitment.write':
+        return role === 'BranchManager' && sameBranch;
+      case 'recruitment.review':
+        return role === 'Administrator';
+      case 'promotions.read':
+        return role === 'BranchManager' || role === 'Cashier';
+      default:
+        return false;
+    }
   }
 
   private persist(response: AuthResponse): void {

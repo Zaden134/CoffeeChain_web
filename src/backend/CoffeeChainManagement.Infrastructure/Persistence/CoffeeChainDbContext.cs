@@ -12,6 +12,7 @@ public sealed class CoffeeChainDbContext(DbContextOptions<CoffeeChainDbContext> 
     public DbSet<Ingredient> Ingredients => Set<Ingredient>();
     public DbSet<InventoryItem> InventoryItems => Set<InventoryItem>();
     public DbSet<Promotion> Promotions => Set<Promotion>();
+    public DbSet<RecruitmentRequest> RecruitmentRequests => Set<RecruitmentRequest>();
     public DbSet<SaleOrder> SaleOrders => Set<SaleOrder>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -75,6 +76,15 @@ public sealed class CoffeeChainDbContext(DbContextOptions<CoffeeChainDbContext> 
             entity.HasKey(promotion => promotion.Id);
             entity.Property(promotion => promotion.Name).HasMaxLength(150);
             entity.Property(promotion => promotion.DiscountPercent).HasPrecision(5, 2);
+        });
+
+        modelBuilder.Entity<RecruitmentRequest>(entity =>
+        {
+            entity.ToTable("recruitment_requests");
+            entity.HasKey(request => request.Id);
+            entity.Property(request => request.PositionTitle).HasMaxLength(120);
+            entity.Property(request => request.Reason).HasMaxLength(1000);
+            entity.Property(request => request.AdminNote).HasMaxLength(1000);
         });
 
         modelBuilder.Entity<SaleOrder>(entity =>

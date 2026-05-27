@@ -1,21 +1,82 @@
-<section class="page-card">
-  <div class="page-head">
-    <div>
-      <h2>Khuyen mai</h2>
-      <p>Trang quan tri campaign theo bo cuc cua mau tham chieu.</p>
+<section class="page-grid">
+  <article class="page-card">
+    <div class="page-head">
+      <div>
+        <h2>Khuyen mai</h2>
+        <p>Manager va admin co the tao, sua, xoa campaign ngay tren web admin.</p>
+      </div>
+      @if (canWrite()) {
+        <button type="button" (click)="startCreate()">Tao campaign</button>
+      }
     </div>
-  </div>
 
-  <div class="promotion-list">
-    @for (promotion of promotions; track promotion.name) {
-      <article class="promotion-card">
-        <div>
-          <strong>{{ promotion.name }}</strong>
-          <p>{{ promotion.range }}</p>
-        </div>
-        <div class="discount">{{ promotion.discount }}</div>
-        <span class="status">{{ promotion.status }}</span>
-      </article>
+    @if (loading()) {
+      <p>Dang tai khuyen mai...</p>
+    } @else {
+      <div class="promotion-list">
+        @for (promotion of promotions(); track promotion.id) {
+          <article class="promotion-card">
+            <div>
+              <strong>{{ promotion.name }}</strong>
+              <p>{{ promotion.startDate }} - {{ promotion.endDate }}</p>
+            </div>
+            <div class="discount">{{ promotion.discountPercent }}%</div>
+            <span class="status" [class.off]="!promotion.isActive">{{ promotion.isActive ? 'Active' : 'Inactive' }}</span>
+            @if (canWrite()) {
+              <div class="actions">
+                <button type="button" (click)="startEdit(promotion)">Sua</button>
+                <button type="button" class="danger" (click)="delete(promotion)">Xoa</button>
+              </div>
+            }
+          </article>
+        }
+      </div>
     }
-  </div>
+  </article>
+
+  @if (canWrite()) {
+    <article class="page-card form-card">
+      <div class="page-head">
+        <div>
+          <h2>{{ editingId() ? 'Cap nhat campaign' : 'Tao campaign' }}</h2>
+          <p>Validation ngay va discount duoc kiem tra o frontend va backend.</p>
+        </div>
+      </div>
+
+      <form class="form" (ngSubmit)="submit()">
+        <label>
+          <span>Ten khuyen mai</span>
+          <input [ngModel]="form().name" (ngModelChange)="form.update(v => ({ ...v, name: $event }))" name="name" />
+        </label>
+
+        <label>
+          <span>Discount (%)</span>
+          <input [ngModel]="form().discountPercent" (ngModelChange)="form.update(v => ({ ...v, discountPercent: +$event }))" name="discountPercent" type="number" min="0" max="100" />
+        </label>
+
+        <label>
+          <span>Ngay bat dau</span>
+          <input [ngModel]="form().startDate" (ngModelChange)="form.update(v => ({ ...v, startDate: $event }))" name="startDate" type="date" />
+        </label>
+
+        <label>
+          <span>Ngay ket thuc</span>
+          <input [ngModel]="form().endDate" (ngModelChange)="form.update(v => ({ ...v, endDate: $event }))" name="endDate" type="date" />
+        </label>
+
+        <label class="checkbox">
+          <input [ngModel]="form().isActive" (ngModelChange)="form.update(v => ({ ...v, isActive: $event }))" name="isActive" type="checkbox" />
+          <span>Dang kich hoat</span>
+        </label>
+
+        @if (error()) {
+          <p class="error">{{ error() }}</p>
+        }
+
+        <button type="submit" class="primary" [disabled]="submitting()">
+          {{ submitting() ? 'Dang luu...' : (editingId() ? 'Cap nhat' : 'Tao moi') }}
+        </button>
+      </form>
+    </article>
+  }
 </section>

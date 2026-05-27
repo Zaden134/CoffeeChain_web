@@ -68,6 +68,19 @@ public sealed class CoffeeChainDbSeeder(
         };
         cashier.PasswordHash = passwordHasher.HashPassword(cashier, "Cashier@123");
 
+        var warehouseStaff = new Employee
+        {
+            Id = Guid.Parse("10000000-0000-0000-0000-000000000004"),
+            Username = "warehouse.q1",
+            FullName = "Pham Duc Anh",
+            Email = "warehouse.q1@coffeechain.local",
+            PasswordHash = string.Empty,
+            Role = UserRole.WarehouseStaff,
+            BranchId = branch1Id,
+            IsActive = true
+        };
+        warehouseStaff.PasswordHash = passwordHasher.HashPassword(warehouseStaff, "Warehouse@123");
+
         dbContext.Branches.AddRange(
             new Branch
             {
@@ -145,7 +158,39 @@ public sealed class CoffeeChainDbSeeder(
             new InventoryItem { BranchId = branch3Id, IngredientId = milkId, InStockQuantity = 8m, ReservedQuantity = 0m },
             new InventoryItem { BranchId = branch3Id, IngredientId = peachSyrupId, InStockQuantity = 3m, ReservedQuantity = 0m });
 
-        dbContext.Employees.AddRange(admin, manager, cashier);
+        dbContext.Employees.AddRange(admin, manager, cashier, warehouseStaff);
+
+        dbContext.Promotions.AddRange(
+            new Promotion
+            {
+                Id = Guid.Parse("40000000-0000-0000-0000-000000000001"),
+                Name = "Happy Morning 15%",
+                DiscountPercent = 15m,
+                StartDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(-5)),
+                EndDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(10)),
+                IsActive = true
+            },
+            new Promotion
+            {
+                Id = Guid.Parse("40000000-0000-0000-0000-000000000002"),
+                Name = "Tea Combo 10%",
+                DiscountPercent = 10m,
+                StartDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(-2)),
+                EndDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(14)),
+                IsActive = true
+            });
+
+        dbContext.RecruitmentRequests.Add(
+            new RecruitmentRequest
+            {
+                Id = Guid.Parse("50000000-0000-0000-0000-000000000001"),
+                BranchId = branch1Id,
+                RequestedByEmployeeId = manager.Id,
+                PositionTitle = "Cashier full-time",
+                Quantity = 2,
+                Reason = "Chi nhanh Quan 1 can bo sung nhan su cho khung gio toi va cuoi tuan.",
+                Status = RecruitmentRequestStatus.Pending
+            });
 
         dbContext.SaleOrders.AddRange(
             new SaleOrder

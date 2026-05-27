@@ -1,6 +1,6 @@
 .page-grid {
   display: grid;
-  grid-template-columns: 1.35fr 0.85fr;
+  grid-template-columns: 1.2fr 0.8fr;
   gap: 18px;
 }
 
@@ -12,21 +12,59 @@
   box-shadow: 0 18px 40px rgba(88, 57, 27, 0.08);
 }
 
-.page-head,
-.row {
-  display: flex;
-  justify-content: space-between;
-  gap: 18px;
-}
-
 .page-head p,
-.row p,
-.row span {
+.request-card p,
+.request-card small,
+.note span {
   margin: 6px 0 0;
   color: #7a624e;
 }
 
-.page-head button,
+.request-list {
+  display: grid;
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.request-card {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  border-radius: 18px;
+  background: #fff8f1;
+  border: 1px solid rgba(92, 64, 35, 0.12);
+}
+
+.status {
+  justify-self: start;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #fbe1b8;
+  color: #a35d0d;
+  font-weight: 700;
+}
+
+.status.approved {
+  background: #dcf6e5;
+  color: #1f7a43;
+}
+
+.status.rejected {
+  background: #f8dddd;
+  color: #a52718;
+}
+
+.review-box,
+.form {
+  display: grid;
+  gap: 12px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
 .actions button,
 .primary {
   border: 0;
@@ -41,41 +79,7 @@
   background: #a52718;
 }
 
-.table {
-  display: grid;
-  gap: 14px;
-  margin-top: 22px;
-}
-
-.row {
-  padding: 18px;
-  border-radius: 18px;
-  background: #fff8f1;
-  border: 1px solid rgba(92, 64, 35, 0.12);
-  align-items: center;
-}
-
-.status {
-  padding: 8px 12px;
-  border-radius: 999px;
-  background: #dcf6e5;
-  color: #1f7a43;
-  font-weight: 700;
-}
-
-.status.warn {
-  background: #fbe1b8;
-  color: #a35d0d;
-}
-
-.actions {
-  display: flex;
-  gap: 8px;
-}
-
 .form {
-  display: grid;
-  gap: 14px;
   margin-top: 22px;
 }
 
@@ -85,11 +89,19 @@
 }
 
 .form input,
-.form select {
+.form select,
+.form textarea,
+.review-box textarea {
   padding: 12px 14px;
   border-radius: 14px;
   border: 1px solid rgba(115, 81, 49, 0.18);
   background: #f8f5f1;
+}
+
+.form textarea,
+.review-box textarea {
+  min-height: 100px;
+  resize: vertical;
 }
 
 .error {
@@ -100,10 +112,5 @@
 @media (max-width: 1100px) {
   .page-grid {
     grid-template-columns: 1fr;
-  }
-
-  .row {
-    flex-direction: column;
-    align-items: start;
   }
 }

@@ -17,7 +17,8 @@ const NAVIGATION: NavigationItem[] = [
   { label: 'Kho hang', path: '/inventory', roles: ['Administrator', 'BranchManager'] },
   { label: 'Nhan vien', path: '/employees', roles: ['Administrator', 'BranchManager'] },
   { label: 'Bao cao', path: '/reports', roles: ['Administrator', 'BranchManager'] },
-  { label: 'Khuyen mai', path: '/promotions', roles: ['Administrator', 'BranchManager'] }
+  { label: 'Khuyen mai', path: '/promotions', roles: ['Administrator', 'BranchManager'] },
+  { label: 'Yeu cau tuyen', path: '/recruitment-requests', roles: ['Administrator', 'BranchManager'] }
 ];
 
 // MainLayout la shell chinh cua he thong sau khi user dang nhap.
