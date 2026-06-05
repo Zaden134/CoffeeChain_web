@@ -10,7 +10,8 @@ namespace CoffeeChainManagement.Infrastructure.Services;
 // PostgresRecruitmentRequestService xu ly luong yeu cau tuyen dung va phe duyet.
 internal sealed class PostgresRecruitmentRequestService(
     CoffeeChainDbContext dbContext,
-    ICurrentUserContext currentUser) : IRecruitmentRequestService
+    ICurrentUserContext currentUser,
+    IAuditLogService auditLogService) : IRecruitmentRequestService
 {
     public async Task<IReadOnlyCollection<RecruitmentRequestDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
@@ -51,7 +52,9 @@ internal sealed class PostgresRecruitmentRequestService(
 
         var branch = await dbContext.Branches.AsNoTracking().SingleAsync(item => item.Id == entity.BranchId, cancellationToken);
         var employee = await dbContext.Employees.AsNoTracking().SingleAsync(item => item.Id == entity.RequestedByEmployeeId, cancellationToken);
-        return MapRequest(entity, new Dictionary<Guid, string> { [branch.Id] = branch.Name }, new Dictionary<Guid, string> { [employee.Id] = employee.FullName });
+        var result = MapRequest(entity, new Dictionary<Guid, string> { [branch.Id] = branch.Name }, new Dictionary<Guid, string> { [employee.Id] = employee.FullName });
+        await auditLogService.WriteAsync("RECRUITMENT_CREATE", nameof(RecruitmentRequest), $"Requested {entity.PositionTitle} x{entity.Quantity}", true, employee.Id, employee.Username, branch.Id, entity.Id, cancellationToken);
+        return result;
     }
 
     public async Task<RecruitmentRequestDto> ReviewAsync(Guid id, ReviewRecruitmentRequestDto request, CancellationToken cancellationToken = default)
@@ -76,7 +79,9 @@ internal sealed class PostgresRecruitmentRequestService(
 
         var branch = await dbContext.Branches.AsNoTracking().SingleAsync(item => item.Id == entity.BranchId, cancellationToken);
         var employee = await dbContext.Employees.AsNoTracking().SingleAsync(item => item.Id == entity.RequestedByEmployeeId, cancellationToken);
-        return MapRequest(entity, new Dictionary<Guid, string> { [branch.Id] = branch.Name }, new Dictionary<Guid, string> { [employee.Id] = employee.FullName });
+        var result = MapRequest(entity, new Dictionary<Guid, string> { [branch.Id] = branch.Name }, new Dictionary<Guid, string> { [employee.Id] = employee.FullName });
+        await auditLogService.WriteAsync("RECRUITMENT_REVIEW", nameof(RecruitmentRequest), $"{request.Decision} recruitment request", true, currentUser.UserId, currentUser.Username, branch.Id, entity.Id, cancellationToken);
+        return result;
     }
 
     private void EnsureReadable()

@@ -11,7 +11,8 @@ namespace CoffeeChainManagement.Infrastructure.Services;
 // PostgresInventoryService xu ly CRUD ton kho va filter theo quyen chi nhanh.
 internal sealed class PostgresInventoryService(
     CoffeeChainDbContext dbContext,
-    ICurrentUserContext currentUser) : IInventoryService
+    ICurrentUserContext currentUser,
+    IAuditLogService auditLogService) : IInventoryService
 {
     public async Task<IReadOnlyCollection<InventoryItemDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
@@ -88,7 +89,9 @@ internal sealed class PostgresInventoryService(
 
         dbContext.InventoryItems.Add(item);
         await dbContext.SaveChangesAsync(cancellationToken);
-        return await MapInventoryItemAsync(item, cancellationToken);
+        var result = await MapInventoryItemAsync(item, cancellationToken);
+        await auditLogService.WriteAsync("INVENTORY_CREATE", nameof(InventoryItem), $"Created inventory item for {result.BranchName}", true, item.Id, branchId: item.BranchId, entityId: item.Id, cancellationToken: cancellationToken);
+        return result;
     }
 
     public async Task<InventoryItemDto> UpdateAsync(Guid id, UpsertInventoryItemRequestDto request, CancellationToken cancellationToken = default)
@@ -108,7 +111,9 @@ internal sealed class PostgresInventoryService(
         item.UpdatedAtUtc = DateTime.UtcNow;
 
         await dbContext.SaveChangesAsync(cancellationToken);
-        return await MapInventoryItemAsync(item, cancellationToken);
+        var result = await MapInventoryItemAsync(item, cancellationToken);
+        await auditLogService.WriteAsync("INVENTORY_UPDATE", nameof(InventoryItem), $"Updated inventory item for {result.BranchName}", true, item.Id, branchId: item.BranchId, entityId: item.Id, cancellationToken: cancellationToken);
+        return result;
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
@@ -119,6 +124,7 @@ internal sealed class PostgresInventoryService(
         EnsureWritable(item.BranchId);
         dbContext.InventoryItems.Remove(item);
         await dbContext.SaveChangesAsync(cancellationToken);
+        await auditLogService.WriteAsync("INVENTORY_DELETE", nameof(InventoryItem), "Deleted inventory item", true, item.Id, branchId: item.BranchId, entityId: item.Id, cancellationToken: cancellationToken);
     }
 
     public async Task<IReadOnlyCollection<LookupDto>> GetIngredientLookupsAsync(CancellationToken cancellationToken = default)
@@ -152,6 +158,7 @@ internal sealed class PostgresInventoryService(
 
         dbContext.Ingredients.Add(ingredient);
         await dbContext.SaveChangesAsync(cancellationToken);
+        await auditLogService.WriteAsync("INGREDIENT_CREATE", nameof(Ingredient), $"Created ingredient {ingredient.Name}", true, ingredient.Id, branchId: request.BranchId, entityId: ingredient.Id, cancellationToken: cancellationToken);
         return ingredient;
     }
 

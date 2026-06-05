@@ -10,11 +10,23 @@
       }
     </div>
 
+    <div class="toolbar">
+      <label>
+        <span>Tim kiem</span>
+        <input type="search" [ngModel]="searchTerm()" (ngModelChange)="changeSearch($event)" name="promotionSearch" placeholder="Ten, trang thai..." />
+      </label>
+      <div class="pager">
+        <button type="button" (click)="previousPage()" [disabled]="page() === 1">Truoc</button>
+        <span>{{ page() }} / {{ totalPages() }}</span>
+        <button type="button" (click)="nextPage()" [disabled]="page() === totalPages()">Sau</button>
+      </div>
+    </div>
+
     @if (loading()) {
       <p>Dang tai khuyen mai...</p>
     } @else {
       <div class="promotion-list">
-        @for (promotion of promotions(); track promotion.id) {
+        @for (promotion of pagedPromotions(); track promotion.id) {
           <article class="promotion-card">
             <div>
               <strong>{{ promotion.name }}</strong>

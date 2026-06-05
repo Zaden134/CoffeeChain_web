@@ -20,6 +20,47 @@
   color: #7a624e;
 }
 
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: end;
+  margin-top: 18px;
+}
+
+.toolbar label {
+  display: grid;
+  gap: 8px;
+}
+
+.toolbar span {
+  color: #7a624e;
+  font-size: 0.9rem;
+}
+
+.toolbar input {
+  min-width: min(360px, 100%);
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(115, 81, 49, 0.18);
+  background: #f8f5f1;
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pager button {
+  border: 1px solid rgba(115, 81, 49, 0.18);
+  background: #fff;
+  border-radius: 999px;
+  padding: 10px 14px;
+  color: #5a3b22;
+  cursor: pointer;
+}
+
 .request-list {
   display: grid;
   gap: 14px;
@@ -112,5 +153,14 @@
 @media (max-width: 1100px) {
   .page-grid {
     grid-template-columns: 1fr;
+  }
+
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .toolbar input {
+    min-width: 0;
   }
 }

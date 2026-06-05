@@ -6,4 +6,7 @@
     <Project Path="src/backend/CoffeeChainManagement.Domain/CoffeeChainManagement.Domain.csproj" />
     <Project Path="src/backend/CoffeeChainManagement.Infrastructure/CoffeeChainManagement.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/backend/CoffeeChainManagement.Tests/CoffeeChainManagement.Tests.csproj" />
+  </Folder>
 </Solution>

@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using CoffeeChainManagement.Application.Interfaces;
 using CoffeeChainManagement.Domain.Enums;
@@ -13,6 +14,8 @@ public sealed class CurrentUserContext(IHttpContextAccessor httpContextAccessor)
     public Guid UserId => Guid.TryParse(User?.FindFirstValue(ClaimTypes.NameIdentifier), out var userId)
         ? userId
         : Guid.Empty;
+
+    public string? Username => User?.FindFirstValue(ClaimTypes.Name) ?? User?.FindFirstValue(JwtRegisteredClaimNames.UniqueName);
 
     public Guid? BranchId => Guid.TryParse(User?.FindFirstValue("branch_id"), out var branchId)
         ? branchId

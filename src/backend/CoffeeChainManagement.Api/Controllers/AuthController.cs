@@ -19,6 +19,21 @@ public sealed class AuthController(IAuthService authService) : ControllerBase
         return response is null ? Unauthorized(new { message = "Invalid username or password." }) : Ok(response);
     }
 
+    [AllowAnonymous]
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh([FromBody] RefreshRequestDto request, CancellationToken cancellationToken)
+    {
+        var response = await authService.RefreshAsync(request, cancellationToken);
+        return response is null ? Unauthorized(new { message = "Refresh token is invalid or expired." }) : Ok(response);
+    }
+
+    [Authorize]
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout([FromBody] RefreshRequestDto request, CancellationToken cancellationToken)
+        => await authService.LogoutAsync(request, cancellationToken)
+            ? NoContent()
+            : NotFound(new { message = "Refresh token was not found." });
+
     [Authorize]
     [HttpGet("me")]
     public async Task<IActionResult> Me(CancellationToken cancellationToken)

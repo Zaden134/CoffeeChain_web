@@ -7,11 +7,23 @@
       </div>
     </div>
 
+    <div class="toolbar">
+      <label>
+        <span>Tim kiem</span>
+        <input type="search" [ngModel]="searchTerm()" (ngModelChange)="changeSearch($event)" name="requestSearch" placeholder="Chi nhanh, vi tri, trang thai..." />
+      </label>
+      <div class="pager">
+        <button type="button" (click)="previousPage()" [disabled]="page() === 1">Truoc</button>
+        <span>{{ page() }} / {{ totalPages() }}</span>
+        <button type="button" (click)="nextPage()" [disabled]="page() === totalPages()">Sau</button>
+      </div>
+    </div>
+
     @if (loading()) {
       <p>Dang tai yeu cau...</p>
     } @else {
       <div class="request-list">
-        @for (request of requests(); track request.id) {
+        @for (request of pagedRequests(); track request.id) {
           <article class="request-card">
             <div>
               <strong>{{ request.positionTitle }} · {{ request.quantity }} nguoi</strong>

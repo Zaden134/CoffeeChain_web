@@ -10,7 +10,8 @@ namespace CoffeeChainManagement.Infrastructure.Services;
 // PostgresPromotionService xu ly CRUD khuyen mai va quyen theo action.
 internal sealed class PostgresPromotionService(
     CoffeeChainDbContext dbContext,
-    ICurrentUserContext currentUser) : IPromotionService
+    ICurrentUserContext currentUser,
+    IAuditLogService auditLogService) : IPromotionService
 {
     public async Task<IReadOnlyCollection<PromotionDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
@@ -61,7 +62,9 @@ internal sealed class PostgresPromotionService(
 
         dbContext.Promotions.Add(promotion);
         await dbContext.SaveChangesAsync(cancellationToken);
-        return MapPromotion(promotion);
+        var result = MapPromotion(promotion);
+        await auditLogService.WriteAsync("PROMOTION_CREATE", nameof(Promotion), $"Created promotion {promotion.Name}", true, promotion.Id, entityId: promotion.Id, cancellationToken: cancellationToken);
+        return result;
     }
 
     public async Task<PromotionDto> UpdateAsync(Guid id, UpsertPromotionRequestDto request, CancellationToken cancellationToken = default)
@@ -80,7 +83,9 @@ internal sealed class PostgresPromotionService(
         promotion.UpdatedAtUtc = DateTime.UtcNow;
 
         await dbContext.SaveChangesAsync(cancellationToken);
-        return MapPromotion(promotion);
+        var result = MapPromotion(promotion);
+        await auditLogService.WriteAsync("PROMOTION_UPDATE", nameof(Promotion), $"Updated promotion {promotion.Name}", true, promotion.Id, entityId: promotion.Id, cancellationToken: cancellationToken);
+        return result;
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
@@ -92,6 +97,7 @@ internal sealed class PostgresPromotionService(
 
         dbContext.Promotions.Remove(promotion);
         await dbContext.SaveChangesAsync(cancellationToken);
+        await auditLogService.WriteAsync("PROMOTION_DELETE", nameof(Promotion), $"Deleted promotion {promotion.Name}", true, promotion.Id, entityId: promotion.Id, cancellationToken: cancellationToken);
     }
 
     private void EnsureWritable()

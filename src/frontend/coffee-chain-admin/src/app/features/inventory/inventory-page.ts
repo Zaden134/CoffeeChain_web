@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { LookupItem } from '../../core/models/common.models';
@@ -29,6 +29,9 @@ export class InventoryPage {
   protected readonly branches = signal<BranchSummary[]>([]);
   protected readonly ingredients = signal<LookupItem[]>([]);
   protected readonly editingId = signal<string | null>(null);
+  protected readonly searchTerm = signal('');
+  protected readonly page = signal(1);
+  protected readonly pageSize = signal(5);
 
   protected readonly form = signal<UpsertInventoryItemRequest>({
     ingredientId: null,
@@ -44,6 +47,26 @@ export class InventoryPage {
     this.load();
   }
 
+  protected readonly filteredItems = computed(() => {
+    const term = this.searchTerm().trim().toLowerCase();
+    if (!term) {
+      return this.items();
+    }
+
+    return this.items().filter((item) =>
+      [item.ingredientName, item.branchName, item.unit].join(' ').toLowerCase().includes(term));
+  });
+
+  protected readonly pagedItems = computed(() => {
+    const start = (this.page() - 1) * this.pageSize();
+    return this.filteredItems().slice(start, start + this.pageSize());
+  });
+
+  protected readonly totalPages = computed(() => {
+    const total = this.filteredItems().length;
+    return Math.max(1, Math.ceil(total / this.pageSize()));
+  });
+
   protected load(): void {
     this.loading.set(true);
     this.error.set(null);
@@ -53,6 +76,7 @@ export class InventoryPage {
     this.inventoryApi.getAll().subscribe({
       next: (items) => {
         this.items.set(items);
+        this.page.set(1);
         this.loading.set(false);
       },
       error: () => {
@@ -64,6 +88,7 @@ export class InventoryPage {
 
   protected startCreate(): void {
     this.editingId.set(null);
+    this.page.set(1);
     this.form.set({
       ingredientId: null,
       ingredientName: '',
@@ -77,6 +102,7 @@ export class InventoryPage {
 
   protected startEdit(item: InventoryItem): void {
     this.editingId.set(item.id);
+    this.page.set(1);
     this.form.set({
       ingredientId: item.ingredientId,
       ingredientName: item.ingredientName,
@@ -126,6 +152,19 @@ export class InventoryPage {
 
   protected canWrite(item?: InventoryItem): boolean {
     return this.authStore.can('inventory.write', item?.branchId ?? this.form().branchId);
+  }
+
+  protected nextPage(): void {
+    this.page.update((value) => Math.min(value + 1, this.totalPages()));
+  }
+
+  protected previousPage(): void {
+    this.page.update((value) => Math.max(value - 1, 1));
+  }
+
+  protected changeSearch(value: string): void {
+    this.searchTerm.set(value);
+    this.page.set(1);
   }
 
   private validate(payload: UpsertInventoryItemRequest): string | null {

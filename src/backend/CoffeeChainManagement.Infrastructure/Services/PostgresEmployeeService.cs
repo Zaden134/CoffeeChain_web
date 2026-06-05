@@ -12,7 +12,8 @@ namespace CoffeeChainManagement.Infrastructure.Services;
 internal sealed class PostgresEmployeeService(
     CoffeeChainDbContext dbContext,
     ICurrentUserContext currentUser,
-    IPasswordHasher<Employee> passwordHasher) : IEmployeeService
+    IPasswordHasher<Employee> passwordHasher,
+    IAuditLogService auditLogService) : IEmployeeService
 {
     public async Task<IReadOnlyCollection<EmployeeSummaryDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
@@ -79,6 +80,16 @@ internal sealed class PostgresEmployeeService(
 
         dbContext.Employees.Add(employee);
         await dbContext.SaveChangesAsync(cancellationToken);
+        await auditLogService.WriteAsync(
+            "EMPLOYEE_CREATE",
+            nameof(Employee),
+            $"Created employee {employee.Username}",
+            true,
+            employee.Id,
+            employee.Username,
+            employee.BranchId,
+            employee.Id,
+            cancellationToken);
 
         var branches = await dbContext.Branches.AsNoTracking().ToDictionaryAsync(branch => branch.Id, branch => branch.Name, cancellationToken);
         return MapEmployee(employee, branches);
@@ -118,6 +129,16 @@ internal sealed class PostgresEmployeeService(
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
+        await auditLogService.WriteAsync(
+            "EMPLOYEE_UPDATE",
+            nameof(Employee),
+            $"Updated employee {employee.Username}",
+            true,
+            employee.Id,
+            employee.Username,
+            employee.BranchId,
+            employee.Id,
+            cancellationToken);
 
         var branches = await dbContext.Branches.AsNoTracking().ToDictionaryAsync(branch => branch.Id, branch => branch.Name, cancellationToken);
         return MapEmployee(employee, branches);
@@ -135,6 +156,16 @@ internal sealed class PostgresEmployeeService(
         employee.UpdatedAtUtc = DateTime.UtcNow;
 
         await dbContext.SaveChangesAsync(cancellationToken);
+        await auditLogService.WriteAsync(
+            "EMPLOYEE_DELETE",
+            nameof(Employee),
+            $"Deactivated employee {employee.Username}",
+            true,
+            employee.Id,
+            employee.Username,
+            employee.BranchId,
+            employee.Id,
+            cancellationToken);
     }
 
     private void EnsureAuthenticated()

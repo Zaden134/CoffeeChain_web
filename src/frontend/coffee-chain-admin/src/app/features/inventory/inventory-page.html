@@ -10,11 +10,23 @@
       }
     </div>
 
+    <div class="toolbar">
+      <label>
+        <span>Tim kiem</span>
+        <input type="search" [ngModel]="searchTerm()" (ngModelChange)="changeSearch($event)" name="inventorySearch" placeholder="Ingredient, chi nhanh, don vi..." />
+      </label>
+      <div class="pager">
+        <button type="button" (click)="previousPage()" [disabled]="page() === 1">Truoc</button>
+        <span>{{ page() }} / {{ totalPages() }}</span>
+        <button type="button" (click)="nextPage()" [disabled]="page() === totalPages()">Sau</button>
+      </div>
+    </div>
+
     @if (loading()) {
       <p>Dang tai ton kho...</p>
     } @else {
       <div class="table">
-        @for (item of items(); track item.id) {
+        @for (item of pagedItems(); track item.id) {
           <div class="row">
             <div>
               <strong>{{ item.ingredientName }}</strong>

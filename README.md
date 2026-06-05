@@ -91,29 +91,40 @@ docker compose up --build
 - `GET /health`
 - `POST /api/auth/login`
 - `GET /api/auth/me`
+- `POST /api/auth/refresh`
+- `POST /api/auth/logout`
 - `GET /api/dashboard/overview`
+- `GET /api/reports/sales`
+- `GET /api/reports/sales/export`
 - `GET /api/branches`
 - `GET /api/products`
+- `GET /api/employees`
+- `GET /api/inventory`
+- `GET /api/inventory/ingredients`
+- `GET /api/promotions`
+- `GET /api/recruitment-requests`
 
 ## Tai khoan seed mac dinh
 
 - `admin / Admin@123` -> role `Administrator`
 - `manager.q1 / Manager@123` -> role `BranchManager`
 - `cashier.q1 / Cashier@123` -> role `Cashier`
+- `warehouse.q1 / Warehouse@123` -> role `WarehouseStaff`
 
 ## Phan quyen hien tai
 
-- `Administrator`: login, xem dashboard, chi nhanh, san pham
-- `BranchManager`: login, xem dashboard, chi nhanh, san pham
-- `Cashier`: login, xem dashboard, san pham
+- `Administrator`: toan quyen he thong, CRUD nhan vien/kho/khuyen mai, review recruitment, xem bao cao, export report
+- `BranchManager`: xem dashboard, chi nhanh, san pham, kho, nhan vien, khuyen mai, tao recruitment request cho chi nhanh cua minh
+- `Cashier`: login, xem dashboard, san pham, xem khuyen mai dang hoat dong
+- `WarehouseStaff`: dang nhap va duoc mo rong quyen ve sau cho cac tac vu kho
 
 ## Frontend hien tai
 
 - Login page goi `POST /api/auth/login`
-- `AuthStore` luu JWT + profile vao `localStorage`
+- `AuthStore` luu access token, refresh token va profile vao `localStorage`
 - `authGuard` chan route noi bo
 - `guestGuard` chan quay lai trang login khi da dang nhap
-- `authInterceptor` tu dong gan bearer token
+- `authInterceptor` tu dong gan bearer token va refresh token neu access token het han
 - Shell va sitemap frontend duoc phat trien theo mau tham chieu trong file zip:
 - `Dashboard`
 - `Chi nhanh`
@@ -122,6 +133,31 @@ docker compose up --build
 - `Nhan vien`
 - `Bao cao`
 - `Khuyen mai`
+- `Yeu cau tuyen dung`
+
+## Phan tich bao cao
+
+- `GET /api/reports/sales` tra tong hop doanh thu theo ngay, chi nhanh va mon ban chay.
+- `GET /api/reports/sales/export?format=xlsx|pdf` xuat bao cao ra Excel hoac PDF.
+- Frontend `Bao cao` co bo loc ngay/chi nhanh va nut export.
+
+## Hardening
+
+- JWT access token co refresh token xoay vong.
+- `audit_logs` ghi lai thao tac quan trong.
+- `Employees`, `Inventory`, `Promotions`, `Recruitment Requests` co search + phan trang tren UI.
+- Docker frontend build su dung output Angular moi nhat.
+
+## Test
+
+```powershell
+dotnet test .\CoffeeChainManagement.slnx
+```
+
+## CI/CD
+
+- `.github/workflows/ci.yml` chay `dotnet test` va `npm run build`.
+- `.github/workflows/docker-publish.yml` build va push image neu cau hinh Docker Hub secrets.
 
 ## Ghi chu cho ban va team
 
@@ -133,20 +169,5 @@ docker compose up --build
 
 ## GitHub va Docker Hub
 
-### GitHub
-
-```powershell
-git add .
-git commit -m "Add EF Core migrations and Angular auth shell"
-git push -u origin main
-```
-
-### Docker Hub
-
-```powershell
-docker login
-docker tag coffee-chain-api zaden134/coffee-chain-api:latest
-docker tag coffee-chain-admin zaden134/coffee-chain-admin:latest
-docker push zaden134/coffee-chain-api:latest
-docker push zaden134/coffee-chain-admin:latest
-```
+- Push len GitHub bang branch `main`.
+- Docker Hub co the cau hinh qua secrets `DOCKERHUB_USERNAME` va `DOCKERHUB_TOKEN`.

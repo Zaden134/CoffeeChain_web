@@ -4,7 +4,6 @@ import { authGuard } from './core/guards/auth.guard';
 import { guestGuard } from './core/guards/guest.guard';
 import { BranchesPage } from './features/branches/branches-page';
 import { DashboardPage } from './features/dashboard/dashboard-page';
-import { DashboardStore } from './features/dashboard/dashboard.store';
 import { EmployeesPage } from './features/employees/employees-page';
 import { InventoryPage } from './features/inventory/inventory-page';
 import { LoginPage } from './features/login/login-page';
@@ -28,8 +27,7 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        component: DashboardPage,
-        providers: [DashboardStore]
+        component: DashboardPage
       },
       {
         path: 'branches',
@@ -49,8 +47,7 @@ export const routes: Routes = [
       },
       {
         path: 'reports',
-        component: ReportsPage,
-        providers: [DashboardStore]
+        component: ReportsPage
       },
       {
         path: 'promotions',

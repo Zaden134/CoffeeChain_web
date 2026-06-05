@@ -9,9 +9,11 @@ public sealed class CoffeeChainDbContext(DbContextOptions<CoffeeChainDbContext> 
     public DbSet<Branch> Branches => Set<Branch>();
     public DbSet<Product> Products => Set<Product>();
     public DbSet<Employee> Employees => Set<Employee>();
+    public DbSet<AuditLogEntry> AuditLogs => Set<AuditLogEntry>();
     public DbSet<Ingredient> Ingredients => Set<Ingredient>();
     public DbSet<InventoryItem> InventoryItems => Set<InventoryItem>();
     public DbSet<Promotion> Promotions => Set<Promotion>();
+    public DbSet<RefreshTokenSession> RefreshTokenSessions => Set<RefreshTokenSession>();
     public DbSet<RecruitmentRequest> RecruitmentRequests => Set<RecruitmentRequest>();
     public DbSet<SaleOrder> SaleOrders => Set<SaleOrder>();
 
@@ -52,6 +54,17 @@ public sealed class CoffeeChainDbContext(DbContextOptions<CoffeeChainDbContext> 
             entity.HasIndex(employee => employee.Email).IsUnique();
         });
 
+        modelBuilder.Entity<AuditLogEntry>(entity =>
+        {
+            entity.ToTable("audit_logs");
+            entity.HasKey(entry => entry.Id);
+            entity.Property(entry => entry.Action).HasMaxLength(120);
+            entity.Property(entry => entry.EntityType).HasMaxLength(120);
+            entity.Property(entry => entry.EntityId).HasMaxLength(80);
+            entity.Property(entry => entry.Details).HasMaxLength(2000);
+            entity.Property(entry => entry.Username).HasMaxLength(80);
+        });
+
         modelBuilder.Entity<Ingredient>(entity =>
         {
             entity.ToTable("ingredients");
@@ -76,6 +89,18 @@ public sealed class CoffeeChainDbContext(DbContextOptions<CoffeeChainDbContext> 
             entity.HasKey(promotion => promotion.Id);
             entity.Property(promotion => promotion.Name).HasMaxLength(150);
             entity.Property(promotion => promotion.DiscountPercent).HasPrecision(5, 2);
+        });
+
+        modelBuilder.Entity<RefreshTokenSession>(entity =>
+        {
+            entity.ToTable("refresh_token_sessions");
+            entity.HasKey(session => session.Id);
+            entity.Property(session => session.TokenHash).HasMaxLength(128);
+            entity.Property(session => session.ReplacedByTokenHash).HasMaxLength(128);
+            entity.Property(session => session.CreatedByIp).HasMaxLength(45);
+            entity.Property(session => session.RevokedByIp).HasMaxLength(45);
+            entity.HasIndex(session => session.TokenHash).IsUnique();
+            entity.HasIndex(session => new { session.EmployeeId, session.ExpiresAtUtc });
         });
 
         modelBuilder.Entity<RecruitmentRequest>(entity =>

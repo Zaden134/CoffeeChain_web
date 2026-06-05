@@ -9,4 +9,5 @@ public sealed class JwtOptions
     public required string Audience { get; set; }
     public required string SigningKey { get; set; }
     public int ExpiryMinutes { get; set; } = 120;
+    public int RefreshExpiryDays { get; set; } = 7;
 }

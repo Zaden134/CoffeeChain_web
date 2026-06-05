@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { BranchSummary } from '../../core/models/dashboard.models';
@@ -27,6 +27,9 @@ export class EmployeesPage {
   protected readonly employees = signal<EmployeeSummary[]>([]);
   protected readonly branches = signal<BranchSummary[]>([]);
   protected readonly editingId = signal<string | null>(null);
+  protected readonly searchTerm = signal('');
+  protected readonly page = signal(1);
+  protected readonly pageSize = signal(5);
 
   protected readonly form = signal<UpsertEmployeeRequest>({
     username: '',
@@ -42,6 +45,30 @@ export class EmployeesPage {
     this.load();
   }
 
+  protected readonly filteredEmployees = computed(() => {
+    const term = this.searchTerm().trim().toLowerCase();
+    const employees = this.employees();
+    if (!term) {
+      return employees;
+    }
+
+    return employees.filter((employee) =>
+      [employee.fullName, employee.username, employee.email, employee.role, employee.branchName]
+        .join(' ')
+        .toLowerCase()
+        .includes(term));
+  });
+
+  protected readonly pagedEmployees = computed(() => {
+    const start = (this.page() - 1) * this.pageSize();
+    return this.filteredEmployees().slice(start, start + this.pageSize());
+  });
+
+  protected readonly totalPages = computed(() => {
+    const total = this.filteredEmployees().length;
+    return Math.max(1, Math.ceil(total / this.pageSize()));
+  });
+
   protected load(): void {
     this.loading.set(true);
     this.error.set(null);
@@ -54,6 +81,7 @@ export class EmployeesPage {
     this.employeeApi.getAll().subscribe({
       next: (employees) => {
         this.employees.set(employees);
+        this.page.set(1);
         this.loading.set(false);
       },
       error: () => {
@@ -65,6 +93,7 @@ export class EmployeesPage {
 
   protected startCreate(): void {
     this.editingId.set(null);
+    this.page.set(1);
     this.form.set({
       username: '',
       fullName: '',
@@ -78,6 +107,7 @@ export class EmployeesPage {
 
   protected startEdit(employee: EmployeeSummary): void {
     this.editingId.set(employee.id);
+    this.page.set(1);
     this.form.set({
       username: employee.username,
       fullName: employee.fullName,
@@ -129,6 +159,19 @@ export class EmployeesPage {
   protected canWrite(employee?: EmployeeSummary): boolean {
     const branchId = employee?.branchId ?? this.form().branchId;
     return this.authStore.can('employees.write', branchId);
+  }
+
+  protected nextPage(): void {
+    this.page.update((value) => Math.min(value + 1, this.totalPages()));
+  }
+
+  protected previousPage(): void {
+    this.page.update((value) => Math.max(value - 1, 1));
+  }
+
+  protected changeSearch(value: string): void {
+    this.searchTerm.set(value);
+    this.page.set(1);
   }
 
   protected roleOptions(): string[] {

@@ -8,11 +8,23 @@
       <button type="button" (click)="startCreate()" [disabled]="!canWrite()">Tao moi</button>
     </div>
 
+    <div class="toolbar">
+      <label>
+        <span>Tim kiem</span>
+        <input type="search" [ngModel]="searchTerm()" (ngModelChange)="changeSearch($event)" name="employeeSearch" placeholder="Ten, email, username..." />
+      </label>
+      <div class="pager">
+        <button type="button" (click)="previousPage()" [disabled]="page() === 1">Truoc</button>
+        <span>{{ page() }} / {{ totalPages() }}</span>
+        <button type="button" (click)="nextPage()" [disabled]="page() === totalPages()">Sau</button>
+      </div>
+    </div>
+
     @if (loading()) {
       <p>Dang tai nhan vien...</p>
     } @else {
       <div class="employee-list">
-        @for (employee of employees(); track employee.id) {
+        @for (employee of pagedEmployees(); track employee.id) {
           <article class="employee-card">
             <div class="avatar">{{ employee.fullName.slice(0, 1) }}</div>
             <div class="copy">

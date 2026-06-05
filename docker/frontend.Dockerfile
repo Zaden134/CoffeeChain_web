@@ -3,11 +3,11 @@ FROM node:24-alpine AS build
 WORKDIR /app
 
 COPY src/frontend/coffee-chain-admin/package*.json ./
-RUN npm install
+RUN npm ci
 
 COPY src/frontend/coffee-chain-admin/ ./
 RUN npm run build
 
 FROM nginx:1.29-alpine AS final
-COPY --from=build /app/dist/coffee-chain-admin/browser /usr/share/nginx/html
+COPY --from=build /app/dist/coffee-chain-admin /usr/share/nginx/html
 EXPOSE 80

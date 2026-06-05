@@ -38,11 +38,13 @@ public static class DependencyInjection
         services.AddScoped<CoffeeChainDbSeeder>();
         services.AddScoped<IDatabaseInitializer, DatabaseInitializer>();
         services.AddScoped<ICurrentUserContext, CurrentUserContext>();
+        services.AddScoped<IAuditLogService, PostgresAuditLogService>();
 
         services.AddScoped<IDashboardService, PostgresDashboardService>();
         services.AddScoped<IBranchService, PostgresBranchService>();
         services.AddScoped<IProductService, PostgresProductService>();
         services.AddScoped<IAuthService, PostgresAuthService>();
+        services.AddScoped<IReportService, PostgresReportService>();
         services.AddScoped<IEmployeeService, PostgresEmployeeService>();
         services.AddScoped<IInventoryService, PostgresInventoryService>();
         services.AddScoped<IPromotionService, PostgresPromotionService>();

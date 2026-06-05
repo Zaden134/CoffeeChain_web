@@ -6,6 +6,7 @@ namespace CoffeeChainManagement.Application.Interfaces;
 public interface ICurrentUserContext
 {
     Guid UserId { get; }
+    string? Username { get; }
     Guid? BranchId { get; }
     UserRole Role { get; }
     bool IsAuthenticated { get; }
