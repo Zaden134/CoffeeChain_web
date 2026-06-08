@@ -51,7 +51,7 @@ export class ReportsPage {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set('Khong tai duoc bao cao.');
+        this.error.set('Không tải được báo cáo.');
         this.loading.set(false);
       }
     });
@@ -66,7 +66,7 @@ export class ReportsPage {
         this.exporting.set(false);
         const blob = response.body;
         if (!blob) {
-          this.error.set('Khong tai duoc file bao cao.');
+          this.error.set('Không tải được file báo cáo.');
           return;
         }
 
@@ -80,7 +80,7 @@ export class ReportsPage {
       },
       error: () => {
         this.exporting.set(false);
-        this.error.set('Khong xuat duoc file bao cao.');
+        this.error.set('Không xuất được file báo cáo.');
       }
     });
   }

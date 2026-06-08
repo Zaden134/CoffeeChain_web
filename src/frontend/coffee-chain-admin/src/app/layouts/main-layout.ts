@@ -12,13 +12,13 @@ interface NavigationItem {
 
 const NAVIGATION: NavigationItem[] = [
   { label: 'Dashboard', path: '/', roles: ['Administrator', 'BranchManager', 'Cashier'] },
-  { label: 'Chi nhanh', path: '/branches', roles: ['Administrator', 'BranchManager'] },
-  { label: 'San pham', path: '/products', roles: ['Administrator', 'BranchManager', 'Cashier'] },
-  { label: 'Kho hang', path: '/inventory', roles: ['Administrator', 'BranchManager'] },
-  { label: 'Nhan vien', path: '/employees', roles: ['Administrator', 'BranchManager'] },
-  { label: 'Bao cao', path: '/reports', roles: ['Administrator', 'BranchManager'] },
-  { label: 'Khuyen mai', path: '/promotions', roles: ['Administrator', 'BranchManager'] },
-  { label: 'Yeu cau tuyen', path: '/recruitment-requests', roles: ['Administrator', 'BranchManager'] }
+  { label: 'Chi nhánh', path: '/branches', roles: ['Administrator', 'BranchManager'] },
+  { label: 'Sản phẩm', path: '/products', roles: ['Administrator', 'BranchManager', 'Cashier'] },
+  { label: 'Kho hàng', path: '/inventory', roles: ['Administrator', 'BranchManager'] },
+  { label: 'Nhân viên', path: '/employees', roles: ['Administrator', 'BranchManager'] },
+  { label: 'Báo cáo', path: '/reports', roles: ['Administrator', 'BranchManager'] },
+  { label: 'Khuyến mãi', path: '/promotions', roles: ['Administrator', 'BranchManager'] },
+  { label: 'Yêu cầu tuyển', path: '/recruitment-requests', roles: ['Administrator', 'BranchManager'] }
 ];
 
 // MainLayout la shell chinh cua he thong sau khi user dang nhap.

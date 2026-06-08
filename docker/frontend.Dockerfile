@@ -9,5 +9,6 @@ COPY src/frontend/coffee-chain-admin/ ./
 RUN npm run build
 
 FROM nginx:1.29-alpine AS final
-COPY --from=build /app/dist/coffee-chain-admin /usr/share/nginx/html
+COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist/coffee-chain-admin/browser /usr/share/nginx/html
 EXPOSE 80

@@ -2,7 +2,7 @@
   <article class="page-card">
     <div class="page-head">
       <div>
-        <h2>Nhan vien</h2>
+        <h2>Nhân viên</h2>
         <p>CRUD nhan vien, giu rule theo role va chi nhanh ngay tren API.</p>
       </div>
       <button type="button" (click)="startCreate()" [disabled]="!canWrite()">Tao moi</button>
@@ -82,9 +82,9 @@
         </label>
 
         <label>
-          <span>Chi nhanh</span>
+          <span>Chi nhánh</span>
           <select [ngModel]="form().branchId" (ngModelChange)="form.update(v => ({ ...v, branchId: $event || null }))" name="branchId">
-            <option value="">Chon chi nhanh</option>
+            <option value="">Chọn chi nhánh</option>
             @for (branch of branches(); track branch.id) {
               <option [value]="branch.id">{{ branch.name }}</option>
             }

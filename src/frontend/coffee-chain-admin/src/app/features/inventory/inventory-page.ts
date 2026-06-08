@@ -169,7 +169,7 @@ export class InventoryPage {
 
   private validate(payload: UpsertInventoryItemRequest): string | null {
     if (!payload.branchId) {
-      return 'Chi nhanh la bat buoc.';
+      return 'Chi nhánh là bắt buộc.';
     }
 
     if (!payload.ingredientId && (!payload.ingredientName?.trim() || !payload.unit?.trim())) {

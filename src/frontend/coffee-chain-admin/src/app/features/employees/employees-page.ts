@@ -152,7 +152,7 @@ export class EmployeesPage {
 
     this.employeeApi.delete(employee.id).subscribe({
       next: () => this.load(),
-      error: (error) => this.error.set(error?.error?.message ?? 'Khong xoa duoc nhan vien.')
+      error: (error) => this.error.set(error?.error?.message ?? 'Không xóa được nhân viên.')
     });
   }
 
@@ -190,7 +190,7 @@ export class EmployeesPage {
     }
 
     if (!payload.branchId && payload.role !== 'Administrator') {
-      return 'Nhan vien khong phai admin phai gan voi mot chi nhanh.';
+      return 'Nhân viên không phải admin phải gắn với một chi nhánh.';
     }
 
     return null;

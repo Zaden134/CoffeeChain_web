@@ -73,7 +73,7 @@ export class PromotionsPage {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set('Khong tai duoc danh sach khuyen mai.');
+        this.error.set('Không tải được danh sách khuyến mãi.');
         this.loading.set(false);
       }
     });
@@ -117,19 +117,19 @@ export class PromotionsPage {
       },
       error: (error) => {
         this.submitting.set(false);
-        this.error.set(error?.error?.message ?? 'Khong luu duoc khuyen mai.');
+        this.error.set(error?.error?.message ?? 'Không lưu được khuyến mãi.');
       }
     });
   }
 
   protected delete(promotion: Promotion): void {
-    if (!confirm(`Xoa khuyen mai ${promotion.name}?`)) {
+    if (!confirm(`Xóa khuyến mãi ${promotion.name}?`)) {
       return;
     }
 
     this.promotionApi.delete(promotion.id).subscribe({
       next: () => this.load(),
-      error: (error) => this.error.set(error?.error?.message ?? 'Khong xoa duoc khuyen mai.')
+      error: (error) => this.error.set(error?.error?.message ?? 'Không xóa được khuyến mãi.')
     });
   }
 
@@ -152,7 +152,7 @@ export class PromotionsPage {
 
   private validate(payload: UpsertPromotionRequest): string | null {
     if (!payload.name.trim()) {
-      return 'Ten khuyen mai la bat buoc.';
+      return 'Tên khuyến mãi là bắt buộc.';
     }
 
     if (!payload.startDate || !payload.endDate) {

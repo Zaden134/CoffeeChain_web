@@ -77,7 +77,7 @@ export class RecruitmentRequestsPage {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set('Khong tai duoc yeu cau tuyen dung.');
+        this.error.set('Không tải được yêu cầu tuyển dụng.');
         this.loading.set(false);
       }
     });
@@ -104,7 +104,7 @@ export class RecruitmentRequestsPage {
       },
       error: (error) => {
         this.submitting.set(false);
-        this.error.set(error?.error?.message ?? 'Khong tao duoc yeu cau tuyen dung.');
+        this.error.set(error?.error?.message ?? 'Không tạo được yêu cầu tuyển dụng.');
       }
     });
   }
@@ -150,7 +150,7 @@ export class RecruitmentRequestsPage {
 
   private validate(payload: CreateRecruitmentRequestPayload): string | null {
     if (!payload.branchId || !payload.positionTitle.trim() || !payload.reason.trim()) {
-      return 'Chi nhanh, vi tri va ly do la bat buoc.';
+      return 'Chi nhánh, vị trí và lý do là bắt buộc.';
     }
 
     return null;

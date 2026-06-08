@@ -33,7 +33,7 @@ export class ProductsPage {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set('Khong tai duoc danh sach san pham.');
+        this.error.set('Không tải được danh sách sản phẩm.');
         this.loading.set(false);
       }
     });

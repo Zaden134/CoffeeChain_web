@@ -1,6 +1,6 @@
 @if (loading()) {
   <section class="page-card">
-    <p>Dang tai bao cao...</p>
+    <p>Đang tải báo cáo...</p>
   </section>
 } @else if (error()) {
   <section class="page-card error">
@@ -10,8 +10,8 @@
   <section class="page-card">
     <div class="page-head">
       <div>
-        <h2>Bao cao doanh thu</h2>
-        <p>Loc theo thoi gian va chi nhanh, sau do xuat ra Excel hoac PDF.</p>
+        <h2>Báo cáo doanh thu</h2>
+        <p>Lọc theo thời gian và chi nhánh, sau đó xuất ra Excel hoặc PDF.</p>
       </div>
 
       <div class="actions">
@@ -41,13 +41,13 @@
       </label>
 
       <label>
-        <span>Chi nhanh</span>
+        <span>Chi nhánh</span>
         <select
           [ngModel]="query().branchId"
           (ngModelChange)="updateQuery('branchId', $event)"
           name="branchId"
           [disabled]="!canChangeBranch()">
-          <option value="">Tat ca</option>
+          <option value="">Tất cả</option>
           @for (branch of branches(); track branch.id) {
             <option [value]="branch.id">{{ branch.name }}</option>
           }
@@ -71,7 +71,7 @@
         <strong>{{ data.lowStockItems }}</strong>
       </article>
       <article class="stat-card">
-        <span>Khuyen mai</span>
+        <span>Khuyến mãi</span>
         <strong>{{ data.activePromotions }}</strong>
       </article>
     </div>
@@ -113,7 +113,7 @@
     <div class="report-grid">
       <article class="list-card">
         <div class="section-head">
-          <h3>Doanh thu theo chi nhanh</h3>
+          <h3>Doanh thu theo chi nhánh</h3>
         </div>
 
         @for (row of data.branchRevenue; track row.branchId) {
@@ -134,9 +134,9 @@
 
         <div class="summary-lines">
           <p><span>Doanh thu trung binh/don</span><strong>{{ data.averageOrderValue | currency:'VND':'symbol':'1.0-0' }}</strong></p>
-          <p><span>Chi nhanh hoat dong</span><strong>{{ data.activeBranches }}</strong></p>
-          <p><span>Yeu cau tuyen dang cho</span><strong>{{ data.pendingRecruitmentRequests }}</strong></p>
-          <p><span>Chi nhanh da loc</span><strong>{{ data.branchName ?? 'Tat ca' }}</strong></p>
+          <p><span>Chi nhánh hoạt động</span><strong>{{ data.activeBranches }}</strong></p>
+          <p><span>Yêu cầu tuyển đang chờ</span><strong>{{ data.pendingRecruitmentRequests }}</strong></p>
+          <p><span>Chi nhánh đã lọc</span><strong>{{ data.branchName ?? 'Tất cả' }}</strong></p>
         </div>
       </article>
     </div>

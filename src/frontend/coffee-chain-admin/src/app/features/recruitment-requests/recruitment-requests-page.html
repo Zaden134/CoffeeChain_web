@@ -2,15 +2,15 @@
   <article class="page-card">
     <div class="page-head">
       <div>
-        <h2>Yeu cau tuyen dung</h2>
-        <p>Quan ly chi nhanh gui de xuat tuyen nguoi, admin xem va phe duyet.</p>
+        <h2>Yêu cầu tuyển dụng</h2>
+        <p>Quản lý chi nhánh gửi đề xuất tuyển người, admin xem và phê duyệt.</p>
       </div>
     </div>
 
     <div class="toolbar">
       <label>
         <span>Tim kiem</span>
-        <input type="search" [ngModel]="searchTerm()" (ngModelChange)="changeSearch($event)" name="requestSearch" placeholder="Chi nhanh, vi tri, trang thai..." />
+        <input type="search" [ngModel]="searchTerm()" (ngModelChange)="changeSearch($event)" name="requestSearch" placeholder="Chi nhánh, vị trí, trạng thái..." />
       </label>
       <div class="pager">
         <button type="button" (click)="previousPage()" [disabled]="page() === 1">Truoc</button>
@@ -62,15 +62,15 @@
       <div class="page-head">
         <div>
           <h2>Tao yeu cau</h2>
-          <p>Chi quan ly chi nhanh moi duoc tao yeu cau cho chi nhanh cua minh.</p>
+          <p>Chỉ quản lý chi nhánh mới được tạo yêu cầu cho chi nhánh của mình.</p>
         </div>
       </div>
 
       <form class="form" (ngSubmit)="submit()">
         <label>
-          <span>Chi nhanh</span>
+          <span>Chi nhánh</span>
           <select [ngModel]="form().branchId" (ngModelChange)="form.update(v => ({ ...v, branchId: $event }))" name="branchId">
-            <option value="">Chon chi nhanh</option>
+            <option value="">Chọn chi nhánh</option>
             @for (branch of branches(); track branch.id) {
               <option [value]="branch.id">{{ branch.name }}</option>
             }

@@ -2,7 +2,7 @@
   <article class="page-card">
     <div class="page-head">
       <div>
-        <h2>Khuyen mai</h2>
+        <h2>Khuyến mãi</h2>
         <p>Manager va admin co the tao, sua, xoa campaign ngay tren web admin.</p>
       </div>
       @if (canWrite()) {
@@ -23,7 +23,7 @@
     </div>
 
     @if (loading()) {
-      <p>Dang tai khuyen mai...</p>
+      <p>Đang tải khuyến mãi...</p>
     } @else {
       <div class="promotion-list">
         @for (promotion of pagedPromotions(); track promotion.id) {
@@ -57,7 +57,7 @@
 
       <form class="form" (ngSubmit)="submit()">
         <label>
-          <span>Ten khuyen mai</span>
+          <span>Tên khuyến mãi</span>
           <input [ngModel]="form().name" (ngModelChange)="form.update(v => ({ ...v, name: $event }))" name="name" />
         </label>
 
