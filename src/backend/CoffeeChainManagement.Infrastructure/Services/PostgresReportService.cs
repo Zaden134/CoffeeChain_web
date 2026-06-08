@@ -1,0 +1,264 @@
+using CoffeeChainManagement.Application.DTOs.Reports;
+using CoffeeChainManagement.Application.Interfaces;
+using CoffeeChainManagement.Domain.Enums;
+using CoffeeChainManagement.Infrastructure.Persistence;
+using ClosedXML.Excel;
+using Microsoft.EntityFrameworkCore;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
+
+namespace CoffeeChainManagement.Infrastructure.Services;
+
+// PostgresReportService tong hop du lieu bao cao va ho tro export xlsx/pdf.
+internal sealed class PostgresReportService(CoffeeChainDbContext dbContext) : IReportService
+{
+    public async Task<SalesReportDto> GetSalesReportAsync(
+        DateOnly? fromDate,
+        DateOnly? toDate,
+        Guid? branchId,
+        CancellationToken cancellationToken = default)
+    {
+        var orders = await BuildOrderQuery(fromDate, toDate, branchId)
+            .Include(order => order.Items)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        var branches = await dbContext.Branches.AsNoTracking().ToDictionaryAsync(branch => branch.Id, branch => branch.Name, cancellationToken);
+        var products = await dbContext.Products.AsNoTracking().ToDictionaryAsync(product => product.Id, product => product.Name, cancellationToken);
+
+        var branchRevenue = orders
+            .GroupBy(order => order.BranchId)
+            .Select(group => new ReportBranchRevenueDto(
+                group.Key,
+                branches.GetValueOrDefault(group.Key, "Khong ro chi nhanh"),
+                group.Sum(order => order.Items.Sum(item => item.LineTotal)),
+                group.Count()))
+            .OrderByDescending(item => item.Revenue)
+            .ToArray();
+
+        var productRevenue = orders
+            .SelectMany(order => order.Items)
+            .GroupBy(item => new { item.ProductId, item.ProductName })
+            .Select(group => new ReportProductRevenueDto(
+                group.Key.ProductId,
+                group.Key.ProductName,
+                group.Sum(item => item.Quantity),
+                group.Sum(item => item.LineTotal)))
+            .OrderByDescending(item => item.Quantity)
+            .ToArray();
+
+        var dailyRevenue = orders
+            .GroupBy(order => DateOnly.FromDateTime(order.CreatedAtUtc))
+            .Select(group => new ReportDailyRevenueDto(
+                group.Key,
+                group.Sum(order => order.Items.Sum(item => item.LineTotal)),
+                group.Count()))
+            .OrderBy(item => item.Date)
+            .ToArray();
+
+        var totalRevenue = orders.Sum(order => order.Items.Sum(item => item.LineTotal));
+        var totalOrders = orders.Count;
+        var averageOrderValue = totalOrders == 0 ? 0 : totalRevenue / totalOrders;
+
+        var inventoryQuery = dbContext.InventoryItems.AsNoTracking();
+        if (branchId.HasValue)
+        {
+            inventoryQuery = inventoryQuery.Where(item => item.BranchId == branchId.Value);
+        }
+
+        var lowStockItems = await (
+            from inventory in inventoryQuery
+            join ingredient in dbContext.Ingredients.AsNoTracking() on inventory.IngredientId equals ingredient.Id
+            where inventory.InStockQuantity <= ingredient.ReorderLevel
+            select inventory.Id).CountAsync(cancellationToken);
+
+        var activePromotions = await dbContext.Promotions.AsNoTracking().CountAsync(promotion => promotion.IsActive, cancellationToken);
+        var pendingRecruitments = await dbContext.RecruitmentRequests.AsNoTracking().CountAsync(request =>
+            request.Status == RecruitmentRequestStatus.Pending && (!branchId.HasValue || request.BranchId == branchId.Value), cancellationToken);
+
+        return new SalesReportDto(
+            fromDate,
+            toDate,
+            branchId,
+            branchId.HasValue && branches.TryGetValue(branchId.Value, out var branchName) ? branchName : null,
+            totalRevenue,
+            totalOrders,
+            averageOrderValue,
+            await dbContext.Branches.AsNoTracking().CountAsync(branch => branch.IsActive, cancellationToken),
+            lowStockItems,
+            activePromotions,
+            pendingRecruitments,
+            dailyRevenue,
+            branchRevenue,
+            productRevenue);
+    }
+
+    public async Task<ReportExportResultDto> ExportSalesReportAsync(
+        DateOnly? fromDate,
+        DateOnly? toDate,
+        Guid? branchId,
+        string format,
+        CancellationToken cancellationToken = default)
+    {
+        var report = await GetSalesReportAsync(fromDate, toDate, branchId, cancellationToken);
+
+        return format.Trim().ToLowerInvariant() switch
+        {
+            "pdf" => new ReportExportResultDto(
+                BuildFileName("sales-report", "pdf"),
+                "application/pdf",
+                BuildPdf(report)),
+            _ => new ReportExportResultDto(
+                BuildFileName("sales-report", "xlsx"),
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                BuildExcel(report))
+        };
+    }
+
+    private IQueryable<Domain.Entities.SaleOrder> BuildOrderQuery(DateOnly? fromDate, DateOnly? toDate, Guid? branchId)
+    {
+        var query = dbContext.SaleOrders.Where(order => order.Status == OrderStatus.Paid);
+
+        if (branchId.HasValue)
+        {
+            query = query.Where(order => order.BranchId == branchId.Value);
+        }
+
+        if (fromDate.HasValue)
+        {
+            var fromUtc = fromDate.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+            query = query.Where(order => order.CreatedAtUtc >= fromUtc);
+        }
+
+        if (toDate.HasValue)
+        {
+            var toUtc = toDate.Value.ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
+            query = query.Where(order => order.CreatedAtUtc <= toUtc);
+        }
+
+        return query.OrderByDescending(order => order.CreatedAtUtc);
+    }
+
+    private static byte[] BuildExcel(SalesReportDto report)
+    {
+        using var workbook = new XLWorkbook();
+        var sheet = workbook.Worksheets.Add("Sales Report");
+
+        sheet.Cell(1, 1).Value = "Sales Report";
+        sheet.Cell(2, 1).Value = "From";
+        sheet.Cell(2, 2).Value = report.FromDate?.ToString("yyyy-MM-dd") ?? "All";
+        sheet.Cell(3, 1).Value = "To";
+        sheet.Cell(3, 2).Value = report.ToDate?.ToString("yyyy-MM-dd") ?? "All";
+        sheet.Cell(4, 1).Value = "Branch";
+        sheet.Cell(4, 2).Value = report.BranchName ?? "All branches";
+        sheet.Cell(5, 1).Value = "Total Revenue";
+        sheet.Cell(5, 2).Value = report.TotalRevenue;
+        sheet.Cell(6, 1).Value = "Total Orders";
+        sheet.Cell(6, 2).Value = report.TotalOrders;
+
+        var row = 8;
+        sheet.Cell(row, 1).Value = "Daily Revenue";
+        row++;
+        sheet.Cell(row, 1).Value = "Date";
+        sheet.Cell(row, 2).Value = "Revenue";
+        sheet.Cell(row, 3).Value = "Orders";
+        row++;
+        foreach (var daily in report.DailyRevenue)
+        {
+            sheet.Cell(row, 1).Value = daily.Date.ToString("yyyy-MM-dd");
+            sheet.Cell(row, 2).Value = daily.Revenue;
+            sheet.Cell(row, 3).Value = daily.Orders;
+            row++;
+        }
+
+        row += 2;
+        sheet.Cell(row, 1).Value = "Branch Revenue";
+        row++;
+        sheet.Cell(row, 1).Value = "Branch";
+        sheet.Cell(row, 2).Value = "Revenue";
+        sheet.Cell(row, 3).Value = "Orders";
+        row++;
+        foreach (var branch in report.BranchRevenue)
+        {
+            sheet.Cell(row, 1).Value = branch.BranchName;
+            sheet.Cell(row, 2).Value = branch.Revenue;
+            sheet.Cell(row, 3).Value = branch.Orders;
+            row++;
+        }
+
+        row += 2;
+        sheet.Cell(row, 1).Value = "Product Revenue";
+        row++;
+        sheet.Cell(row, 1).Value = "Product";
+        sheet.Cell(row, 2).Value = "Quantity";
+        sheet.Cell(row, 3).Value = "Revenue";
+        row++;
+        foreach (var product in report.ProductRevenue)
+        {
+            sheet.Cell(row, 1).Value = product.ProductName;
+            sheet.Cell(row, 2).Value = product.Quantity;
+            sheet.Cell(row, 3).Value = product.Revenue;
+            row++;
+        }
+
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+        return stream.ToArray();
+    }
+
+    private static byte[] BuildPdf(SalesReportDto report)
+    {
+        QuestPDF.Settings.License = LicenseType.Community;
+
+        var document = Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Margin(32);
+                page.Size(PageSizes.A4);
+                page.DefaultTextStyle(style => style.FontSize(10));
+
+                page.Content().Column(column =>
+                {
+                    column.Item().Text("Sales Report").FontSize(20).SemiBold();
+                    column.Item().Text($"From: {report.FromDate?.ToString("yyyy-MM-dd") ?? "All"}");
+                    column.Item().Text($"To: {report.ToDate?.ToString("yyyy-MM-dd") ?? "All"}");
+                    column.Item().Text($"Branch: {report.BranchName ?? "All branches"}");
+                    column.Item().Text($"Revenue: {report.TotalRevenue:N0}");
+                    column.Item().Text($"Orders: {report.TotalOrders}");
+
+                    column.Item().PaddingTop(12).Text("Daily Revenue").SemiBold();
+                    column.Item().Table(table =>
+                    {
+                        table.ColumnsDefinition(columns =>
+                        {
+                            columns.RelativeColumn();
+                            columns.RelativeColumn();
+                            columns.RelativeColumn();
+                        });
+
+                        table.Header(header =>
+                        {
+                            header.Cell().Text("Date").SemiBold();
+                            header.Cell().Text("Revenue").SemiBold();
+                            header.Cell().Text("Orders").SemiBold();
+                        });
+
+                        foreach (var daily in report.DailyRevenue)
+                        {
+                            table.Cell().Text(daily.Date.ToString("yyyy-MM-dd"));
+                            table.Cell().Text(daily.Revenue.ToString("N0"));
+                            table.Cell().Text(daily.Orders.ToString());
+                        }
+                    });
+                });
+            });
+        });
+
+        return document.GeneratePdf();
+    }
+
+    private static string BuildFileName(string prefix, string extension)
+        => $"{prefix}-{DateTime.UtcNow:yyyyMMddHHmmss}.{extension}";
+}

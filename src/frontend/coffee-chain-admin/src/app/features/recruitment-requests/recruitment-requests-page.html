@@ -1,0 +1,105 @@
+<section class="page-grid">
+  <article class="page-card">
+    <div class="page-head">
+      <div>
+        <h2>Yêu cầu tuyển dụng</h2>
+        <p>Quản lý chi nhánh gửi đề xuất tuyển người, admin xem và phê duyệt.</p>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <label>
+        <span>Tim kiem</span>
+        <input type="search" [ngModel]="searchTerm()" (ngModelChange)="changeSearch($event)" name="requestSearch" placeholder="Chi nhánh, vị trí, trạng thái..." />
+      </label>
+      <div class="pager">
+        <button type="button" (click)="previousPage()" [disabled]="page() === 1">Truoc</button>
+        <span>{{ page() }} / {{ totalPages() }}</span>
+        <button type="button" (click)="nextPage()" [disabled]="page() === totalPages()">Sau</button>
+      </div>
+    </div>
+
+    @if (loading()) {
+      <p>Dang tai yeu cau...</p>
+    } @else {
+      <div class="request-list">
+        @for (request of pagedRequests(); track request.id) {
+          <article class="request-card">
+            <div>
+              <strong>{{ request.positionTitle }} · {{ request.quantity }} nguoi</strong>
+              <p>{{ request.branchName }} · {{ request.requestedByName }}</p>
+              <small>{{ request.reason }}</small>
+            </div>
+            <span class="status" [class.approved]="request.status === 'Approved'" [class.rejected]="request.status === 'Rejected'">
+              {{ request.status }}
+            </span>
+
+            @if (canReview() && request.status === 'Pending') {
+              <div class="review-box">
+                <textarea
+                  [ngModel]="getReviewNote(request.id)"
+                  (ngModelChange)="updateReviewNote(request.id, $event)"
+                  placeholder="Ghi chu admin"></textarea>
+                <div class="actions">
+                  <button type="button" (click)="review(request, 'Approved')">Phe duyet</button>
+                  <button type="button" class="danger" (click)="review(request, 'Rejected')">Tu choi</button>
+                </div>
+              </div>
+            } @else if (request.adminNote) {
+              <div class="note">
+                <span>Ghi chu admin</span>
+                <p>{{ request.adminNote }}</p>
+              </div>
+            }
+          </article>
+        }
+      </div>
+    }
+  </article>
+
+  @if (canCreate()) {
+    <article class="page-card form-card">
+      <div class="page-head">
+        <div>
+          <h2>Tao yeu cau</h2>
+          <p>Chỉ quản lý chi nhánh mới được tạo yêu cầu cho chi nhánh của mình.</p>
+        </div>
+      </div>
+
+      <form class="form" (ngSubmit)="submit()">
+        <label>
+          <span>Chi nhánh</span>
+          <select [ngModel]="form().branchId" (ngModelChange)="form.update(v => ({ ...v, branchId: $event }))" name="branchId">
+            <option value="">Chọn chi nhánh</option>
+            @for (branch of branches(); track branch.id) {
+              <option [value]="branch.id">{{ branch.name }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          <span>Vi tri</span>
+          <input [ngModel]="form().positionTitle" (ngModelChange)="form.update(v => ({ ...v, positionTitle: $event }))" name="positionTitle" />
+        </label>
+
+        <label>
+          <span>So luong</span>
+          <input [ngModel]="form().quantity" (ngModelChange)="form.update(v => ({ ...v, quantity: +$event }))" name="quantity" type="number" min="1" />
+        </label>
+
+        <label>
+          <span>Ly do</span>
+          <textarea [ngModel]="form().reason" (ngModelChange)="form.update(v => ({ ...v, reason: $event }))" name="reason"></textarea>
+        </label>
+
+        @if (error()) {
+          <p class="error">{{ error() }}</p>
+        }
+
+        <button type="submit" class="primary" [disabled]="submitting()">
+          {{ submitting() ? 'Dang gui...' : 'Gui yeu cau' }}
+        </button>
+      </form>
+    </article>
+  }
+</section>

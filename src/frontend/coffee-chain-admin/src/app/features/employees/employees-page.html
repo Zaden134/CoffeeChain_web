@@ -1,0 +1,114 @@
+<section class="page-grid">
+  <article class="page-card">
+    <div class="page-head">
+      <div>
+        <h2>Nhân viên</h2>
+        <p>CRUD nhan vien, giu rule theo role va chi nhanh ngay tren API.</p>
+      </div>
+      <button type="button" (click)="startCreate()" [disabled]="!canWrite()">Tao moi</button>
+    </div>
+
+    <div class="toolbar">
+      <label>
+        <span>Tim kiem</span>
+        <input type="search" [ngModel]="searchTerm()" (ngModelChange)="changeSearch($event)" name="employeeSearch" placeholder="Ten, email, username..." />
+      </label>
+      <div class="pager">
+        <button type="button" (click)="previousPage()" [disabled]="page() === 1">Truoc</button>
+        <span>{{ page() }} / {{ totalPages() }}</span>
+        <button type="button" (click)="nextPage()" [disabled]="page() === totalPages()">Sau</button>
+      </div>
+    </div>
+
+    @if (loading()) {
+      <p>Dang tai nhan vien...</p>
+    } @else {
+      <div class="employee-list">
+        @for (employee of pagedEmployees(); track employee.id) {
+          <article class="employee-card">
+            <div class="avatar">{{ employee.fullName.slice(0, 1) }}</div>
+            <div class="copy">
+              <strong>{{ employee.fullName }}</strong>
+              <p>{{ employee.role }} · {{ employee.branchName }}</p>
+              <small>{{ employee.email }} · {{ employee.username }}</small>
+            </div>
+            <span class="status" [class.inactive]="!employee.isActive">
+              {{ employee.isActive ? 'Active' : 'Inactive' }}
+            </span>
+            @if (canWrite(employee)) {
+              <div class="actions">
+                <button type="button" (click)="startEdit(employee)">Sua</button>
+                <button type="button" class="danger" (click)="delete(employee)">Vo hieu hoa</button>
+              </div>
+            }
+          </article>
+        }
+      </div>
+    }
+  </article>
+
+  @if (canWrite()) {
+    <article class="page-card form-card">
+      <div class="page-head">
+        <div>
+          <h2>{{ editingId() ? 'Cap nhat nhan vien' : 'Tao nhan vien' }}</h2>
+          <p>Mat khau co the bo trong khi sua neu khong doi.</p>
+        </div>
+      </div>
+
+      <form class="form" (ngSubmit)="submit()">
+        <label>
+          <span>Username</span>
+          <input [ngModel]="form().username" (ngModelChange)="form.update(v => ({ ...v, username: $event }))" name="username" />
+        </label>
+
+        <label>
+          <span>Ho ten</span>
+          <input [ngModel]="form().fullName" (ngModelChange)="form.update(v => ({ ...v, fullName: $event }))" name="fullName" />
+        </label>
+
+        <label>
+          <span>Email</span>
+          <input [ngModel]="form().email" (ngModelChange)="form.update(v => ({ ...v, email: $event }))" name="email" type="email" />
+        </label>
+
+        <label>
+          <span>Vai tro</span>
+          <select [ngModel]="form().role" (ngModelChange)="form.update(v => ({ ...v, role: $event }))" name="role">
+            @for (role of roleOptions(); track role) {
+              <option [value]="role">{{ role }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          <span>Chi nhánh</span>
+          <select [ngModel]="form().branchId" (ngModelChange)="form.update(v => ({ ...v, branchId: $event || null }))" name="branchId">
+            <option value="">Chọn chi nhánh</option>
+            @for (branch of branches(); track branch.id) {
+              <option [value]="branch.id">{{ branch.name }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          <span>Mat khau {{ editingId() ? '(de trong neu khong doi)' : '' }}</span>
+          <input [ngModel]="form().password" (ngModelChange)="form.update(v => ({ ...v, password: $event }))" name="password" type="password" />
+        </label>
+
+        <label class="checkbox">
+          <input [ngModel]="form().isActive" (ngModelChange)="form.update(v => ({ ...v, isActive: $event }))" name="isActive" type="checkbox" />
+          <span>Dang hoat dong</span>
+        </label>
+
+        @if (error()) {
+          <p class="error">{{ error() }}</p>
+        }
+
+        <button type="submit" class="primary" [disabled]="submitting()">
+          {{ submitting() ? 'Dang luu...' : (editingId() ? 'Cap nhat' : 'Tao moi') }}
+        </button>
+      </form>
+    </article>
+  }
+</section>

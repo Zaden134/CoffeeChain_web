@@ -1,0 +1,49 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: coffee-chain-postgres
+    environment:
+      POSTGRES_DB: coffee_chain_management
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d coffee_chain_management"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    container_name: coffee-chain-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__PostgreSql: Host=postgres;Port=5432;Database=coffee_chain_management;Username=postgres;Password=postgres
+      Frontend__Url: http://localhost:4200
+      Jwt__Issuer: CoffeeChainManagement.Api
+      Jwt__Audience: CoffeeChainManagement.Frontend
+      Jwt__SigningKey: Replace-This-Dev-Key-With-At-Least-32-Characters
+      Jwt__ExpiryMinutes: 180
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+    container_name: coffee-chain-admin
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres-data:

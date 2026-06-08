@@ -1,0 +1,85 @@
+.page-card {
+  padding: 24px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(92, 64, 35, 0.12);
+  box-shadow: 0 18px 40px rgba(88, 57, 27, 0.08);
+}
+
+.page-head,
+.branch-top {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.page-head p,
+.branch-top p {
+  margin: 6px 0 0;
+  color: #7a624e;
+}
+
+.page-head button {
+  border: 0;
+  border-radius: 14px;
+  padding: 12px 16px;
+  background: #b4631c;
+  color: #fff;
+  cursor: pointer;
+}
+
+.branch-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 22px;
+}
+
+.branch-card {
+  padding: 20px;
+  border-radius: 20px;
+  background: #fff8f1;
+  border: 1px solid rgba(92, 64, 35, 0.12);
+}
+
+.badge {
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: #dcf6e5;
+  color: #1f7a43;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.badge.inactive {
+  background: #f8dddd;
+  color: #a52718;
+}
+
+.branch-stats {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.branch-stats span {
+  display: block;
+  color: #7a624e;
+  font-size: 0.92rem;
+}
+
+.branch-stats strong {
+  display: block;
+  margin-top: 4px;
+}
+
+.error {
+  color: #a52718;
+}
+
+@media (max-width: 900px) {
+  .branch-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,103 @@
+@if (state().loading) {
+  <section class="panel">
+    <p>Dang tai dashboard...</p>
+  </section>
+} @else if (state().error) {
+  <section class="panel error">
+    <p>{{ state().error }}</p>
+  </section>
+} @else if (state().data; as data) {
+  <section class="hero">
+    <div>
+      <p class="eyebrow">Tong quan he thong</p>
+      <h2>Van hanh chuoi ca phe theo thoi gian thuc</h2>
+      <p class="hero-copy">
+        Bieu do duoc tinh tu PostgreSQL va nhan du lieu qua JWT-protected API.
+      </p>
+    </div>
+    <button type="button" (click)="store.load()">Lam moi dashboard</button>
+  </section>
+
+  <section class="kpis">
+    <article class="kpi-card">
+      <span>Doanh thu hom nay</span>
+      <strong>{{ data.summary.dailyRevenue | currency:'VND':'symbol':'1.0-0' }}</strong>
+    </article>
+    <article class="kpi-card">
+      <span>Doanh thu thang</span>
+      <strong>{{ data.summary.monthlyRevenue | currency:'VND':'symbol':'1.0-0' }}</strong>
+    </article>
+    <article class="kpi-card">
+      <span>Don hang</span>
+      <strong>{{ data.summary.totalOrders }}</strong>
+    </article>
+    <article class="kpi-card">
+      <span>Canh bao ton kho</span>
+      <strong>{{ data.summary.lowStockAlerts }}</strong>
+    </article>
+  </section>
+
+  <section class="grid">
+    <article class="panel">
+      <div class="panel-head">
+        <h3>Chi nhánh noi bat</h3>
+        <span>{{ data.summary.activeBranches }} dang hoat dong</span>
+      </div>
+
+      <div class="branch-list">
+        @for (branch of data.topBranches; track branch.id) {
+          <div class="branch-item">
+            <div>
+              <strong>{{ branch.name }}</strong>
+              <p>{{ branch.address }}</p>
+            </div>
+            <div class="branch-meta">
+              <span>{{ branch.revenueToday | currency:'VND':'symbol':'1.0-0' }}</span>
+              <small>{{ branch.lowStockItems }} canh bao kho</small>
+            </div>
+          </div>
+        }
+      </div>
+    </article>
+
+    <article class="panel">
+      <div class="panel-head">
+        <h3>Mon ban chay</h3>
+        <span>Cap nhat tu POS</span>
+      </div>
+
+      <div class="product-list">
+        @for (product of data.bestSellingProducts; track product.id) {
+          <div class="product-item">
+            <img [src]="product.imageUrl" [alt]="product.name" />
+            <div>
+              <strong>{{ product.name }}</strong>
+              <p>{{ product.category }} · {{ product.soldQuantity }} ly</p>
+            </div>
+            <span>{{ product.price | currency:'VND':'symbol':'1.0-0' }}</span>
+          </div>
+        }
+      </div>
+    </article>
+  </section>
+
+  <section class="panel activity-panel">
+    <div class="panel-head">
+      <h3>Hoat dong gan day</h3>
+      <span>Cap nhat noi bo</span>
+    </div>
+
+    <div class="activity-list">
+      @for (activity of activities; track activity.action) {
+        <div class="activity-item">
+          <span class="activity-dot" [class]="activity.status"></span>
+          <div class="activity-copy">
+            <strong>{{ activity.action }}</strong>
+            <p>{{ activity.detail }}</p>
+          </div>
+          <small>{{ activity.time }}</small>
+        </div>
+      }
+    </div>
+  </section>
+}
