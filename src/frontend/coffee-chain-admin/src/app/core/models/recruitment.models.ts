@@ -22,6 +22,6 @@ export interface CreateRecruitmentRequestPayload {
 }
 
 export interface ReviewRecruitmentRequestPayload {
-  decision: 'Approved' | 'Rejected';
+  decision: 'Đã duyệt' | 'Từ chối';
   adminNote?: string | null;
 }

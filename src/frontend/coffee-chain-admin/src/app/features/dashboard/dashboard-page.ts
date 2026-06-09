@@ -24,7 +24,7 @@ export class DashboardPage {
     },
     {
       action: 'Canh bao ton kho',
-      detail: 'Sua tuoi sap het tai CN Hai Chau',
+      detail: 'Sửa tuoi sap het tai CN Hai Chau',
       time: '15 phut truoc',
       status: 'warning'
     },

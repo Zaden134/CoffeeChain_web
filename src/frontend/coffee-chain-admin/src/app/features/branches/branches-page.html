@@ -4,11 +4,11 @@
       <h2>Chi nhánh</h2>
       <p>Theo doi doanh thu va canh bao ton kho cua tung cua hang.</p>
     </div>
-    <button type="button" (click)="load()">Lam moi</button>
+    <button type="button" (click)="load()">Làm mới</button>
   </div>
 
   @if (loading()) {
-    <p>Dang tai chi nhanh...</p>
+    <p>Đang tải chi nhánh...</p>
   } @else if (error()) {
     <p class="error">{{ error() }}</p>
   } @else {
@@ -21,21 +21,21 @@
               <p>{{ branch.code }} · {{ branch.address }}</p>
             </div>
             <span class="badge" [class.inactive]="!branch.isActive">
-              {{ branch.isActive ? 'Hoat dong' : 'Tam dung' }}
+              {{ branch.isActive ? 'Hoạt động' : 'Tam dung' }}
             </span>
           </div>
 
           <div class="branch-stats">
             <div>
-              <span>Doanh thu hom nay</span>
+              <span>Doanh thu hôm nay</span>
               <strong>{{ branch.revenueToday | currency:'VND':'symbol':'1.0-0' }}</strong>
             </div>
             <div>
-              <span>Quan ly</span>
+              <span>Quản lý</span>
               <strong>{{ branch.managerName }}</strong>
             </div>
             <div>
-              <span>Canh bao kho</span>
+              <span>Cảnh báo kho</span>
               <strong>{{ branch.lowStockItems }}</strong>
             </div>
           </div>

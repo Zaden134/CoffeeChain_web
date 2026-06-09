@@ -140,7 +140,7 @@ export class InventoryPage {
   }
 
   protected delete(item: InventoryItem): void {
-    if (!confirm(`Xoa ton kho cua ${item.ingredientName} tai ${item.branchName}?`)) {
+    if (!confirm(`Xóa ton kho cua ${item.ingredientName} tai ${item.branchName}?`)) {
       return;
     }
 

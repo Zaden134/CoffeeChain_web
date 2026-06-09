@@ -17,7 +17,7 @@
       <div class="actions">
         <button type="button" (click)="export('xlsx')" [disabled]="exporting()">Excel</button>
         <button type="button" (click)="export('pdf')" [disabled]="exporting()">PDF</button>
-        <button type="button" (click)="load()">Lam moi</button>
+        <button type="button" (click)="load()">Làm mới</button>
       </div>
     </div>
 
@@ -54,7 +54,7 @@
         </select>
       </label>
 
-      <button type="button" class="primary" (click)="load()">Ap dung</button>
+      <button type="button" class="primary" (click)="load()">Áp dụng</button>
     </div>
 
     <div class="grid">
@@ -67,7 +67,7 @@
         <strong>{{ data.totalOrders }}</strong>
       </article>
       <article class="stat-card">
-        <span>Canh bao kho</span>
+        <span>Cảnh báo kho</span>
         <strong>{{ data.lowStockItems }}</strong>
       </article>
       <article class="stat-card">
@@ -86,7 +86,7 @@
           <div class="list-item">
             <div>
               <strong>{{ row.date }}</strong>
-              <p>{{ row.orders }} don hang</p>
+              <p>{{ row.orders }} đơn hàng</p>
             </div>
             <div class="meta">{{ row.revenue | currency:'VND':'symbol':'1.0-0' }}</div>
           </div>
@@ -95,7 +95,7 @@
 
       <article class="list-card">
         <div class="section-head">
-          <h3>Mon ban chay</h3>
+          <h3>Món bán chạy</h3>
         </div>
 
         @for (row of data.productRevenue; track row.productName) {
@@ -120,7 +120,7 @@
           <div class="list-item">
             <div>
               <strong>{{ row.branchName }}</strong>
-              <p>{{ row.orders }} don hang</p>
+              <p>{{ row.orders }} đơn hàng</p>
             </div>
             <div class="meta">{{ row.revenue | currency:'VND':'symbol':'1.0-0' }}</div>
           </div>
@@ -129,11 +129,11 @@
 
       <article class="list-card summary-card">
         <div class="section-head">
-          <h3>Chi so tong hop</h3>
+          <h3>Chỉ số tổng hợp</h3>
         </div>
 
         <div class="summary-lines">
-          <p><span>Doanh thu trung binh/don</span><strong>{{ data.averageOrderValue | currency:'VND':'symbol':'1.0-0' }}</strong></p>
+          <p><span>Doanh thu trung bình/đơn</span><strong>{{ data.averageOrderValue | currency:'VND':'symbol':'1.0-0' }}</strong></p>
           <p><span>Chi nhánh hoạt động</span><strong>{{ data.activeBranches }}</strong></p>
           <p><span>Yêu cầu tuyển đang chờ</span><strong>{{ data.pendingRecruitmentRequests }}</strong></p>
           <p><span>Chi nhánh đã lọc</span><strong>{{ data.branchName ?? 'Tất cả' }}</strong></p>

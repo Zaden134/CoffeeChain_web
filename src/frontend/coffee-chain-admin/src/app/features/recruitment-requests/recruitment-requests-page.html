@@ -9,11 +9,11 @@
 
     <div class="toolbar">
       <label>
-        <span>Tim kiem</span>
+        <span>Tìm kiếm</span>
         <input type="search" [ngModel]="searchTerm()" (ngModelChange)="changeSearch($event)" name="requestSearch" placeholder="Chi nhánh, vị trí, trạng thái..." />
       </label>
       <div class="pager">
-        <button type="button" (click)="previousPage()" [disabled]="page() === 1">Truoc</button>
+        <button type="button" (click)="previousPage()" [disabled]="page() === 1">Trước</button>
         <span>{{ page() }} / {{ totalPages() }}</span>
         <button type="button" (click)="nextPage()" [disabled]="page() === totalPages()">Sau</button>
       </div>
@@ -41,8 +41,8 @@
                   (ngModelChange)="updateReviewNote(request.id, $event)"
                   placeholder="Ghi chu admin"></textarea>
                 <div class="actions">
-                  <button type="button" (click)="review(request, 'Approved')">Phe duyet</button>
-                  <button type="button" class="danger" (click)="review(request, 'Rejected')">Tu choi</button>
+                  <button type="button" (click)="review(request, 'Đã duyệt')">Phê duyệt</button>
+                  <button type="button" class="danger" (click)="review(request, 'Từ chối')">Từ chối</button>
                 </div>
               </div>
             } @else if (request.adminNote) {
@@ -61,7 +61,7 @@
     <article class="page-card form-card">
       <div class="page-head">
         <div>
-          <h2>Tao yeu cau</h2>
+          <h2>Tạo yêu cầu</h2>
           <p>Chỉ quản lý chi nhánh mới được tạo yêu cầu cho chi nhánh của mình.</p>
         </div>
       </div>
@@ -78,17 +78,17 @@
         </label>
 
         <label>
-          <span>Vi tri</span>
+          <span>Vị trí</span>
           <input [ngModel]="form().positionTitle" (ngModelChange)="form.update(v => ({ ...v, positionTitle: $event }))" name="positionTitle" />
         </label>
 
         <label>
-          <span>So luong</span>
+          <span>Số lượng</span>
           <input [ngModel]="form().quantity" (ngModelChange)="form.update(v => ({ ...v, quantity: +$event }))" name="quantity" type="number" min="1" />
         </label>
 
         <label>
-          <span>Ly do</span>
+          <span>Lý do</span>
           <textarea [ngModel]="form().reason" (ngModelChange)="form.update(v => ({ ...v, reason: $event }))" name="reason"></textarea>
         </label>
 
@@ -97,7 +97,7 @@
         }
 
         <button type="submit" class="primary" [disabled]="submitting()">
-          {{ submitting() ? 'Dang gui...' : 'Gui yeu cau' }}
+          {{ submitting() ? 'Dang gui...' : 'Gửi yêu cầu' }}
         </button>
       </form>
     </article>

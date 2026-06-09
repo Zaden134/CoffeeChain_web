@@ -6,17 +6,17 @@
         <p>Manager va admin co the tao, sua, xoa campaign ngay tren web admin.</p>
       </div>
       @if (canWrite()) {
-        <button type="button" (click)="startCreate()">Tao campaign</button>
+        <button type="button" (click)="startCreate()">Tạo khuyến mãi</button>
       }
     </div>
 
     <div class="toolbar">
       <label>
-        <span>Tim kiem</span>
+        <span>Tìm kiếm</span>
         <input type="search" [ngModel]="searchTerm()" (ngModelChange)="changeSearch($event)" name="promotionSearch" placeholder="Ten, trang thai..." />
       </label>
       <div class="pager">
-        <button type="button" (click)="previousPage()" [disabled]="page() === 1">Truoc</button>
+        <button type="button" (click)="previousPage()" [disabled]="page() === 1">Trước</button>
         <span>{{ page() }} / {{ totalPages() }}</span>
         <button type="button" (click)="nextPage()" [disabled]="page() === totalPages()">Sau</button>
       </div>
@@ -33,11 +33,11 @@
               <p>{{ promotion.startDate }} - {{ promotion.endDate }}</p>
             </div>
             <div class="discount">{{ promotion.discountPercent }}%</div>
-            <span class="status" [class.off]="!promotion.isActive">{{ promotion.isActive ? 'Active' : 'Inactive' }}</span>
+            <span class="status" [class.off]="!promotion.isActive">{{ promotion.isActive ? 'Hoạt động' : 'Đã khóa' }}</span>
             @if (canWrite()) {
               <div class="actions">
-                <button type="button" (click)="startEdit(promotion)">Sua</button>
-                <button type="button" class="danger" (click)="delete(promotion)">Xoa</button>
+                <button type="button" (click)="startEdit(promotion)">Sửa</button>
+                <button type="button" class="danger" (click)="delete(promotion)">Xóa</button>
               </div>
             }
           </article>
@@ -50,8 +50,8 @@
     <article class="page-card form-card">
       <div class="page-head">
         <div>
-          <h2>{{ editingId() ? 'Cap nhat campaign' : 'Tao campaign' }}</h2>
-          <p>Validation ngay va discount duoc kiem tra o frontend va backend.</p>
+          <h2>{{ editingId() ? 'Cập nhật campaign' : 'Tạo khuyến mãi' }}</h2>
+          <p>Validation ngày và discount được kiểm tra ở frontend và backend.</p>
         </div>
       </div>
 
@@ -67,18 +67,18 @@
         </label>
 
         <label>
-          <span>Ngay bat dau</span>
+          <span>Ngày bắt đầu</span>
           <input [ngModel]="form().startDate" (ngModelChange)="form.update(v => ({ ...v, startDate: $event }))" name="startDate" type="date" />
         </label>
 
         <label>
-          <span>Ngay ket thuc</span>
+          <span>Ngày kết thúc</span>
           <input [ngModel]="form().endDate" (ngModelChange)="form.update(v => ({ ...v, endDate: $event }))" name="endDate" type="date" />
         </label>
 
         <label class="checkbox">
           <input [ngModel]="form().isActive" (ngModelChange)="form.update(v => ({ ...v, isActive: $event }))" name="isActive" type="checkbox" />
-          <span>Dang kich hoat</span>
+          <span>Đang kích hoạt</span>
         </label>
 
         @if (error()) {
@@ -86,7 +86,7 @@
         }
 
         <button type="submit" class="primary" [disabled]="submitting()">
-          {{ submitting() ? 'Dang luu...' : (editingId() ? 'Cap nhat' : 'Tao moi') }}
+          {{ submitting() ? 'Đang lưu...' : (editingId() ? 'Cập nhật' : 'Tạo mới') }}
         </button>
       </form>
     </article>

@@ -3,27 +3,27 @@
     <div class="page-head">
       <div>
         <h2>Kho hàng</h2>
-        <p>Ton kho duoc doc va ghi truc tiep tu backend PostgreSQL.</p>
+        <p>Tồn kho được đọc và ghi trực tiếp từ backend PostgreSQL.</p>
       </div>
       @if (canWrite()) {
-        <button type="button" (click)="startCreate()">Tao muc ton kho</button>
+        <button type="button" (click)="startCreate()">Tạo mục tồn kho</button>
       }
     </div>
 
     <div class="toolbar">
       <label>
-        <span>Tim kiem</span>
-        <input type="search" [ngModel]="searchTerm()" (ngModelChange)="changeSearch($event)" name="inventorySearch" placeholder="Ingredient, chi nhanh, don vi..." />
+        <span>Tìm kiếm</span>
+        <input type="search" [ngModel]="searchTerm()" (ngModelChange)="changeSearch($event)" name="inventorySearch" placeholder="Nguyên liệu, chi nhánh, đơn vị..." />
       </label>
       <div class="pager">
-        <button type="button" (click)="previousPage()" [disabled]="page() === 1">Truoc</button>
+        <button type="button" (click)="previousPage()" [disabled]="page() === 1">Trước</button>
         <span>{{ page() }} / {{ totalPages() }}</span>
         <button type="button" (click)="nextPage()" [disabled]="page() === totalPages()">Sau</button>
       </div>
     </div>
 
     @if (loading()) {
-      <p>Dang tai ton kho...</p>
+      <p>Đang tải tồn kho...</p>
     } @else {
       <div class="table">
         @for (item of pagedItems(); track item.id) {
@@ -33,24 +33,24 @@
               <p>{{ item.branchName }} · {{ item.unit }}</p>
             </div>
             <div>
-              <span>Ton kho</span>
+              <span>Tồn kho</span>
               <strong>{{ item.inStockQuantity }}</strong>
             </div>
             <div>
-              <span>Dat truoc</span>
+              <span>Đặt trước</span>
               <strong>{{ item.reservedQuantity }}</strong>
             </div>
             <div>
-              <span>Muc canh bao</span>
+              <span>Mức cảnh báo</span>
               <strong>{{ item.reorderLevel }}</strong>
             </div>
             <div>
-              <span class="status" [class.warn]="item.isLowStock">{{ item.isLowStock ? 'Low stock' : 'On track' }}</span>
+              <span class="status" [class.warn]="item.isLowStock">{{ item.isLowStock ? 'Sắp hết' : 'Còn hàng' }}</span>
             </div>
             @if (canWrite(item)) {
               <div class="actions">
-                <button type="button" (click)="startEdit(item)">Sua</button>
-                <button type="button" class="danger" (click)="delete(item)">Xoa</button>
+                <button type="button" (click)="startEdit(item)">Sửa</button>
+                <button type="button" class="danger" (click)="delete(item)">Xóa</button>
               </div>
             }
           </div>
@@ -63,8 +63,8 @@
     <article class="page-card form-card">
       <div class="page-head">
         <div>
-          <h2>{{ editingId() ? 'Cap nhat ton kho' : 'Tao ton kho' }}</h2>
-          <p>Co the chon ingredient san co hoac tao ingredient moi ngay trong form.</p>
+          <h2>{{ editingId() ? 'Cập nhật tồn kho' : 'Tạo tồn kho' }}</h2>
+          <p>Có thể chọn nguyên liệu sẵn có hoặc tạo nguyên liệu mới ngay trong form.</p>
         </div>
       </div>
 
@@ -80,9 +80,9 @@
         </label>
 
         <label>
-          <span>Ingredient san co</span>
+          <span>Nguyên liệu sẵn có</span>
           <select [ngModel]="form().ingredientId" (ngModelChange)="form.update(v => ({ ...v, ingredientId: $event || null }))" name="ingredientId">
-            <option value="">Tao ingredient moi</option>
+            <option value="">Tạo nguyên liệu mới</option>
             @for (ingredient of ingredients(); track ingredient.id) {
               <option [value]="ingredient.id">{{ ingredient.label }}</option>
             }
@@ -91,28 +91,28 @@
 
         @if (!form().ingredientId) {
           <label>
-            <span>Ten ingredient</span>
+            <span>Tên nguyên liệu</span>
             <input [ngModel]="form().ingredientName" (ngModelChange)="form.update(v => ({ ...v, ingredientName: $event }))" name="ingredientName" />
           </label>
 
           <label>
-            <span>Don vi</span>
+            <span>Đơn vị</span>
             <input [ngModel]="form().unit" (ngModelChange)="form.update(v => ({ ...v, unit: $event }))" name="unit" />
           </label>
         }
 
         <label>
-          <span>Muc canh bao</span>
+          <span>Mức cảnh báo</span>
           <input [ngModel]="form().reorderLevel" (ngModelChange)="form.update(v => ({ ...v, reorderLevel: +$event }))" name="reorderLevel" type="number" min="0" />
         </label>
 
         <label>
-          <span>Ton kho</span>
+          <span>Tồn kho</span>
           <input [ngModel]="form().inStockQuantity" (ngModelChange)="form.update(v => ({ ...v, inStockQuantity: +$event }))" name="inStockQuantity" type="number" min="0" />
         </label>
 
         <label>
-          <span>Dat truoc</span>
+          <span>Đặt trước</span>
           <input [ngModel]="form().reservedQuantity" (ngModelChange)="form.update(v => ({ ...v, reservedQuantity: +$event }))" name="reservedQuantity" type="number" min="0" />
         </label>
 
@@ -121,7 +121,7 @@
         }
 
         <button type="submit" class="primary" [disabled]="submitting()">
-          {{ submitting() ? 'Dang luu...' : (editingId() ? 'Cap nhat' : 'Tao moi') }}
+          {{ submitting() ? 'Đang lưu...' : (editingId() ? 'Cập nhật' : 'Tạo mới') }}
         </button>
       </form>
     </article>

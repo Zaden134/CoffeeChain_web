@@ -109,7 +109,7 @@ export class RecruitmentRequestsPage {
     });
   }
 
-  protected review(request: RecruitmentRequest, decision: 'Approved' | 'Rejected'): void {
+  protected review(request: RecruitmentRequest, decision: 'Đã duyệt' | 'Từ chối'): void {
     this.recruitmentApi.review(request.id, {
       decision,
       adminNote: this.reviewNote()[request.id] ?? ''

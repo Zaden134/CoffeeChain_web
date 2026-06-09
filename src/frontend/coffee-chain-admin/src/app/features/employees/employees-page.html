@@ -5,23 +5,23 @@
         <h2>Nhân viên</h2>
         <p>CRUD nhan vien, giu rule theo role va chi nhanh ngay tren API.</p>
       </div>
-      <button type="button" (click)="startCreate()" [disabled]="!canWrite()">Tao moi</button>
+      <button type="button" (click)="startCreate()" [disabled]="!canWrite()">Tạo mới</button>
     </div>
 
     <div class="toolbar">
       <label>
-        <span>Tim kiem</span>
-        <input type="search" [ngModel]="searchTerm()" (ngModelChange)="changeSearch($event)" name="employeeSearch" placeholder="Ten, email, username..." />
+        <span>Tìm kiếm</span>
+        <input type="search" [ngModel]="searchTerm()" (ngModelChange)="changeSearch($event)" name="employeeSearch" placeholder="Tên, email, username..." />
       </label>
       <div class="pager">
-        <button type="button" (click)="previousPage()" [disabled]="page() === 1">Truoc</button>
+        <button type="button" (click)="previousPage()" [disabled]="page() === 1">Trước</button>
         <span>{{ page() }} / {{ totalPages() }}</span>
         <button type="button" (click)="nextPage()" [disabled]="page() === totalPages()">Sau</button>
       </div>
     </div>
 
     @if (loading()) {
-      <p>Dang tai nhan vien...</p>
+      <p>Đang tải nhân viên...</p>
     } @else {
       <div class="employee-list">
         @for (employee of pagedEmployees(); track employee.id) {
@@ -33,12 +33,12 @@
               <small>{{ employee.email }} · {{ employee.username }}</small>
             </div>
             <span class="status" [class.inactive]="!employee.isActive">
-              {{ employee.isActive ? 'Active' : 'Inactive' }}
+              {{ employee.isActive ? 'Hoạt động' : 'Đã khóa' }}
             </span>
             @if (canWrite(employee)) {
               <div class="actions">
-                <button type="button" (click)="startEdit(employee)">Sua</button>
-                <button type="button" class="danger" (click)="delete(employee)">Vo hieu hoa</button>
+                <button type="button" (click)="startEdit(employee)">Sửa</button>
+                <button type="button" class="danger" (click)="delete(employee)">Vô hiệu hóa</button>
               </div>
             }
           </article>
@@ -51,8 +51,8 @@
     <article class="page-card form-card">
       <div class="page-head">
         <div>
-          <h2>{{ editingId() ? 'Cap nhat nhan vien' : 'Tao nhan vien' }}</h2>
-          <p>Mat khau co the bo trong khi sua neu khong doi.</p>
+          <h2>{{ editingId() ? 'Cập nhật nhân viên' : 'Tạo nhân viên' }}</h2>
+          <p>Mật khẩu có thể bỏ trống khi sửa nếu không đổi.</p>
         </div>
       </div>
 
@@ -63,7 +63,7 @@
         </label>
 
         <label>
-          <span>Ho ten</span>
+          <span>Họ tên</span>
           <input [ngModel]="form().fullName" (ngModelChange)="form.update(v => ({ ...v, fullName: $event }))" name="fullName" />
         </label>
 
@@ -73,7 +73,7 @@
         </label>
 
         <label>
-          <span>Vai tro</span>
+          <span>Vai trò</span>
           <select [ngModel]="form().role" (ngModelChange)="form.update(v => ({ ...v, role: $event }))" name="role">
             @for (role of roleOptions(); track role) {
               <option [value]="role">{{ role }}</option>
@@ -92,13 +92,13 @@
         </label>
 
         <label>
-          <span>Mat khau {{ editingId() ? '(de trong neu khong doi)' : '' }}</span>
+          <span>Mật khẩu {{ editingId() ? '(để trống nếu không đổi)' : '' }}</span>
           <input [ngModel]="form().password" (ngModelChange)="form.update(v => ({ ...v, password: $event }))" name="password" type="password" />
         </label>
 
         <label class="checkbox">
           <input [ngModel]="form().isActive" (ngModelChange)="form.update(v => ({ ...v, isActive: $event }))" name="isActive" type="checkbox" />
-          <span>Dang hoat dong</span>
+          <span>Đang hoạt động</span>
         </label>
 
         @if (error()) {
@@ -106,7 +106,7 @@
         }
 
         <button type="submit" class="primary" [disabled]="submitting()">
-          {{ submitting() ? 'Dang luu...' : (editingId() ? 'Cap nhat' : 'Tao moi') }}
+          {{ submitting() ? 'Đang lưu...' : (editingId() ? 'Cập nhật' : 'Tạo mới') }}
         </button>
       </form>
     </article>

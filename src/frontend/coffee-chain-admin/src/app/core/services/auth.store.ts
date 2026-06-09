@@ -1,4 +1,4 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { AuthResponse, UserProfile } from '../models/auth.models';
@@ -22,7 +22,8 @@ const REFRESH_EXPIRES_KEY = 'ccm.auth.refreshExpires';
 // AuthStore giu token, profile va helper auth cho toan bo ung dung.
 @Injectable({ providedIn: 'root' })
 export class AuthStore {
-  private readonly authApi = inject(AuthApi);
+  private readonly injector = inject(Injector);
+  private get authApi(): AuthApi { return this.injector.get(AuthApi); }
   private readonly router = inject(Router);
 
   readonly state = signal<AuthState>({
@@ -37,7 +38,15 @@ export class AuthStore {
   readonly token = computed(() => this.state().token);
   readonly refreshToken = computed(() => this.state().refreshToken);
   readonly user = computed(() => this.state().user);
-  readonly isAuthenticated = computed(() => Boolean(this.state().token && this.state().user));
+  readonly isAuthenticated = computed(() => {
+    const state = this.state();
+    if (!state.token || !state.user) return false;
+    if (state.expiresAtUtc) {
+      const expires = new Date(state.expiresAtUtc).getTime();
+      if (Date.now() >= expires) return false;
+    }
+    return true;
+  });
   readonly role = computed(() => this.state().user?.role ?? null);
   readonly branchId = computed(() => this.state().user?.branchId ?? null);
 
@@ -121,7 +130,7 @@ export class AuthStore {
           resolve(response);
         },
         error: () => {
-          this.state.update((state) => ({ ...state, loading: false }));
+          this.clear(true);
           resolve(null);
         }
       });

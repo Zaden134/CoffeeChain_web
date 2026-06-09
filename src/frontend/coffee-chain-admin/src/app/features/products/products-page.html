@@ -4,7 +4,7 @@
       <h2>Sản phẩm</h2>
       <p>Menu, gia ban va so luong tieu thu duoc dong bo tu backend.</p>
     </div>
-    <button type="button" (click)="load()">Lam moi</button>
+    <button type="button" (click)="load()">Làm mới</button>
   </div>
 
   @if (loading()) {
@@ -20,13 +20,13 @@
             <div class="title-row">
               <strong>{{ product.name }}</strong>
               <span class="status" [class.off]="!product.isAvailable">
-                {{ product.isAvailable ? 'Dang ban' : 'Tam an' }}
+                {{ product.isAvailable ? 'Đang bán' : 'Tam an' }}
               </span>
             </div>
             <p>{{ product.sku }} · {{ product.category }}</p>
             <div class="product-meta">
               <span>{{ product.price | currency:'VND':'symbol':'1.0-0' }}</span>
-              <small>{{ product.soldQuantity }} ly da ban</small>
+              <small>{{ product.soldQuantity }} ly đã bán</small>
             </div>
           </div>
         </article>

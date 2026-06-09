@@ -69,6 +69,8 @@
   gap: 8px;
   margin-top: 20px;
   flex: 1;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .nav-item {
@@ -112,10 +114,19 @@
 
 .logout {
   grid-column: 1 / -1;
-  justify-self: start;
-  padding: 10px 0 0;
-  color: #9f2519;
+  justify-self: stretch;
+  margin-top: 8px;
+  padding: 10px 16px !important;
+  color: #D34C4C !important;
+  background-color: #FFF2F2 !important;
+  border: 1px solid #FAD4D4 !important;
   font-weight: 600;
+  border-radius: 8px;
+  text-align: center;
+}
+.logout:hover {
+  background-color: #D34C4C !important;
+  color: white !important;
 }
 
 .content-wrap {

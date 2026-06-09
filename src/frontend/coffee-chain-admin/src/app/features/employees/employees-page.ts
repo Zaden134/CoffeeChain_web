@@ -146,7 +146,7 @@ export class EmployeesPage {
   }
 
   protected delete(employee: EmployeeSummary): void {
-    if (!confirm(`Vo hieu hoa nhan vien ${employee.fullName}?`)) {
+    if (!confirm(`Vô hiệu hóa nhan vien ${employee.fullName}?`)) {
       return;
     }
 
@@ -186,7 +186,7 @@ export class EmployeesPage {
     }
 
     if (!this.editingId() && (!payload.password || payload.password.length < 8)) {
-      return 'Mat khau tao moi phai co it nhat 8 ky tu.';
+      return 'Mật khẩu tao moi phai co it nhat 8 ky tu.';
     }
 
     if (!payload.branchId && payload.role !== 'Administrator') {

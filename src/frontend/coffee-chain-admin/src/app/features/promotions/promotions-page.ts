@@ -156,11 +156,11 @@ export class PromotionsPage {
     }
 
     if (!payload.startDate || !payload.endDate) {
-      return 'Ngay bat dau va ket thuc la bat buoc.';
+      return 'Ngày bắt đầu va ket thuc la bat buoc.';
     }
 
     if (payload.endDate < payload.startDate) {
-      return 'Ngay ket thuc khong duoc nho hon ngay bat dau.';
+      return 'Ngày kết thúc khong duoc nho hon ngay bat dau.';
     }
 
     return null;
