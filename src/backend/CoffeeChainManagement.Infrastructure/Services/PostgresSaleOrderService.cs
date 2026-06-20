@@ -45,6 +45,27 @@ public sealed class PostgresSaleOrderService(CoffeeChainDbContext dbContext) : I
             };
 
             await dbContext.Set<SaleOrder>().AddAsync(saleOrder, cancellationToken);
+
+            // Deduct from inventory based on recipe
+            var productIds = orderDto.Items.Select(i => i.ProductId).Distinct().ToList();
+            var recipes = await dbContext.Recipes.Include(r => r.Ingredients).Where(r => productIds.Contains(r.ProductId)).ToListAsync(cancellationToken);
+
+            foreach (var item in orderDto.Items)
+            {
+                var recipe = recipes.FirstOrDefault(r => r.ProductId == item.ProductId);
+                if (recipe != null)
+                {
+                    foreach (var ing in recipe.Ingredients)
+                    {
+                        var inventoryItem = await dbContext.InventoryItems.FirstOrDefaultAsync(inv => inv.BranchId == orderDto.BranchId && inv.IngredientId == ing.IngredientId, cancellationToken);
+                        if (inventoryItem != null)
+                        {
+                            inventoryItem.InStockQuantity -= (ing.RequiredQuantity * item.Quantity);
+                        }
+                    }
+                }
+            }
+
             syncedCount++;
         }
 
