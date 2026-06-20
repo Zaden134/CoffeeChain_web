@@ -50,6 +50,8 @@ public static class DependencyInjection
         services.AddScoped<IPromotionService, PostgresPromotionService>();
         services.AddScoped<IRecruitmentRequestService, PostgresRecruitmentRequestService>();
         services.AddScoped<ISaleOrderService, PostgresSaleOrderService>();
+        services.AddScoped<IRecipeService, PostgresRecipeService>();
+        services.AddScoped<IInventoryTransactionService, PostgresInventoryTransactionService>();
 
         return services;
     }
