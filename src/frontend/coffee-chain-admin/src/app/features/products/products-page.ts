@@ -1,5 +1,6 @@
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 import { ProductSummary } from '../../core/models/dashboard.models';
 import { ProductApi } from '../../core/services/product.api';
@@ -8,7 +9,7 @@ import { ProductApi } from '../../core/services/product.api';
 @Component({
   selector: 'ccm-products-page',
   standalone: true,
-  imports: [CommonModule, CurrencyPipe],
+  imports: [CommonModule, CurrencyPipe, RouterLink],
   templateUrl: './products-page.html',
   styleUrl: './products-page.css'
 })

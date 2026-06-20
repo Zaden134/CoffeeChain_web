@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 
 import { LookupItem } from '../../core/models/common.models';
 import { BranchSummary } from '../../core/models/dashboard.models';
@@ -13,7 +14,7 @@ import { InventoryApi } from '../../core/services/inventory.api';
 @Component({
   selector: 'ccm-inventory-page',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './inventory-page.html',
   styleUrl: './inventory-page.css'
 })

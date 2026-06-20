@@ -1,0 +1,101 @@
+<section class="page-card">
+  <div class="page-head">
+    <div>
+      <h2>Lịch sử Nhập / Xuất Kho</h2>
+      <p>Theo dõi luân chuyển nguyên liệu tại các chi nhánh.</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="load()">Làm mới</button>
+      <button class="btn btn-primary" *ngIf="!isCreating() && authStore.can('inventory.write', null)" (click)="startCreate()">+ Tạo giao dịch</button>
+    </div>
+  </div>
+
+  <div *ngIf="error()" class="alert alert-error">{{ error() }}</div>
+  <div *ngIf="success()" class="alert alert-success">{{ success() }}</div>
+
+  <!-- Form Tạo Giao Dịch Mới -->
+  <div *ngIf="isCreating()" class="create-form-panel">
+    <h3>Tạo giao dịch Nhập/Xuất kho</h3>
+    
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Loại giao dịch <span class="required">*</span></label>
+        <select class="form-control" [ngModel]="form().type" (ngModelChange)="form().type = $event">
+          <option [ngValue]="1">Nhập kho (Import)</option>
+          <option [ngValue]="2">Xuất kho (Export)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Chi nhánh <span class="required">*</span></label>
+        <select class="form-control" [ngModel]="form().branchId" (ngModelChange)="form().branchId = $event">
+          <option value="">-- Chọn chi nhánh --</option>
+          <option *ngFor="let b of branches()" [value]="b.id">{{ b.name }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Nguyên liệu <span class="required">*</span></label>
+        <select class="form-control" [ngModel]="form().ingredientId" (ngModelChange)="form().ingredientId = $event">
+          <option value="">-- Chọn nguyên liệu --</option>
+          <option *ngFor="let item of ingredients()" [value]="item.id">{{ item.label }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Số lượng <span class="required">*</span></label>
+        <input type="number" class="form-control" min="1" [ngModel]="form().quantity" (ngModelChange)="form().quantity = $event">
+      </div>
+
+      <div class="form-group">
+        <label>Mã chứng từ (Tùy chọn)</label>
+        <input type="text" class="form-control" placeholder="Mã phiếu nhập/xuất" [ngModel]="form().referenceNumber" (ngModelChange)="form().referenceNumber = $event">
+      </div>
+      
+      <div class="form-group">
+        <label>Ghi chú</label>
+        <input type="text" class="form-control" placeholder="Lý do, nguồn gốc..." [ngModel]="form().notes" (ngModelChange)="form().notes = $event">
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-secondary" [disabled]="submitting()" (click)="cancelCreate()">Hủy</button>
+      <button class="btn btn-primary" [disabled]="submitting()" (click)="submit()">Xác nhận giao dịch</button>
+    </div>
+  </div>
+
+  <div *ngIf="loading()" class="loading-state">
+    Đang tải dữ liệu...
+  </div>
+
+  <!-- Danh sách giao dịch -->
+  <div *ngIf="!loading() && !isCreating()" class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Thời gian</th>
+          <th>Chi nhánh</th>
+          <th>Loại</th>
+          <th>Nguyên liệu</th>
+          <th>SL</th>
+          <th>Mã chứng từ</th>
+          <th>Ghi chú</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let tx of transactions()">
+          <td>{{ tx.createdAtUtc | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>{{ tx.branchName }}</td>
+          <td><span class="badge" [ngClass]="getTypeClass(tx.type)">{{ getTypeName(tx.type) }}</span></td>
+          <td>{{ tx.ingredientName }}</td>
+          <td><strong>{{ tx.quantity > 0 ? '+' + tx.quantity : tx.quantity }}</strong></td>
+          <td>{{ tx.referenceNumber || '-' }}</td>
+          <td>{{ tx.notes }}</td>
+        </tr>
+        <tr *ngIf="transactions().length === 0">
+          <td colspan="7" class="text-center empty-state">Chưa có lịch sử giao dịch nào.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

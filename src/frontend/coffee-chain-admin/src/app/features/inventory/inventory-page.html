@@ -6,7 +6,10 @@
         <p>Tồn kho được đọc và ghi trực tiếp từ backend PostgreSQL.</p>
       </div>
       @if (canWrite()) {
-        <button type="button" (click)="startCreate()">Tạo mục tồn kho</button>
+        <div style="display: flex; gap: 8px;">
+          <a routerLink="/inventory/transactions" class="button-link" style="padding: 8px 16px; background: #f1f5f9; color: #475569; text-decoration: none; border-radius: 6px; font-weight: 500; border: 1px solid #cbd5e1;">Lịch sử Giao dịch</a>
+          <button type="button" (click)="startCreate()">Tạo mục tồn kho</button>
+        </div>
       }
     </div>
 

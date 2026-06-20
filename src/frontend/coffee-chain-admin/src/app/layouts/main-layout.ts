@@ -15,6 +15,7 @@ const NAVIGATION: NavigationItem[] = [
   { label: 'Chi nhánh', path: '/branches', roles: ['Administrator', 'BranchManager'] },
   { label: 'Sản phẩm', path: '/products', roles: ['Administrator', 'BranchManager', 'Cashier'] },
   { label: 'Kho hàng', path: '/inventory', roles: ['Administrator', 'BranchManager'] },
+  { label: 'Nhập / Xuất kho', path: '/inventory/transactions', roles: ['Administrator', 'BranchManager'] },
   { label: 'Nhân viên', path: '/employees', roles: ['Administrator', 'BranchManager'] },
   { label: 'Báo cáo', path: '/reports', roles: ['Administrator', 'BranchManager'] },
   { label: 'Khuyến mãi', path: '/promotions', roles: ['Administrator', 'BranchManager'] },

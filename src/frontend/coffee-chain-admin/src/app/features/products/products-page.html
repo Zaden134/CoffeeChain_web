@@ -28,6 +28,9 @@
               <span>{{ product.price | currency:'VND':'symbol':'1.0-0' }}</span>
               <small>{{ product.soldQuantity }} ly đã bán</small>
             </div>
+            <div style="margin-top: 12px;">
+              <a [routerLink]="['/recipes', product.id]" style="font-size: 13px; color: #3b82f6; text-decoration: none; border: 1px solid #3b82f6; padding: 4px 8px; border-radius: 4px; display: inline-block;">⚙️ Cài đặt công thức</a>
+            </div>
           </div>
         </article>
       }

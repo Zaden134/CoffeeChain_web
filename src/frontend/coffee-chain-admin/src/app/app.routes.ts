@@ -41,8 +41,18 @@ export const routes: Routes = [
         data: { roles: ['Administrator', 'BranchManager', 'Cashier'] }
       },
       {
+        path: 'recipes/:productId',
+        loadComponent: () => import('./features/recipes/recipes-page').then(m => m.RecipesPage),
+        data: { roles: ['Administrator', 'BranchManager'] }
+      },
+      {
         path: 'inventory',
         component: InventoryPage,
+        data: { roles: ['Administrator', 'BranchManager'] }
+      },
+      {
+        path: 'inventory/transactions',
+        loadComponent: () => import('./features/inventory-transactions/inventory-transactions-page').then(m => m.InventoryTransactionsPage),
         data: { roles: ['Administrator', 'BranchManager'] }
       },
       {
