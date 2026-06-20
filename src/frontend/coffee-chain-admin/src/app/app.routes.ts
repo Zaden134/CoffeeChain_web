@@ -27,35 +27,43 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        component: DashboardPage
+        component: DashboardPage,
+        data: { roles: ['Administrator', 'BranchManager', 'Cashier'] }
       },
       {
         path: 'branches',
-        component: BranchesPage
+        component: BranchesPage,
+        data: { roles: ['Administrator', 'BranchManager'] }
       },
       {
         path: 'products',
-        component: ProductsPage
+        component: ProductsPage,
+        data: { roles: ['Administrator', 'BranchManager', 'Cashier'] }
       },
       {
         path: 'inventory',
-        component: InventoryPage
+        component: InventoryPage,
+        data: { roles: ['Administrator', 'BranchManager'] }
       },
       {
         path: 'employees',
-        component: EmployeesPage
+        component: EmployeesPage,
+        data: { roles: ['Administrator', 'BranchManager'] }
       },
       {
         path: 'reports',
-        component: ReportsPage
+        component: ReportsPage,
+        data: { roles: ['Administrator', 'BranchManager'] }
       },
       {
         path: 'promotions',
-        component: PromotionsPage
+        component: PromotionsPage,
+        data: { roles: ['Administrator', 'BranchManager'] }
       },
       {
         path: 'recruitment-requests',
-        component: RecruitmentRequestsPage
+        component: RecruitmentRequestsPage,
+        data: { roles: ['Administrator', 'BranchManager'] }
       }
     ]
   },

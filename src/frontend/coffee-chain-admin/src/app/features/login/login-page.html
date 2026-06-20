@@ -7,7 +7,7 @@
     </div>
 
     <div class="form-card">
-      <h2>Dang nhap</h2>
+      <h2>Đăng nhập</h2>
 
       <form (ngSubmit)="submit()" class="form">
         <label>
@@ -29,10 +29,10 @@
               (ngModelChange)="password.set($event)"
               name="password"
               [type]="showPassword() ? 'text' : 'password'"
-              placeholder="Nhap mat khau"
+              placeholder="Nhập mật khẩu"
               required />
             <button type="button" (click)="showPassword.set(!showPassword())">
-              {{ showPassword() ? 'An' : 'Hien' }}
+              {{ showPassword() ? 'Ẩn' : 'Hiện' }}
             </button>
           </div>
         </label>
@@ -42,7 +42,7 @@
         }
 
         <button class="submit" type="submit" [disabled]="authStore.state().loading">
-          {{ authStore.state().loading ? 'Dang dang nhap...' : 'Dang nhap' }}
+          {{ authStore.state().loading ? 'Đang đăng nhập...' : 'Đăng nhập' }}
         </button>
       </form>
 
