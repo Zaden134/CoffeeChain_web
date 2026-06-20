@@ -16,6 +16,9 @@ public sealed class CoffeeChainDbContext(DbContextOptions<CoffeeChainDbContext> 
     public DbSet<RefreshTokenSession> RefreshTokenSessions => Set<RefreshTokenSession>();
     public DbSet<RecruitmentRequest> RecruitmentRequests => Set<RecruitmentRequest>();
     public DbSet<SaleOrder> SaleOrders => Set<SaleOrder>();
+    public DbSet<InventoryTransaction> InventoryTransactions => Set<InventoryTransaction>();
+    public DbSet<Recipe> Recipes => Set<Recipe>();
+    public DbSet<RecipeIngredient> RecipeIngredients => Set<RecipeIngredient>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -121,6 +124,7 @@ public sealed class CoffeeChainDbContext(DbContextOptions<CoffeeChainDbContext> 
                 order => order.Items,
                 item =>
                 {
+
                     item.ToTable("sale_order_items");
                     item.WithOwner().HasForeignKey("SaleOrderId");
                     item.Property<Guid>("Id").ValueGeneratedOnAdd();
@@ -128,6 +132,31 @@ public sealed class CoffeeChainDbContext(DbContextOptions<CoffeeChainDbContext> 
                     item.Property(orderItem => orderItem.ProductName).HasMaxLength(150);
                     item.Property(orderItem => orderItem.UnitPrice).HasPrecision(18, 2);
                 });
+        });
+
+        modelBuilder.Entity<InventoryTransaction>(entity =>
+        {
+            entity.ToTable("inventory_transactions");
+            entity.HasKey(t => t.Id);
+            entity.Property(t => t.ReferenceNumber).HasMaxLength(50);
+            entity.Property(t => t.Notes).HasMaxLength(1000);
+            entity.HasIndex(t => t.BranchId);
+            entity.HasIndex(t => t.IngredientId);
+        });
+
+        modelBuilder.Entity<Recipe>(entity =>
+        {
+            entity.ToTable("recipes");
+            entity.HasKey(r => r.Id);
+            entity.Property(r => r.Instructions).HasMaxLength(2000);
+            entity.HasIndex(r => r.ProductId).IsUnique();
+        });
+
+        modelBuilder.Entity<RecipeIngredient>(entity =>
+        {
+            entity.ToTable("recipe_ingredients");
+            entity.HasKey(ri => ri.Id);
+            entity.HasIndex(ri => new { ri.RecipeId, ri.IngredientId }).IsUnique();
         });
     }
 }
