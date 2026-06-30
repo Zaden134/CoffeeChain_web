@@ -1,3 +1,4 @@
+using CoffeeChainManagement.Application.DTOs.Common;
 using CoffeeChainManagement.Application.DTOs.Products;
 using CoffeeChainManagement.Application.Interfaces;
 using CoffeeChainManagement.Domain.Entities;
@@ -20,6 +21,51 @@ internal sealed class PostgresProductService(
         var soldQuantityByProduct = await GetSoldQuantityByProductAsync(cancellationToken);
 
         return products.Select(product => MapProduct(product, soldQuantityByProduct)).ToArray();
+    }
+
+    public async Task<PagedResultDto<ProductSummaryDto>> GetPagedAsync(ProductQueryDto query, CancellationToken cancellationToken = default)
+    {
+        EnsureReadable();
+
+        var page = Math.Max(query.Page, 1);
+        var pageSize = Math.Clamp(query.PageSize, 4, 100);
+        var productsQuery = dbContext.Products.AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(query.Search))
+        {
+            var search = query.Search.Trim().ToLower();
+            productsQuery = productsQuery.Where(product =>
+                product.Sku.ToLower().Contains(search)
+                || product.Name.ToLower().Contains(search)
+                || product.Category.ToLower().Contains(search));
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.Category))
+        {
+            var category = query.Category.Trim().ToLower();
+            productsQuery = productsQuery.Where(product => product.Category.ToLower() == category);
+        }
+
+        if (query.IsAvailable.HasValue)
+        {
+            productsQuery = productsQuery.Where(product => product.IsAvailable == query.IsAvailable.Value);
+        }
+
+        var totalItems = await productsQuery.CountAsync(cancellationToken);
+        var totalPages = Math.Max(1, (int)Math.Ceiling(totalItems / (double)pageSize));
+        var products = await productsQuery
+            .OrderBy(product => product.Name)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+        var soldQuantityByProduct = await GetSoldQuantityByProductAsync(cancellationToken);
+
+        return new PagedResultDto<ProductSummaryDto>(
+            products.Select(product => MapProduct(product, soldQuantityByProduct)).ToArray(),
+            page,
+            pageSize,
+            totalItems,
+            totalPages);
     }
 
     public async Task<ProductSummaryDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)

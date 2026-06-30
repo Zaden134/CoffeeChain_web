@@ -21,7 +21,8 @@ const NAVIGATION: NavigationItem[] = [
   { label: 'Báo cáo', path: '/reports', icon: 'analytics', roles: ['Administrator', 'BranchManager'] },
   { label: 'Khuyến mãi', path: '/promotions', icon: 'local_offer', roles: ['Administrator', 'BranchManager'] },
   { label: 'Tuyển dụng', path: '/recruitment-requests', icon: 'work', roles: ['Administrator', 'BranchManager'] },
-  { label: 'Audit log', path: '/audit-logs', icon: 'manage_search', roles: ['Administrator'] }
+  { label: 'Audit log', path: '/audit-logs', icon: 'manage_search', roles: ['Administrator'] },
+  { label: 'Bảo mật', path: '/security', icon: 'admin_panel_settings', roles: ['Administrator', 'BranchManager', 'Cashier', 'WarehouseStaff'] }
 ];
 
 // MainLayout la shell chinh cua he thong sau khi user dang nhap.

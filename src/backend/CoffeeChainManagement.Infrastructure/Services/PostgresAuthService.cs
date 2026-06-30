@@ -2,8 +2,10 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using CoffeeChainManagement.Application.DTOs.Auth;
+using CoffeeChainManagement.Application.DTOs.Common;
 using CoffeeChainManagement.Application.Interfaces;
 using CoffeeChainManagement.Domain.Entities;
+using CoffeeChainManagement.Domain.Enums;
 using CoffeeChainManagement.Infrastructure.Auth;
 using CoffeeChainManagement.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
@@ -19,6 +21,7 @@ internal sealed class PostgresAuthService(
     CoffeeChainDbContext dbContext,
     IPasswordHasher<Employee> passwordHasher,
     IAuditLogService auditLogService,
+    ICurrentUserContext currentUser,
     IOptions<JwtOptions> jwtOptions) : IAuthService
 {
     private readonly JwtOptions _jwtOptions = jwtOptions.Value;
@@ -162,6 +165,120 @@ internal sealed class PostgresAuthService(
         return user is null ? null : MapUser(user);
     }
 
+    public async Task<bool> ChangePasswordAsync(Guid userId, ChangePasswordRequestDto request, CancellationToken cancellationToken = default)
+    {
+        ValidatePassword(request.NewPassword);
+
+        var user = await dbContext.Employees.SingleOrDefaultAsync(employee => employee.Id == userId && employee.IsActive, cancellationToken);
+        if (user is null)
+        {
+            return false;
+        }
+
+        var verificationResult = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.CurrentPassword);
+        if (verificationResult == PasswordVerificationResult.Failed)
+        {
+            await auditLogService.WriteAsync("AUTH_PASSWORD_CHANGE", nameof(Employee), "Password change rejected", false, user.Id, user.Username, user.BranchId, cancellationToken: cancellationToken);
+            return false;
+        }
+
+        user.PasswordHash = passwordHasher.HashPassword(user, request.NewPassword);
+        user.UpdatedAtUtc = DateTime.UtcNow;
+        await RevokeEmployeeSessionsAsync(user.Id, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        await auditLogService.WriteAsync("AUTH_PASSWORD_CHANGE", nameof(Employee), $"Password changed for {user.Username}", true, user.Id, user.Username, user.BranchId, cancellationToken: cancellationToken);
+        return true;
+    }
+
+    public async Task<bool> ResetPasswordAsync(Guid employeeId, ResetPasswordRequestDto request, CancellationToken cancellationToken = default)
+    {
+        EnsureAdministrator();
+        ValidatePassword(request.NewPassword);
+
+        var user = await dbContext.Employees.SingleOrDefaultAsync(employee => employee.Id == employeeId, cancellationToken);
+        if (user is null)
+        {
+            return false;
+        }
+
+        user.PasswordHash = passwordHasher.HashPassword(user, request.NewPassword);
+        user.UpdatedAtUtc = DateTime.UtcNow;
+        await RevokeEmployeeSessionsAsync(user.Id, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        await auditLogService.WriteAsync("AUTH_PASSWORD_RESET", nameof(Employee), $"Password reset for {user.Username}", true, user.Id, user.Username, user.BranchId, cancellationToken: cancellationToken);
+        return true;
+    }
+
+    public async Task<PagedResultDto<UserSessionDto>> GetSessionsAsync(UserSessionQueryDto query, CancellationToken cancellationToken = default)
+    {
+        EnsureAdministrator();
+
+        var page = Math.Max(query.Page, 1);
+        var pageSize = Math.Clamp(query.PageSize, 5, 100);
+        var nowUtc = DateTime.UtcNow;
+
+        var sessionsQuery =
+            from session in dbContext.RefreshTokenSessions.AsNoTracking()
+            join employee in dbContext.Employees.AsNoTracking() on session.EmployeeId equals employee.Id
+            select new { session, employee };
+
+        if (query.ActiveOnly)
+        {
+            sessionsQuery = sessionsQuery.Where(item => item.session.RevokedAtUtc == null && item.session.ExpiresAtUtc > nowUtc);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.Search))
+        {
+            var search = query.Search.Trim().ToLower();
+            sessionsQuery = sessionsQuery.Where(item =>
+                item.employee.Username.ToLower().Contains(search)
+                || item.employee.FullName.ToLower().Contains(search)
+                || item.employee.Email.ToLower().Contains(search)
+                || item.employee.Role.ToString().ToLower().Contains(search));
+        }
+
+        var totalItems = await sessionsQuery.CountAsync(cancellationToken);
+        var totalPages = Math.Max(1, (int)Math.Ceiling(totalItems / (double)pageSize));
+        var items = await sessionsQuery
+            .OrderByDescending(item => item.session.CreatedAtUtc)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(item => new UserSessionDto(
+                item.session.Id,
+                item.employee.Id,
+                item.employee.Username,
+                item.employee.FullName,
+                item.employee.Role.ToString(),
+                item.employee.BranchId,
+                item.session.CreatedAtUtc,
+                item.session.ExpiresAtUtc,
+                item.session.RevokedAtUtc,
+                item.session.CreatedByIp,
+                item.session.RevokedByIp,
+                item.session.RevokedAtUtc == null && item.session.ExpiresAtUtc > nowUtc))
+            .ToArrayAsync(cancellationToken);
+
+        return new PagedResultDto<UserSessionDto>(items, page, pageSize, totalItems, totalPages);
+    }
+
+    public async Task<bool> RevokeSessionAsync(Guid sessionId, CancellationToken cancellationToken = default)
+    {
+        EnsureAdministrator();
+
+        var session = await dbContext.RefreshTokenSessions.SingleOrDefaultAsync(item => item.Id == sessionId, cancellationToken);
+        if (session is null)
+        {
+            return false;
+        }
+
+        session.RevokedAtUtc ??= DateTime.UtcNow;
+        session.RevokedByIp = GetIpAddress();
+        session.UpdatedAtUtc = DateTime.UtcNow;
+        await dbContext.SaveChangesAsync(cancellationToken);
+        await auditLogService.WriteAsync("AUTH_SESSION_REVOKE", nameof(RefreshTokenSession), "Session revoked by administrator", true, session.EmployeeId, entityId: session.Id, cancellationToken: cancellationToken);
+        return true;
+    }
+
     private async Task<AuthResponseDto> CreateAuthResponseAsync(Employee user, CancellationToken cancellationToken)
     {
         var expiresAtUtc = DateTime.UtcNow.AddMinutes(_jwtOptions.ExpiryMinutes);
@@ -271,6 +388,36 @@ internal sealed class PostgresAuthService(
 
     private string? GetIpAddress()
         => null;
+
+    private async Task RevokeEmployeeSessionsAsync(Guid employeeId, CancellationToken cancellationToken)
+    {
+        var activeSessions = await dbContext.RefreshTokenSessions
+            .Where(session => session.EmployeeId == employeeId && session.RevokedAtUtc == null)
+            .ToListAsync(cancellationToken);
+
+        foreach (var session in activeSessions)
+        {
+            session.RevokedAtUtc = DateTime.UtcNow;
+            session.RevokedByIp = GetIpAddress();
+            session.UpdatedAtUtc = DateTime.UtcNow;
+        }
+    }
+
+    private void EnsureAdministrator()
+    {
+        if (!currentUser.IsAuthenticated || currentUser.Role != UserRole.Administrator)
+        {
+            throw new UnauthorizedAccessException("Only administrators can manage user sessions.");
+        }
+    }
+
+    private static void ValidatePassword(string password)
+    {
+        if (string.IsNullOrWhiteSpace(password) || password.Length < 8)
+        {
+            throw new InvalidOperationException("Password must contain at least 8 characters.");
+        }
+    }
 
     private static UserProfileDto MapUser(Employee user)
         => new(

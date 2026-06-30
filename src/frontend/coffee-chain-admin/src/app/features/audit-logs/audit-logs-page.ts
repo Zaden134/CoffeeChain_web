@@ -41,7 +41,7 @@ export class AuditLogsPage {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set('Khong tai duoc audit log.');
+        this.error.set('Không tải được audit log.');
         this.loading.set(false);
       }
     });

@@ -80,6 +80,49 @@ dotnet tool restore
 dotnet dotnet-ef database update --project .\src\backend\CoffeeChainManagement.Infrastructure --startup-project .\src\backend\CoffeeChainManagement.Api
 ```
 
+## E2E tests
+
+Playwright tests nam trong `src/frontend/coffee-chain-admin/e2e`.
+
+Chay backend, frontend va PostgreSQL truoc, sau do:
+
+```powershell
+cd .\src\frontend\coffee-chain-admin
+npm.cmd run e2e
+```
+
+Mac dinh test dung `http://localhost:4200`. Neu can doi URL:
+
+```powershell
+$env:E2E_BASE_URL="http://localhost:4200"
+npm.cmd run e2e
+```
+
+Tai khoan seed dung trong E2E:
+
+- `admin / Admin@123`
+- `manager.q1 / Manager@123`
+
+## Health va backup
+
+Health endpoints:
+
+- `GET /health`
+- `GET /health/db`
+- `GET /health/info`
+
+Backup PostgreSQL:
+
+```powershell
+.\scripts\backup-postgres.ps1
+```
+
+Restore PostgreSQL:
+
+```powershell
+.\scripts\restore-postgres.ps1 -BackupFile .\backups\coffee-chain-yyyyMMdd-HHmmss.dump -Clean
+```
+
 ## Chay bang Docker
 
 ```powershell

@@ -12,6 +12,7 @@ import { ProductsPage } from './features/products/products-page';
 import { PromotionsPage } from './features/promotions/promotions-page';
 import { RecruitmentRequestsPage } from './features/recruitment-requests/recruitment-requests-page';
 import { ReportsPage } from './features/reports/reports-page';
+import { SecurityPage } from './features/security/security-page';
 import { MainLayout } from './layouts/main-layout';
 
 // routes chia app thanh login route va shell route da duoc auth guard bao ve.
@@ -81,6 +82,11 @@ export const routes: Routes = [
         path: 'audit-logs',
         component: AuditLogsPage,
         data: { roles: ['Administrator'] }
+      },
+      {
+        path: 'security',
+        component: SecurityPage,
+        data: { roles: ['Administrator', 'BranchManager', 'Cashier', 'WarehouseStaff'] }
       }
     ]
   },

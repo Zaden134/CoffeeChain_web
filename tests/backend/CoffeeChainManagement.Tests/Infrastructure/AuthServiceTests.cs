@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using CoffeeChainManagement.Application.Interfaces;
+using CoffeeChainManagement.Domain.Enums;
+using CoffeeChainManagement.Tests.TestDoubles;
 
 namespace CoffeeChainManagement.Tests.Infrastructure;
 
@@ -54,6 +56,7 @@ public sealed class AuthServiceTests
             db,
             new PasswordHasher<Employee>(),
             new NoopAuditLogService(),
+            new TestCurrentUserContext(Guid.NewGuid(), "admin", null, UserRole.Administrator),
             Options.Create(new JwtOptions
             {
                 Issuer = "CoffeeChainManagement.Api",

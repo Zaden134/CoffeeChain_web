@@ -1,13 +1,22 @@
 using System.Text;
 using CoffeeChainManagement.Infrastructure;
 using CoffeeChainManagement.Infrastructure.Auth;
+using CoffeeChainManagement.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
     ?? throw new InvalidOperationException("Jwt configuration is missing.");
+
+builder.Logging.ClearProviders();
+builder.Logging.AddJsonConsole(options =>
+{
+    options.IncludeScopes = true;
+    options.TimestampFormat = "yyyy-MM-ddTHH:mm:ss.fffZ";
+});
 
 // Day la diem khoi dong backend: dang ky controller, swagger, CORS va service nen.
 builder.Services.AddControllers();
@@ -71,6 +80,7 @@ builder.Services
     });
 builder.Services.AddAuthorization();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
@@ -91,6 +101,25 @@ app.MapGet(
     {
         status = "healthy",
         service = "coffee-chain-api",
+        utc = DateTime.UtcNow
+    }));
+
+app.MapGet(
+    "/health/db",
+    async (CoffeeChainDbContext dbContext, CancellationToken cancellationToken) =>
+    {
+        var canConnect = await dbContext.Database.CanConnectAsync(cancellationToken);
+        return canConnect
+            ? Results.Ok(new { status = "healthy", dependency = "postgresql", utc = DateTime.UtcNow })
+            : Results.Problem("PostgreSQL connection failed.", statusCode: StatusCodes.Status503ServiceUnavailable);
+    });
+
+app.MapGet(
+    "/health/info",
+    () => Results.Ok(new
+    {
+        service = "coffee-chain-api",
+        environment = app.Environment.EnvironmentName,
         utc = DateTime.UtcNow
     }));
 

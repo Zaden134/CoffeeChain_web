@@ -20,3 +20,34 @@ export interface AuthResponse {
   refreshTokenExpiresAtUtc: string;
   user: UserProfile;
 }
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface ResetPasswordRequest {
+  newPassword: string;
+}
+
+export interface UserSession {
+  id: string;
+  employeeId: string;
+  username: string;
+  fullName: string;
+  role: string;
+  branchId: string | null;
+  createdAtUtc: string;
+  expiresAtUtc: string;
+  revokedAtUtc: string | null;
+  createdByIp: string | null;
+  revokedByIp: string | null;
+  isActive: boolean;
+}
+
+export interface UserSessionQuery {
+  page: number;
+  pageSize: number;
+  search?: string | null;
+  activeOnly?: boolean;
+}

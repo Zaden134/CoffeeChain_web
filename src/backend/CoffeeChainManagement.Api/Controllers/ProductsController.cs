@@ -18,6 +18,16 @@ public sealed class ProductsController(IProductService productService) : Control
         return Ok(data);
     }
 
+    [HttpGet("paged")]
+    public async Task<IActionResult> GetPaged(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 12,
+        [FromQuery] string? search = null,
+        [FromQuery] string? category = null,
+        [FromQuery] bool? isAvailable = null,
+        CancellationToken cancellationToken = default)
+        => Ok(await productService.GetPagedAsync(new ProductQueryDto(page, pageSize, search, category, isAvailable), cancellationToken));
+
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
         => await ExecuteAsync(async () =>

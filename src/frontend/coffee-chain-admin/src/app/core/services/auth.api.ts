@@ -2,7 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 
 import { environment } from '../../../environments/environment';
-import { AuthResponse, LoginRequest, UserProfile } from '../models/auth.models';
+import { AuthResponse, ChangePasswordRequest, LoginRequest, ResetPasswordRequest, UserProfile, UserSession, UserSessionQuery } from '../models/auth.models';
+import { PagedResult } from '../models/paged.models';
 
 interface RefreshRequest {
   refreshToken: string;
@@ -28,5 +29,31 @@ export class AuthApi {
 
   me() {
     return this.http.get<UserProfile>(`${this.baseUrl}/me`);
+  }
+
+  changePassword(payload: ChangePasswordRequest) {
+    return this.http.post<void>(`${this.baseUrl}/change-password`, payload);
+  }
+
+  resetPassword(employeeId: string, payload: ResetPasswordRequest) {
+    return this.http.post<void>(`${this.baseUrl}/users/${employeeId}/reset-password`, payload);
+  }
+
+  getSessions(query: UserSessionQuery) {
+    const params: Record<string, string> = {
+      page: String(query.page),
+      pageSize: String(query.pageSize),
+      activeOnly: String(query.activeOnly ?? false)
+    };
+
+    if (query.search?.trim()) {
+      params['search'] = query.search.trim();
+    }
+
+    return this.http.get<PagedResult<UserSession>>(`${this.baseUrl}/sessions`, { params });
+  }
+
+  revokeSession(sessionId: string) {
+    return this.http.post<void>(`${this.baseUrl}/sessions/${sessionId}/revoke`, {});
   }
 }

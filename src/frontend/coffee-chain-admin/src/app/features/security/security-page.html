@@ -1,0 +1,115 @@
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+  <div>
+    <h1 class="font-display-lg text-display-lg text-on-surface mb-2 tracking-tight">Bảo mật</h1>
+    <p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">Quản lý mật khẩu, phiên đăng nhập và thu hồi token khi cần.</p>
+  </div>
+</div>
+
+@if (message()) {
+  <div class="p-4 bg-[#E6F4EA] text-[#137333] rounded-lg mb-4">{{ message() }}</div>
+}
+@if (error()) {
+  <div class="p-4 bg-error-container text-error rounded-lg mb-4">{{ error() }}</div>
+}
+
+<div class="grid grid-cols-1 xl:grid-cols-[420px_1fr] gap-card-gap">
+  <section class="bg-white border border-outline-variant rounded-[20px] p-5 card-shadow-level-1 h-fit">
+    <h2 class="font-title-lg text-title-lg font-bold mb-4">Đổi mật khẩu</h2>
+    <form class="flex flex-col gap-4" (ngSubmit)="changePassword()">
+      <label class="flex flex-col gap-1.5">
+        <span class="text-[12px] uppercase text-on-surface-variant font-bold">Mật khẩu hiện tại</span>
+        <input type="password" class="px-3 py-2.5 border border-outline-variant rounded-lg" [ngModel]="currentPassword()" (ngModelChange)="currentPassword.set($event)" name="currentPassword" />
+      </label>
+      <label class="flex flex-col gap-1.5">
+        <span class="text-[12px] uppercase text-on-surface-variant font-bold">Mật khẩu mới</span>
+        <input type="password" class="px-3 py-2.5 border border-outline-variant rounded-lg" [ngModel]="newPassword()" (ngModelChange)="newPassword.set($event)" name="newPassword" />
+      </label>
+      <label class="flex flex-col gap-1.5">
+        <span class="text-[12px] uppercase text-on-surface-variant font-bold">Xác nhận mật khẩu</span>
+        <input type="password" class="px-3 py-2.5 border border-outline-variant rounded-lg" [ngModel]="confirmPassword()" (ngModelChange)="confirmPassword.set($event)" name="confirmPassword" />
+      </label>
+      <button type="submit" [disabled]="submitting()" class="bg-primary text-white py-2.5 rounded-lg disabled:opacity-50">
+        {{ submitting() ? 'Đang lưu...' : 'Cập nhật mật khẩu' }}
+      </button>
+    </form>
+  </section>
+
+  @if (isAdmin()) {
+    <section class="bg-white border border-outline-variant rounded-[20px] card-shadow-level-1 overflow-hidden">
+      <div class="p-4 border-b border-outline-variant flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
+        <label class="relative flex-1">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+          <input type="search" class="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-surface-container-lowest"
+                 [ngModel]="sessionSearch()" (ngModelChange)="changeSessionSearch($event)" name="sessionSearch" placeholder="Tìm username, họ tên, email, role..." />
+        </label>
+        <label class="flex items-center gap-2 text-sm">
+          <input type="checkbox" [ngModel]="activeOnly()" (ngModelChange)="toggleActiveOnly($event)" name="activeOnly" />
+          Chỉ phiên đang hoạt động
+        </label>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left min-w-[960px]">
+          <thead class="bg-surface-container-low border-b border-outline-variant">
+            <tr>
+              <th class="px-4 py-3 text-[12px] uppercase text-on-surface-variant">User</th>
+              <th class="px-4 py-3 text-[12px] uppercase text-on-surface-variant">Role</th>
+              <th class="px-4 py-3 text-[12px] uppercase text-on-surface-variant">Tạo lúc</th>
+              <th class="px-4 py-3 text-[12px] uppercase text-on-surface-variant">Hết hạn</th>
+              <th class="px-4 py-3 text-[12px] uppercase text-on-surface-variant">Trạng thái</th>
+              <th class="px-4 py-3 text-[12px] uppercase text-on-surface-variant">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (session of sessions()?.items ?? []; track session.id) {
+              <tr class="border-b border-outline-variant/60 last:border-0">
+                <td class="px-4 py-3">
+                  <strong class="block">{{ session.fullName }}</strong>
+                  <span class="text-sm text-on-surface-variant">{{ session.username }}</span>
+                </td>
+                <td class="px-4 py-3">{{ session.role }}</td>
+                <td class="px-4 py-3 whitespace-nowrap">{{ session.createdAtUtc | date:'yyyy-MM-dd HH:mm' }}</td>
+                <td class="px-4 py-3 whitespace-nowrap">{{ session.expiresAtUtc | date:'yyyy-MM-dd HH:mm' }}</td>
+                <td class="px-4 py-3">
+                  <span class="px-2 py-1 rounded-full text-[12px] font-bold"
+                        [class.bg-[#E6F4EA]]="session.isActive"
+                        [class.text-[#137333]]="session.isActive"
+                        [class.bg-surface-variant]="!session.isActive"
+                        [class.text-on-surface-variant]="!session.isActive">
+                    {{ session.isActive ? 'Đang hoạt động' : 'Đã kết thúc' }}
+                  </span>
+                </td>
+                <td class="px-4 py-3">
+                  <div class="flex gap-2">
+                    <button type="button" (click)="revoke(session)" [disabled]="!session.isActive" class="px-3 py-1.5 border border-error text-error rounded-lg disabled:opacity-40">Thu hồi</button>
+                    <button type="button" (click)="selectReset(session)" class="px-3 py-1.5 border border-outline-variant rounded-lg">Reset mật khẩu</button>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="px-4 py-8 text-center text-on-surface-variant">Không có phiên đăng nhập phù hợp.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="p-4 border-t border-outline-variant flex items-center justify-between">
+        <button type="button" (click)="previousPage()" [disabled]="page() <= 1" class="px-4 py-2 border border-outline-variant rounded-lg disabled:opacity-50">Trang trước</button>
+        <span class="text-sm text-on-surface-variant">Trang {{ sessions()?.page ?? 1 }} / {{ sessions()?.totalPages ?? 1 }}</span>
+        <button type="button" (click)="nextPage()" [disabled]="page() >= (sessions()?.totalPages ?? 1)" class="px-4 py-2 border border-outline-variant rounded-lg disabled:opacity-50">Trang sau</button>
+      </div>
+
+      @if (selectedEmployeeId()) {
+        <div class="p-4 border-t border-outline-variant bg-surface-container-low flex flex-col md:flex-row gap-3 md:items-end">
+          <label class="flex-1 flex flex-col gap-1.5">
+            <span class="text-[12px] uppercase text-on-surface-variant font-bold">Mật khẩu reset</span>
+            <input type="password" class="px-3 py-2.5 border border-outline-variant rounded-lg bg-white" [ngModel]="resetPassword()" (ngModelChange)="resetPassword.set($event)" name="resetPassword" />
+          </label>
+          <button type="button" (click)="submitReset()" class="bg-primary text-white px-4 py-2.5 rounded-lg">Reset</button>
+        </div>
+      }
+    </section>
+  }
+</div>
