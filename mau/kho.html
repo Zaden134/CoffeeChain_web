@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+
+<html lang="vi" style=""><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Quản lý chi nhánh - Hệ thống HQ</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config injected from system -->
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-low": "#f6f3f2",
+                      "primary-container": "#7d4a25",
+                      "tertiary": "#3f3f3d",
+                      "surface-tint": "#86522c",
+                      "outline": "#84746a",
+                      "surface": "#fcf9f8",
+                      "inverse-on-surface": "#f3f0ef",
+                      "on-primary": "#ffffff",
+                      "on-background": "#1c1b1b",
+                      "tertiary-fixed-dim": "#c8c6c3",
+                      "on-secondary-fixed-variant": "#753400",
+                      "secondary": "#994600",
+                      "surface-container-lowest": "#ffffff",
+                      "secondary-fixed": "#ffdbc8",
+                      "primary": "#613310",
+                      "on-surface-variant": "#52443c",
+                      "error-container": "#ffdad6",
+                      "surface-variant": "#e5e2e1",
+                      "primary-fixed": "#ffdcc7",
+                      "on-tertiary-container": "#cecbc9",
+                      "on-primary-fixed-variant": "#6a3b17",
+                      "on-primary-container": "#ffbf95",
+                      "surface-dim": "#dcd9d9",
+                      "on-tertiary": "#ffffff",
+                      "on-primary-fixed": "#311300",
+                      "tertiary-container": "#575654",
+                      "on-tertiary-fixed": "#1c1c1a",
+                      "on-secondary-container": "#6a2e00",
+                      "surface-container-high": "#eae7e7",
+                      "on-error": "#ffffff",
+                      "primary-fixed-dim": "#fdb789",
+                      "on-secondary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "on-surface": "#1c1b1b",
+                      "on-secondary-fixed": "#321200",
+                      "inverse-surface": "#313030",
+                      "secondary-fixed-dim": "#ffb68b",
+                      "secondary-container": "#ff8d41",
+                      "inverse-primary": "#fdb789",
+                      "surface-bright": "#fcf9f8",
+                      "on-tertiary-fixed-variant": "#474745",
+                      "error": "#ba1a1a",
+                      "surface-container-highest": "#e5e2e1",
+                      "surface-container": "#f0eded",
+                      "background": "#fcf9f8",
+                      "tertiary-fixed": "#e5e2df",
+                      "outline-variant": "#d7c3b8"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.5rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-padding": "32px",
+                      "card-gap": "24px",
+                      "gutter": "24px",
+                      "section-margin": "48px",
+                      "unit": "8px"
+              },
+              "fontFamily": {
+                      "body-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "label-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "headline-lg": [
+                              "Be Vietnam Pro"
+                      ],
+                      "display-lg": [
+                              "Be Vietnam Pro"
+                      ],
+                      "body-lg": [
+                              "Be Vietnam Pro"
+                      ],
+                      "headline-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "headline-lg-mobile": [
+                              "Be Vietnam Pro"
+                      ],
+                      "title-lg": [
+                              "Be Vietnam Pro"
+                      ]
+              },
+              "fontSize": {
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-md": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "title-lg": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- AlpineJS for interactive mock charts -->
+<script defer="" src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<style>
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            background-color: #fcf9f8; /* background */
+            color: #1c1b1b; /* on-background */
+        }
+        
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Soft tactile shadows based on style guidance */
+        .card-shadow-level-1 {
+            box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.04);
+        }
+        
+        .card-shadow-level-2:hover {
+            box-shadow: 0px 12px 32px rgba(125, 74, 37, 0.08); /* Primary color tinted shadow */
+        }
+        
+        /* Mini Sparkline Styles */
+        .sparkline {
+            display: flex;
+            align-items: flex-end;
+            height: 40px;
+            gap: 4px;
+            padding-bottom: 2px;
+        }
+        
+        .sparkline-bar {
+            flex: 1;
+            background-color: #fdb789; /* inverse-primary */
+            border-radius: 2px 2px 0 0;
+            transition: height 0.3s ease;
+        }
+        
+        .sparkline-bar.active {
+            background-color: #ff8d41; /* secondary-container */
+        }
+        
+        .sparkline-bar:hover {
+            background-color: #994600; /* secondary */
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex">
+<!-- SideNavBar -->
+<nav class="hidden md:flex flex-col fixed left-0 top-0 h-full w-64 p-6 gap-6 bg-surface/80 backdrop-blur-xl border-r border-outline-variant/30 z-40 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+<!-- Header -->
+<div class="flex items-center gap-3 mb-4">
+<div class="w-10 h-10 rounded-lg overflow-hidden bg-white shadow-sm flex-shrink-0">
+<img alt="Logo Doanh Nghiệp" class="w-full h-full object-cover" data-alt="A clean, minimalist corporate logo for HQ System. Warm terra and earth tones, sharp geometric shapes, professional and grounded aesthetic on a white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLDPg88OPvKrmO0Fe9TsgPcWgIEnkLcaDWniIJ4zBXRZ3rK9DK4K8Jbu7rXRIxJ2nPXUy9D5zrzoERPC80tXCPI4QKCsCpiO9jDYwbBoCOVI2wKQdeMFtAbyoKl-DAxCYt5OspH6dSIE1XRhcyN-xBG8jbPNMOgqrhkaFonTh2Mv4q29Y_gC04AQibBK1-V1Cq_YGnN7rUyTKHOMvLHa1iVaSMll5dnvznPfsEFegj5_80TNFqtiLnq1lVCICbwcjg-0LHC5cmTTo"/>
+</div>
+<div class="flex flex-col">
+<span class="font-title-lg text-title-lg font-bold text-primary">Hệ thống HQ</span>
+<span class="font-label-md text-label-md text-on-surface-variant/80">Quản trị viên</span>
+</div>
+</div>
+<!-- Main Tabs -->
+<div class="flex flex-col gap-2 flex-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high/50 hover:text-primary rounded-lg font-body-md text-body-md font-medium transition-all group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform">dashboard</span>
+<span class="">Bảng điều khiển</span>
+</a>
+<!-- Active Tab -->
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container/10 text-secondary rounded-lg font-body-md text-body-md font-semibold transition-all relative overflow-hidden" href="#">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-secondary rounded-r-full"></div>
+<span class="material-symbols-outlined fill text-[20px]" style="font-variation-settings: 'FILL' 1;">storefront</span>
+<span class="">Chi nhánh</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high/50 hover:text-primary rounded-lg font-body-md text-body-md font-medium transition-all group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform">inventory_2</span>
+<span class="">Kho hàng</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high/50 hover:text-primary rounded-lg font-body-md text-body-md font-medium transition-all group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform">receipt_long</span>
+<span class="">Giao dịch</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high/50 hover:text-primary rounded-lg font-body-md text-body-md font-medium transition-all group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform">settings</span>
+<span class="">Cài đặt</span>
+</a>
+</div>
+<!-- CTA -->
+<button class="w-full bg-primary-container text-on-primary font-body-md text-body-md font-medium py-3 px-4 rounded-lg flex items-center justify-center gap-2 hover:shadow-md hover:-translate-y-0.5 transition-all mb-4">
+<span class="material-symbols-outlined text-[18px]">add</span>
+            Thêm chi nhánh
+        </button>
+<!-- Footer Tabs -->
+<div class="flex flex-col gap-2 pt-4 mt-auto">
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-high/50 hover:text-primary rounded-lg font-body-md text-body-md font-medium transition-all group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform">help</span>
+<span class="">Hỗ trợ</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-high/50 hover:text-error rounded-lg font-body-md text-body-md font-medium transition-all group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform">logout</span>
+<span class="">Đăng xuất</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col md:ml-64 min-w-0">
+<!-- TopNavBar -->
+<header class="sticky top-0 w-full z-30 flex justify-between items-center px-container-padding h-20 bg-surface/80 backdrop-blur-md border-b border-outline-variant/30 transition-all">
+<div class="flex items-center gap-2 md:hidden">
+<span class="font-headline-md text-headline-md font-bold text-primary">Hệ thống HQ</span>
+</div>
+<div class="hidden md:flex flex-1"></div>
+<div class="flex items-center gap-5">
+<button class="text-on-surface-variant hover:text-primary transition-colors cursor-pointer w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high/50">
+<span class="material-symbols-outlined">refresh</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors cursor-pointer w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high/50 relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<div class="w-10 h-10 rounded-full overflow-hidden shadow-sm cursor-pointer hover:ring-2 ring-primary ring-offset-2 ring-offset-surface transition-all">
+<img alt="Ảnh đại diện người dùng" class="w-full h-full object-cover" data-alt="A professional headshot of a business administrator in a modern office environment. Warm, natural lighting, approachable yet serious demeanor. Earth-toned attire matching a grounded corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC50EIJOKN6Jrtlt58lbSHXUEVkrvHNJUKNLq-IBnuZd5X1_IgXar_U_MQOPYRyBkZOoaE8yrykPpf03w9r3jYPfSyOm5YGpTkcCSrlI7tc60VKK5-kCNQpIghw4K5R9aLr3sxqWq6g0moBL2Kq6MfDJ3q8vmfG3wuv_tWqH3N4wqdyfSZ5NdkDtGPdGqWqiYaiEi-kodYuwDD4I2DqDY81mUunR7mVstXqtELD1n113b4AlziWk-kbSYZktFceU0MUEMoFW8qteZI"/>
+</div>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 p-4 md:p-container-padding max-w-[1440px] mx-auto w-full">
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+<div class="max-w-2xl">
+<h1 class="font-display-lg text-display-lg md:text-display-lg text-on-surface mb-2 font-bold tracking-tight">Quản lý chi nhánh</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">Vận hành chuỗi cà phê theo thời gian thực. Hệ thống quản trị dữ liệu tập trung kết nối PostgreSQL API.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center justify-center gap-2 px-4 py-2.5 border border-outline-variant/50 text-on-surface font-body-md text-body-md font-medium rounded-lg hover:bg-surface-container-high/50 hover:border-outline-variant transition-all bg-white/50 backdrop-blur-sm shadow-sm">
+<span class="material-symbols-outlined text-[18px]">refresh</span>
+                        Làm mới
+                    </button>
+<button class="flex items-center justify-center gap-2 px-4 py-2.5 bg-secondary-container text-on-secondary-container font-body-md text-body-md font-semibold rounded-lg hover:shadow-md hover:-translate-y-0.5 transition-all shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                        Thêm chi nhánh
+                    </button>
+</div>
+</div>
+<!-- Dashboard Stats Overview (Data-Focused Variant) -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8"><div class="bg-white/60 backdrop-blur-md p-5 rounded-[24px] border border-outline-variant card-shadow-level-1 flex flex-col gap-2"><div class="flex justify-between items-start mb-1"><span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Doanh thu hôm nay</span><span class="material-symbols-outlined text-[20px] text-primary">payments</span></div><span class="font-headline-lg text-headline-lg text-on-surface leading-none">125.4M ₫</span><div class="flex items-center gap-2 mt-2"><span class="text-[#137333] font-label-md text-[12px] font-bold">+15% vs T7</span></div></div><div class="bg-white/60 backdrop-blur-md p-5 rounded-[24px] border border-outline-variant card-shadow-level-1 flex flex-col gap-2"><div class="flex justify-between items-start mb-1"><span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Doanh thu tháng</span><span class="material-symbols-outlined text-[20px] text-primary">calendar_month</span></div><span class="font-headline-lg text-headline-lg text-on-surface leading-none">3.2B ₫</span><div class="flex items-center gap-2 mt-2"><span class="text-[#137333] font-label-md text-[12px] font-bold">+8% vs tháng trước</span></div></div><div class="bg-white/60 backdrop-blur-md p-5 rounded-[24px] border border-outline-variant card-shadow-level-1 flex flex-col gap-2"><div class="flex justify-between items-start mb-1"><span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Đơn hàng</span><span class="material-symbols-outlined text-[20px] text-secondary">shopping_cart</span></div><span class="font-headline-lg text-headline-lg text-on-surface leading-none">1,245</span><div class="flex items-center gap-2 mt-2"><span class="text-[#137333] font-label-md text-[12px] font-bold">8.2% tăng trưởng</span></div></div><div class="bg-[#FFF3CD]/40 backdrop-blur-md p-5 rounded-[24px] border border-[#FFE69C] card-shadow-level-1 flex flex-col gap-2"><div class="flex justify-between items-start mb-1"><span class="font-label-md text-label-md text-[#856404] uppercase tracking-wider">Cảnh báo tồn kho</span><span class="material-symbols-outlined text-[20px] text-[#856404]">warning</span></div><span class="font-headline-lg text-headline-lg text-[#856404] leading-none">5</span><div class="flex items-center gap-1 text-[#856404] mt-2 font-label-md text-[12px]"><span>Cần nhập hàng ngay</span></div></div></div>
+<!-- Controls/Filters -->
+<div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+<div class="relative w-full sm:w-96">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-on-surface-variant">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-2 border border-outline-variant rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent font-body-md text-body-md placeholder-on-surface-variant/60" placeholder="Tìm kiếm chi nhánh, mã, địa chỉ..." type="text"/>
+</div>
+<div class="flex gap-2 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0 hide-scrollbar">
+<button class="flex items-center justify-center gap-2 px-3 py-1.5 bg-surface-container-high text-on-surface font-label-md text-[13px] font-medium rounded-full whitespace-nowrap">
+                        Tất cả (14)
+                    </button>
+<button class="flex items-center justify-center gap-2 px-3 py-1.5 border border-outline-variant text-on-surface-variant font-label-md text-[13px] font-medium rounded-full whitespace-nowrap hover:bg-surface-container-high">
+                        Đang hoạt động (12)
+                    </button>
+<button class="flex items-center justify-center gap-2 px-3 py-1.5 border border-outline-variant text-on-surface-variant font-label-md text-[13px] font-medium rounded-full whitespace-nowrap hover:bg-surface-container-high">
+                        Cảnh báo kho (2)
+                    </button>
+<div class="w-px h-6 bg-outline-variant mx-1 self-center hidden sm:block"></div>
+<button class="flex items-center justify-center gap-2 px-4 py-2 border border-outline-variant text-on-surface font-label-md text-label-md font-medium rounded-lg hover:bg-surface-container-high transition-colors bg-white">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                        Lọc
+                    </button>
+<button class="flex items-center justify-center gap-2 px-4 py-2 border border-outline-variant text-on-surface font-label-md text-label-md font-medium rounded-lg hover:bg-surface-container-high transition-colors bg-white">
+<span class="material-symbols-outlined text-[18px]">sort</span>
+                        Sắp xếp
+                    </button>
+</div>
+</div>
+<!-- Branch Cards Grid (Data-Focused Variant) -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-card-gap"><div class="lg:col-span-2 flex flex-col gap-4"><h2 class="font-title-lg text-title-lg text-on-surface">Chi nhánh nổi bật</h2><div class="bg-white rounded-[20px] border border-outline-variant overflow-hidden"><table class="w-full text-left border-collapse"><thead class="bg-surface-container-low border-b border-outline-variant"><tr class="font-label-md text-on-surface-variant uppercase"><th class="p-4">Chi nhánh</th><th class="p-4">Doanh thu</th><th class="p-4">Tồn kho thấp</th></tr></thead><tbody class="font-body-md text-on-surface"><tr class="border-b border-outline-variant/30 hover:bg-surface-container-lowest"><td class="p-4"><div class="font-bold">Quận 1</div><div class="text-[12px] text-on-surface-variant">123 Lê Lợi, Quận 1</div></td><td class="p-4 font-medium">125.4M ₫</td><td class="p-4"><span class="bg-surface-variant px-2 py-1 rounded text-[12px]">0</span></td></tr><tr class="border-b border-outline-variant/30 hover:bg-surface-container-lowest"><td class="p-4"><div class="font-bold">Quận 3</div><div class="text-[12px] text-on-surface-variant">45 Võ Văn Tần, Quận 3</div></td><td class="p-4 font-medium">89.2M ₫</td><td class="p-4"><span class="bg-error-container text-error px-2 py-1 rounded text-[12px] font-bold">3</span></td></tr></tbody></table></div></div><div class="flex flex-col gap-4"><h2 class="font-title-lg text-title-lg text-on-surface">Món bán chạy</h2><div class="bg-white rounded-[20px] border border-outline-variant p-4 flex flex-col gap-4"><div class="flex items-center gap-3"><div class="w-12 h-12 rounded-lg bg-surface-variant flex-shrink-0"></div><div class="flex-1"><div class="font-bold text-on-surface">Cà phê Sữa Đá</div><div class="text-[12px] text-on-surface-variant">Cà phê truyền thống</div></div><div class="text-right"><div class="font-bold text-primary">29.000 ₫</div><div class="text-[11px] text-on-surface-variant">452 đã bán</div></div></div><div class="flex items-center gap-3"><div class="w-12 h-12 rounded-lg bg-surface-variant flex-shrink-0"></div><div class="flex-1"><div class="font-bold text-on-surface">Bạc Xỉu</div><div class="text-[12px] text-on-surface-variant">Cà phê truyền thống</div></div><div class="text-right"><div class="font-bold text-primary">32.000 ₫</div><div class="text-[11px] text-on-surface-variant">312 đã bán</div></div></div></div></div></div>
+<div class="mt-8 flex flex-col gap-4"><h2 class="font-title-lg text-title-lg text-on-surface">Hoạt động gần đây</h2><div class="bg-white rounded-[20px] border border-outline-variant p-4 flex flex-col gap-3"><div class="flex items-center gap-3 py-2 border-b border-outline-variant/30"><div class="w-2 h-2 rounded-full bg-[#137333]"></div><div class="flex-1 font-body-md">Đơn hàng mới #CN001-9928</div><div class="text-[12px] text-on-surface-variant">2 phút trước</div></div><div class="flex items-center gap-3 py-2 border-b border-outline-variant/30"><div class="w-2 h-2 rounded-full bg-[#C5221F]"></div><div class="flex-1 font-body-md">Cảnh báo tồn kho: Cà phê hạt (CN002)</div><div class="text-[12px] text-on-surface-variant">15 phút trước</div></div><div class="flex items-center gap-3 py-2"><div class="w-2 h-2 rounded-full bg-primary"></div><div class="flex-1 font-body-md">Ca làm việc mới: Nguyễn Văn A (CN001)</div><div class="text-[12px] text-on-surface-variant">1 giờ trước</div></div></div></div></main>
+</div>
+</body></html>

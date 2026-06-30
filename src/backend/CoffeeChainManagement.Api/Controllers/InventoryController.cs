@@ -7,7 +7,7 @@ namespace CoffeeChainManagement.Api.Controllers;
 
 // InventoryController cung cap CRUD ton kho va lookup ingredient cho form.
 [ApiController]
-[Authorize(Roles = "Administrator,BranchManager")]
+[Authorize(Roles = "Administrator,BranchManager,WarehouseStaff")]
 [Route("api/inventory")]
 public sealed class InventoryController(IInventoryService inventoryService) : ControllerBase
 {

@@ -6,19 +6,32 @@ using System.Threading.Tasks;
 using CoffeeChainManagement.Application.DTOs.Inventory;
 using CoffeeChainManagement.Application.Interfaces;
 using CoffeeChainManagement.Domain.Entities;
+using CoffeeChainManagement.Domain.Enums;
 using CoffeeChainManagement.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace CoffeeChainManagement.Infrastructure.Services;
 
-internal sealed class PostgresInventoryTransactionService(CoffeeChainDbContext dbContext) : IInventoryTransactionService
+internal sealed class PostgresInventoryTransactionService(
+    CoffeeChainDbContext dbContext,
+    ICurrentUserContext currentUser,
+    IAuditLogService auditLogService) : IInventoryTransactionService
 {
     public async Task<List<InventoryTransactionDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var txs = await dbContext.InventoryTransactions
+        EnsureReadable();
+
+        IQueryable<InventoryTransaction> query = dbContext.InventoryTransactions
             .AsNoTracking()
             .Include(t => t.Ingredient)
-            .Include(t => t.Branch)
+            .Include(t => t.Branch);
+
+        if (currentUser.Role is UserRole.BranchManager or UserRole.WarehouseStaff)
+        {
+            query = query.Where(t => t.BranchId == currentUser.BranchId);
+        }
+
+        var txs = await query
             .OrderByDescending(t => t.CreatedAtUtc)
             .ToListAsync(cancellationToken);
 
@@ -40,6 +53,8 @@ internal sealed class PostgresInventoryTransactionService(CoffeeChainDbContext d
 
     public async Task<InventoryTransactionDto> CreateTransactionAsync(CreateInventoryTransactionRequestDto request, Guid employeeId, CancellationToken cancellationToken = default)
     {
+        EnsureWritable(request.BranchId);
+
         var ingredient = await dbContext.Ingredients.FindAsync([request.IngredientId], cancellationToken)
             ?? throw new KeyNotFoundException("Ingredient not found.");
 
@@ -79,6 +94,15 @@ internal sealed class PostgresInventoryTransactionService(CoffeeChainDbContext d
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
+        await auditLogService.WriteAsync(
+            "INVENTORY_TRANSACTION_CREATE",
+            nameof(InventoryTransaction),
+            $"Created inventory transaction {tx.ReferenceNumber}",
+            true,
+            employeeId,
+            branchId: tx.BranchId,
+            entityId: tx.Id,
+            cancellationToken: cancellationToken);
 
         return new InventoryTransactionDto
         {
@@ -94,5 +118,23 @@ internal sealed class PostgresInventoryTransactionService(CoffeeChainDbContext d
             CreatedBy = tx.CreatedBy,
             CreatedAtUtc = tx.CreatedAtUtc
         };
+    }
+
+    private void EnsureReadable()
+    {
+        if (!currentUser.IsAuthenticated || currentUser.Role is not (UserRole.Administrator or UserRole.BranchManager or UserRole.WarehouseStaff))
+        {
+            throw new UnauthorizedAccessException("You do not have permission to access inventory transactions.");
+        }
+    }
+
+    private void EnsureWritable(Guid branchId)
+    {
+        EnsureReadable();
+
+        if (currentUser.Role is (UserRole.BranchManager or UserRole.WarehouseStaff) && currentUser.BranchId != branchId)
+        {
+            throw new UnauthorizedAccessException("You can only create inventory transactions in your own branch.");
+        }
     }
 }

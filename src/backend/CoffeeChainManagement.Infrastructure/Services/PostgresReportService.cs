@@ -11,7 +11,9 @@ using QuestPDF.Infrastructure;
 namespace CoffeeChainManagement.Infrastructure.Services;
 
 // PostgresReportService tong hop du lieu bao cao va ho tro export xlsx/pdf.
-internal sealed class PostgresReportService(CoffeeChainDbContext dbContext) : IReportService
+internal sealed class PostgresReportService(
+    CoffeeChainDbContext dbContext,
+    ICurrentUserContext currentUser) : IReportService
 {
     public async Task<SalesReportDto> GetSalesReportAsync(
         DateOnly? fromDate,
@@ -19,7 +21,8 @@ internal sealed class PostgresReportService(CoffeeChainDbContext dbContext) : IR
         Guid? branchId,
         CancellationToken cancellationToken = default)
     {
-        var orders = await BuildOrderQuery(fromDate, toDate, branchId)
+        var effectiveBranchId = ResolveBranchId(branchId);
+        var orders = await BuildOrderQuery(fromDate, toDate, effectiveBranchId)
             .Include(order => order.Items)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
@@ -62,9 +65,9 @@ internal sealed class PostgresReportService(CoffeeChainDbContext dbContext) : IR
         var averageOrderValue = totalOrders == 0 ? 0 : totalRevenue / totalOrders;
 
         var inventoryQuery = dbContext.InventoryItems.AsNoTracking();
-        if (branchId.HasValue)
+        if (effectiveBranchId.HasValue)
         {
-            inventoryQuery = inventoryQuery.Where(item => item.BranchId == branchId.Value);
+            inventoryQuery = inventoryQuery.Where(item => item.BranchId == effectiveBranchId.Value);
         }
 
         var lowStockItems = await (
@@ -75,17 +78,19 @@ internal sealed class PostgresReportService(CoffeeChainDbContext dbContext) : IR
 
         var activePromotions = await dbContext.Promotions.AsNoTracking().CountAsync(promotion => promotion.IsActive, cancellationToken);
         var pendingRecruitments = await dbContext.RecruitmentRequests.AsNoTracking().CountAsync(request =>
-            request.Status == RecruitmentRequestStatus.Pending && (!branchId.HasValue || request.BranchId == branchId.Value), cancellationToken);
+            request.Status == RecruitmentRequestStatus.Pending && (!effectiveBranchId.HasValue || request.BranchId == effectiveBranchId.Value), cancellationToken);
 
         return new SalesReportDto(
             fromDate,
             toDate,
-            branchId,
-            branchId.HasValue && branches.TryGetValue(branchId.Value, out var branchName) ? branchName : null,
+            effectiveBranchId,
+            effectiveBranchId.HasValue && branches.TryGetValue(effectiveBranchId.Value, out var branchName) ? branchName : null,
             totalRevenue,
             totalOrders,
             averageOrderValue,
-            await dbContext.Branches.AsNoTracking().CountAsync(branch => branch.IsActive, cancellationToken),
+            await dbContext.Branches.AsNoTracking().CountAsync(
+                branch => branch.IsActive && (!effectiveBranchId.HasValue || branch.Id == effectiveBranchId.Value),
+                cancellationToken),
             lowStockItems,
             activePromotions,
             pendingRecruitments,
@@ -138,6 +143,31 @@ internal sealed class PostgresReportService(CoffeeChainDbContext dbContext) : IR
         }
 
         return query.OrderByDescending(order => order.CreatedAtUtc);
+    }
+
+    private Guid? ResolveBranchId(Guid? requestedBranchId)
+    {
+        if (!currentUser.IsAuthenticated)
+        {
+            throw new UnauthorizedAccessException("You do not have permission to access reports.");
+        }
+
+        if (currentUser.Role == UserRole.Administrator)
+        {
+            return requestedBranchId;
+        }
+
+        if (currentUser.Role == UserRole.BranchManager && currentUser.BranchId.HasValue)
+        {
+            if (requestedBranchId.HasValue && requestedBranchId.Value != currentUser.BranchId.Value)
+            {
+                throw new UnauthorizedAccessException("Branch managers can only access reports for their own branch.");
+            }
+
+            return currentUser.BranchId.Value;
+        }
+
+        throw new UnauthorizedAccessException("You do not have permission to access reports.");
     }
 
     private static byte[] BuildExcel(SalesReportDto report)

@@ -6,7 +6,7 @@ namespace CoffeeChainManagement.Api.Controllers;
 
 // DashboardController tra du lieu tong quan cho trang admin Angular.
 [ApiController]
-[Authorize(Roles = "Administrator,BranchManager,Cashier")]
+[Authorize(Roles = "Administrator,BranchManager,Cashier,WarehouseStaff")]
 [Route("api/dashboard")]
 public sealed class DashboardController(IDashboardService dashboardService) : ControllerBase
 {

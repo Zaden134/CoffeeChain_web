@@ -1,15 +1,24 @@
 import { inject } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivateFn, Router, RouterStateSnapshot } from '@angular/router';
+import { ActivatedRouteSnapshot, CanActivateChildFn, CanActivateFn, Router } from '@angular/router';
 
 import { AuthStore } from '../services/auth.store';
 
 // authGuard chan route noi bo neu user chua dang nhap.
-export const authGuard: CanActivateFn = async (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+export const authGuard: CanActivateFn = async (route: ActivatedRouteSnapshot) => {
+  return authorizeRoute(route);
+};
+
+// authChildGuard kiem tra role tren tung route con trong shell.
+export const authChildGuard: CanActivateChildFn = async (route: ActivatedRouteSnapshot) => {
+  return authorizeRoute(route);
+};
+
+async function authorizeRoute(route: ActivatedRouteSnapshot) {
   const authStore = inject(AuthStore);
   const router = inject(Router);
 
   if (authStore.isAuthenticated()) {
-    return true;
+    return authorizeRole(route, authStore, router);
   }
 
   const profile = await authStore.hydrateProfile();
@@ -17,14 +26,17 @@ export const authGuard: CanActivateFn = async (route: ActivatedRouteSnapshot, st
     return router.createUrlTree(['/login']);
   }
 
-  // Check roles in route data
+  return authorizeRole(route, authStore, router);
+}
+
+function authorizeRole(route: ActivatedRouteSnapshot, authStore: AuthStore, router: Router) {
   const requiredRoles = route.data['roles'] as string[];
   if (requiredRoles && requiredRoles.length > 0) {
     const userRole = authStore.role();
     if (!userRole || !requiredRoles.includes(userRole)) {
-      return router.createUrlTree(['/']); // Redirect to dashboard if not authorized
+      return router.createUrlTree(['/']);
     }
   }
 
   return true;
-};
+}

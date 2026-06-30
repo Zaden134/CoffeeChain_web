@@ -1,7 +1,8 @@
 import { Routes } from '@angular/router';
 
-import { authGuard } from './core/guards/auth.guard';
+import { authChildGuard, authGuard } from './core/guards/auth.guard';
 import { guestGuard } from './core/guards/guest.guard';
+import { AuditLogsPage } from './features/audit-logs/audit-logs-page';
 import { BranchesPage } from './features/branches/branches-page';
 import { DashboardPage } from './features/dashboard/dashboard-page';
 import { EmployeesPage } from './features/employees/employees-page';
@@ -23,12 +24,13 @@ export const routes: Routes = [
   {
     path: '',
     canActivate: [authGuard],
+    canActivateChild: [authChildGuard],
     component: MainLayout,
     children: [
       {
         path: '',
         component: DashboardPage,
-        data: { roles: ['Administrator', 'BranchManager', 'Cashier'] }
+        data: { roles: ['Administrator', 'BranchManager', 'Cashier', 'WarehouseStaff'] }
       },
       {
         path: 'branches',
@@ -48,12 +50,12 @@ export const routes: Routes = [
       {
         path: 'inventory',
         component: InventoryPage,
-        data: { roles: ['Administrator', 'BranchManager'] }
+        data: { roles: ['Administrator', 'BranchManager', 'WarehouseStaff'] }
       },
       {
         path: 'inventory/transactions',
         loadComponent: () => import('./features/inventory-transactions/inventory-transactions-page').then(m => m.InventoryTransactionsPage),
-        data: { roles: ['Administrator', 'BranchManager'] }
+        data: { roles: ['Administrator', 'BranchManager', 'WarehouseStaff'] }
       },
       {
         path: 'employees',
@@ -74,6 +76,11 @@ export const routes: Routes = [
         path: 'recruitment-requests',
         component: RecruitmentRequestsPage,
         data: { roles: ['Administrator', 'BranchManager'] }
+      },
+      {
+        path: 'audit-logs',
+        component: AuditLogsPage,
+        data: { roles: ['Administrator'] }
       }
     ]
   },

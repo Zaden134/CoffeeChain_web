@@ -1,4 +1,6 @@
 using CoffeeChainManagement.Application.DTOs.Auth;
+using CoffeeChainManagement.Application.DTOs.Audit;
+using CoffeeChainManagement.Application.DTOs.Common;
 using CoffeeChainManagement.Domain.Entities;
 using CoffeeChainManagement.Infrastructure.Auth;
 using CoffeeChainManagement.Infrastructure.Persistence;
@@ -89,6 +91,9 @@ public sealed class AuthServiceTests
 
     private sealed class NoopAuditLogService : IAuditLogService
     {
+        public Task<PagedResultDto<AuditLogDto>> GetPagedAsync(AuditLogQueryDto query, CancellationToken cancellationToken = default)
+            => Task.FromResult(new PagedResultDto<AuditLogDto>(Array.Empty<AuditLogDto>(), 1, 20, 0, 1));
+
         public Task WriteAsync(string action, string entityType, string details, bool isSuccess, Guid? employeeId = null, string? username = null, Guid? branchId = null, Guid? entityId = null, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
     }

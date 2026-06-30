@@ -1,70 +1,133 @@
-<div class="recipes-container">
-  <div class="page-header">
-    <div class="header-content">
-      <a routerLink="/products" class="back-link">← Quay lại danh sách Sản phẩm</a>
-      <h1>Thiết lập công thức</h1>
-      <p class="subtitle">Sản phẩm: <strong>{{ productName() }}</strong></p>
-    </div>
-    <div class="header-actions">
-      <button class="btn btn-primary" [disabled]="loading() || submitting()" (click)="save()">
-        <span class="icon">💾</span> Lưu công thức
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+  <div class="max-w-2xl">
+      <a routerLink="/products" class="inline-flex items-center gap-2 text-primary font-label-md text-label-md font-medium hover:underline mb-4 transition-all">
+          <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+          Quay lại danh sách sản phẩm
+      </a>
+      <h1 class="font-display-lg text-display-lg md:text-display-lg text-on-surface mb-2 tracking-tight">Thiết lập công thức</h1>
+      <p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
+          Sản phẩm: <strong class="text-on-surface">{{ productName() }}</strong>
+      </p>
+  </div>
+  <div class="flex items-center gap-3">
+      <button type="button" class="flex items-center justify-center gap-2 px-6 py-2.5 bg-primary text-white font-label-md text-label-md font-medium rounded-lg hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              [disabled]="loading() || submitting()" (click)="save()">
+          <span class="material-symbols-outlined text-[18px]">save</span>
+          Lưu công thức
       </button>
-    </div>
-  </div>
-
-  <div *ngIf="error()" class="alert alert-error">{{ error() }}</div>
-  <div *ngIf="success()" class="alert alert-success">{{ success() }}</div>
-
-  <div *ngIf="loading()" class="loading-state">
-    <div class="spinner"></div>
-    <p>Đang tải dữ liệu...</p>
-  </div>
-
-  <div *ngIf="!loading()" class="recipe-content">
-    <div class="card form-card">
-      <div class="form-group">
-        <label>Hướng dẫn pha chế</label>
-        <textarea 
-          class="form-control" 
-          rows="4" 
-          [ngModel]="instructions()" 
-          (ngModelChange)="instructions.set($event)"
-          placeholder="Nhập hướng dẫn pha chế chi tiết (tùy chọn)"></textarea>
-      </div>
-
-      <div class="ingredients-section">
-        <div class="section-header">
-          <h3>Định mức nguyên liệu</h3>
-          <button class="btn btn-secondary btn-sm" (click)="addIngredient()">
-            + Thêm nguyên liệu
-          </button>
-        </div>
-
-        <p *ngIf="ingredients().length === 0" class="empty-state text-muted">Chưa có nguyên liệu nào. Vui lòng thêm nguyên liệu.</p>
-
-        <div class="ingredient-list">
-          <div class="ingredient-row" *ngFor="let item of ingredients(); let i = index">
-            <div class="form-group flex-1">
-              <label>Nguyên liệu</label>
-              <select class="form-control" [ngModel]="item.ingredientId" (ngModelChange)="item.ingredientId = $event">
-                <option value="">-- Chọn nguyên liệu --</option>
-                <option *ngFor="let lookup of lookupIngredients()" [value]="lookup.id">
-                  {{ lookup.label }}
-                </option>
-              </select>
-            </div>
-            
-            <div class="form-group quantity-input">
-              <label>Số lượng (đơn vị)</label>
-              <input type="number" class="form-control" min="1" [ngModel]="item.requiredQuantity" (ngModelChange)="item.requiredQuantity = $event">
-            </div>
-
-            <button class="btn btn-danger btn-icon" title="Xóa nguyên liệu" (click)="removeIngredient(i)">
-              ✖
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </div>
+
+@if (error()) {
+  <div class="flex items-center gap-2 p-4 bg-error-container text-error rounded-lg mb-6 text-body-md border border-error/20">
+      <span class="material-symbols-outlined">error</span>
+      {{ error() }}
+  </div>
+}
+
+@if (success()) {
+  <div class="flex items-center gap-2 p-4 bg-[#E6F4EA] text-[#137333] rounded-lg mb-6 text-body-md border border-[#137333]/20">
+      <span class="material-symbols-outlined">check_circle</span>
+      {{ success() }}
+  </div>
+}
+
+@if (loading()) {
+  <div class="flex flex-col items-center justify-center py-16 gap-4 text-on-surface-variant">
+      <div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      <p class="font-body-md">Đang tải dữ liệu công thức...</p>
+  </div>
+} @else {
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-card-gap">
+      <!-- Cột chính: Hướng dẫn pha chế -->
+      <div class="lg:col-span-1">
+          <div class="bg-white rounded-[24px] border border-outline-variant p-6 card-shadow-level-1 h-full flex flex-col">
+              <div class="flex items-center gap-2 mb-6">
+                  <div class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center">
+                      <span class="material-symbols-outlined">blender</span>
+                  </div>
+                  <h3 class="font-title-lg text-[18px] text-on-surface font-bold">Hướng dẫn pha chế</h3>
+              </div>
+              
+              <div class="flex-1 flex flex-col">
+                  <label class="block font-label-md text-[13px] text-on-surface-variant uppercase tracking-wider mb-2">Chi tiết các bước</label>
+                  <textarea 
+                      class="w-full flex-1 min-h-[200px] p-4 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-on-surface bg-surface-container-lowest resize-y transition-shadow"
+                      [ngModel]="instructions()" 
+                      (ngModelChange)="instructions.set($event)"
+                      placeholder="Nhập hướng dẫn pha chế chi tiết (tùy chọn)"></textarea>
+              </div>
+          </div>
+      </div>
+
+      <!-- Cột phụ: Định mức nguyên liệu -->
+      <div class="lg:col-span-2">
+          <div class="bg-white rounded-[24px] border border-outline-variant p-6 card-shadow-level-1 flex flex-col h-full">
+              <div class="flex items-center justify-between mb-6">
+                  <div class="flex items-center gap-2">
+                      <div class="w-10 h-10 rounded-full bg-[#E8F0FE] text-[#1967D2] flex items-center justify-center">
+                          <span class="material-symbols-outlined">category</span>
+                      </div>
+                      <div>
+                          <h3 class="font-title-lg text-[18px] text-on-surface font-bold">Định mức nguyên liệu</h3>
+                          <span class="text-on-surface-variant text-[13px]">Số lượng nguyên liệu cho mỗi sản phẩm</span>
+                      </div>
+                  </div>
+                  <button type="button" class="flex items-center justify-center gap-2 px-4 py-2 bg-surface-container-low text-on-surface hover:bg-surface-container border border-outline-variant rounded-lg font-label-md text-label-md font-medium transition-colors" (click)="addIngredient()">
+                      <span class="material-symbols-outlined text-[18px]">add</span>
+                      Thêm nguyên liệu
+                  </button>
+              </div>
+
+              @if (ingredients().length === 0) {
+                  <div class="flex-1 flex flex-col items-center justify-center py-12 text-on-surface-variant border-2 border-dashed border-outline-variant rounded-xl bg-surface-container-lowest">
+                      <span class="material-symbols-outlined text-[48px] mb-4 opacity-50">kitchen</span>
+                      <p class="font-body-lg text-center max-w-sm mb-4">Sản phẩm này chưa có định mức nguyên liệu nào được thiết lập.</p>
+                      <button type="button" class="text-primary font-medium hover:underline" (click)="addIngredient()">Bấm vào đây để thêm</button>
+                  </div>
+              } @else {
+                  <div class="flex flex-col gap-4">
+                      <!-- Headers -->
+                      <div class="hidden md:flex items-center gap-4 px-4 pb-2 border-b border-outline-variant">
+                          <div class="flex-1 font-label-md text-[13px] text-on-surface-variant uppercase tracking-wider">Nguyên liệu</div>
+                          <div class="w-32 font-label-md text-[13px] text-on-surface-variant uppercase tracking-wider text-right">Số lượng</div>
+                          <div class="w-12"></div>
+                      </div>
+
+                      <!-- List -->
+                      @for (item of ingredients(); track $index) {
+                          <div class="flex flex-col md:flex-row items-center gap-4 p-4 rounded-xl border border-outline-variant/50 hover:bg-surface-container-lowest transition-colors bg-white">
+                              <!-- Select Ingredient -->
+                              <div class="flex-1 w-full">
+                                  <label class="md:hidden block font-label-md text-[12px] text-on-surface-variant uppercase mb-1">Nguyên liệu</label>
+                                  <select class="w-full px-3 py-2.5 border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-on-surface bg-surface-container-lowest" [ngModel]="item.ingredientId" (ngModelChange)="item.ingredientId = $event">
+                                      <option value="">-- Chọn nguyên liệu --</option>
+                                      @for (lookup of lookupIngredients(); track lookup.id) {
+                                          <option [value]="lookup.id">{{ lookup.label }}</option>
+                                      }
+                                  </select>
+                              </div>
+                              
+                              <!-- Input Quantity -->
+                              <div class="w-full md:w-32">
+                                  <label class="md:hidden block font-label-md text-[12px] text-on-surface-variant uppercase mb-1">Số lượng</label>
+                                  <div class="relative">
+                                      <input type="number" class="w-full px-3 py-2.5 border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-on-surface bg-surface-container-lowest text-right pr-12" min="1" [ngModel]="item.requiredQuantity" (ngModelChange)="item.requiredQuantity = $event">
+                                      <span class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm font-medium">đv</span>
+                                  </div>
+                              </div>
+
+                              <!-- Action -->
+                              <button type="button" class="w-full md:w-12 h-11 flex items-center justify-center rounded-lg text-on-surface-variant hover:text-error hover:bg-error-container transition-colors border border-outline-variant md:border-transparent bg-surface-container-low md:bg-transparent" title="Xóa nguyên liệu" (click)="removeIngredient($index)">
+                                  <span class="material-symbols-outlined">delete</span>
+                                  <span class="md:hidden ml-2 font-medium">Xóa nguyên liệu này</span>
+                              </button>
+                          </div>
+                      }
+                  </div>
+              }
+          </div>
+      </div>
+  </div>
+}

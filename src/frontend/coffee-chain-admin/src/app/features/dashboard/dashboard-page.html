@@ -1,103 +1,139 @@
+<!-- Dashboard Content -->
 @if (state().loading) {
-  <section class="panel">
-    <p>Dang tai dashboard...</p>
-  </section>
+  <div class="flex justify-center p-8 text-on-surface-variant">Đang tải dashboard...</div>
 } @else if (state().error) {
-  <section class="panel error">
-    <p>{{ state().error }}</p>
-  </section>
+  <div class="p-4 bg-error-container text-error rounded-lg mb-4">{{ state().error }}</div>
 } @else if (state().data; as data) {
-  <section class="hero">
-    <div>
-      <p class="eyebrow">Tong quan he thong</p>
-      <h2>Van hanh chuoi ca phe theo thoi gian thuc</h2>
-      <p class="hero-copy">
-        Bieu do duoc tinh tu PostgreSQL va nhan du lieu qua JWT-protected API.
-      </p>
-    </div>
-    <button type="button" (click)="store.load()">Làm mới dashboard</button>
-  </section>
-
-  <section class="kpis">
-    <article class="kpi-card">
-      <span>Doanh thu hôm nay</span>
-      <strong>{{ data.summary.dailyRevenue | currency:'VND':'symbol':'1.0-0' }}</strong>
-    </article>
-    <article class="kpi-card">
-      <span>Doanh thu thang</span>
-      <strong>{{ data.summary.monthlyRevenue | currency:'VND':'symbol':'1.0-0' }}</strong>
-    </article>
-    <article class="kpi-card">
-      <span>Don hang</span>
-      <strong>{{ data.summary.totalOrders }}</strong>
-    </article>
-    <article class="kpi-card">
-      <span>Canh bao ton kho</span>
-      <strong>{{ data.summary.lowStockAlerts }}</strong>
-    </article>
-  </section>
-
-  <section class="grid">
-    <article class="panel">
-      <div class="panel-head">
-        <h3>Chi nhánh noi bat</h3>
-        <span>{{ data.summary.activeBranches }} dang hoat dong</span>
+  <!-- Hero Section -->
+  <div class="bg-surface-container-low rounded-[24px] p-8 mb-8 relative overflow-hidden border border-outline-variant">
+      <div class="relative z-10 max-w-3xl">
+          <span class="font-label-md text-label-md text-primary uppercase tracking-wider mb-2 block">Tổng quan hệ thống</span>
+          <h1 class="font-display-lg text-display-lg md:text-display-lg text-on-surface mb-4 font-black">Vận hành chuỗi cà phê theo thời gian thực</h1>
+          <p class="font-body-lg text-body-lg text-on-surface-variant mb-6">Biểu đồ được tính từ PostgreSQL và nhận dữ liệu qua JWT-protected API.</p>
+          <button type="button" (click)="store.load()" class="bg-primary text-white px-6 py-3 rounded-lg font-label-md text-[14px] font-bold hover:bg-primary/90 transition-colors inline-flex items-center gap-2">
+              <span class="material-symbols-outlined text-[18px]">refresh</span>
+              Làm mới dữ liệu
+          </button>
       </div>
+      <!-- Decorative element -->
+      <div class="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-primary/10 to-transparent pointer-events-none rounded-r-[24px]"></div>
+  </div>
 
-      <div class="branch-list">
-        @for (branch of data.topBranches; track branch.id) {
-          <div class="branch-item">
-            <div>
-              <strong>{{ branch.name }}</strong>
-              <p>{{ branch.address }}</p>
-            </div>
-            <div class="branch-meta">
-              <span>{{ branch.revenueToday | currency:'VND':'symbol':'1.0-0' }}</span>
-              <small>{{ branch.lowStockItems }} canh bao kho</small>
-            </div>
+  <!-- Key Metrics (KPIs) -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-card-gap mb-8">
+      <div class="bg-white rounded-xl p-5 border border-outline-variant card-shadow-level-1 flex flex-col gap-3">
+          <div class="flex items-center gap-2 text-on-surface-variant">
+              <span class="material-symbols-outlined text-primary">payments</span>
+              <span class="font-label-md text-[13px] uppercase tracking-wider font-semibold">Doanh thu hôm nay</span>
           </div>
-        }
+          <span class="font-headline-md text-headline-md font-bold text-on-surface">{{ data.summary.dailyRevenue | currency:'VND':'symbol':'1.0-0' }}</span>
       </div>
-    </article>
-
-    <article class="panel">
-      <div class="panel-head">
-        <h3>Món bán chạy</h3>
-        <span>Cập nhật tu POS</span>
-      </div>
-
-      <div class="product-list">
-        @for (product of data.bestSellingProducts; track product.id) {
-          <div class="product-item">
-            <img [src]="product.imageUrl" [alt]="product.name" />
-            <div>
-              <strong>{{ product.name }}</strong>
-              <p>{{ product.category }} · {{ product.soldQuantity }} ly</p>
-            </div>
-            <span>{{ product.price | currency:'VND':'symbol':'1.0-0' }}</span>
+      <div class="bg-white rounded-xl p-5 border border-outline-variant card-shadow-level-1 flex flex-col gap-3">
+          <div class="flex items-center gap-2 text-on-surface-variant">
+              <span class="material-symbols-outlined text-[#137333]">account_balance_wallet</span>
+              <span class="font-label-md text-[13px] uppercase tracking-wider font-semibold">Doanh thu tháng</span>
           </div>
-        }
+          <span class="font-headline-md text-headline-md font-bold text-on-surface">{{ data.summary.monthlyRevenue | currency:'VND':'symbol':'1.0-0' }}</span>
       </div>
-    </article>
-  </section>
-
-  <section class="panel activity-panel">
-    <div class="panel-head">
-      <h3>Hoạt động gan day</h3>
-      <span>Cập nhật noi bo</span>
-    </div>
-
-    <div class="activity-list">
-      @for (activity of activities; track activity.action) {
-        <div class="activity-item">
-          <span class="activity-dot" [class]="activity.status"></span>
-          <div class="activity-copy">
-            <strong>{{ activity.action }}</strong>
-            <p>{{ activity.detail }}</p>
+      <div class="bg-white rounded-xl p-5 border border-outline-variant card-shadow-level-1 flex flex-col gap-3">
+          <div class="flex items-center gap-2 text-on-surface-variant">
+              <span class="material-symbols-outlined text-secondary">receipt_long</span>
+              <span class="font-label-md text-[13px] uppercase tracking-wider font-semibold">Tổng đơn hàng</span>
           </div>
-          <small>{{ activity.time }}</small>
-        </div>
-      }
-    </div>
-  </section>
+          <span class="font-headline-md text-headline-md font-bold text-on-surface">{{ data.summary.totalOrders }}</span>
+      </div>
+      <div class="bg-white rounded-xl p-5 border border-outline-variant card-shadow-level-1 flex flex-col gap-3">
+          <div class="flex items-center gap-2 text-on-surface-variant">
+              <span class="material-symbols-outlined text-error">warning</span>
+              <span class="font-label-md text-[13px] uppercase tracking-wider font-semibold">Cảnh báo tồn kho</span>
+          </div>
+          <span class="font-headline-md text-headline-md font-bold" [class.text-error]="data.summary.lowStockAlerts > 0">{{ data.summary.lowStockAlerts }}</span>
+      </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-card-gap mb-8">
+      <!-- Chi nhánh nổi bật -->
+      <div class="bg-white rounded-[24px] border border-outline-variant p-6 card-shadow-level-1 lg:col-span-2">
+          <div class="flex items-center justify-between mb-6">
+              <div>
+                  <h3 class="font-title-lg text-title-lg text-on-surface font-bold">Chi nhánh nổi bật</h3>
+                  <span class="text-on-surface-variant text-[13px]">{{ data.summary.activeBranches }} đang hoạt động</span>
+              </div>
+              <button class="text-primary hover:bg-primary-container/30 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors">Xem tất cả</button>
+          </div>
+          
+          <div class="flex flex-col gap-4">
+              @for (branch of data.topBranches; track branch.id) {
+                  <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/50 hover:bg-surface-container-lowest transition-colors">
+                      <div class="flex items-center gap-4">
+                          <div class="w-12 h-12 bg-surface-container-low rounded-lg flex items-center justify-center text-primary font-bold border border-outline-variant">
+                              {{ branch.name.charAt(0) }}
+                          </div>
+                          <div>
+                              <strong class="font-title-md text-on-surface block">{{ branch.name }}</strong>
+                              <span class="text-[13px] text-on-surface-variant line-clamp-1">{{ branch.address }}</span>
+                          </div>
+                      </div>
+                      <div class="text-right">
+                          <strong class="block text-on-surface font-bold">{{ branch.revenueToday | currency:'VND':'symbol':'1.0-0' }}</strong>
+                          <span class="text-[12px] flex items-center gap-1 justify-end" [class.text-error]="branch.lowStockItems > 0" [class.text-on-surface-variant]="branch.lowStockItems === 0">
+                              <span class="material-symbols-outlined text-[14px]">inventory_2</span> {{ branch.lowStockItems }} cảnh báo
+                          </span>
+                      </div>
+                  </div>
+              }
+          </div>
+      </div>
+
+      <!-- Món bán chạy -->
+      <div class="bg-white rounded-[24px] border border-outline-variant p-6 card-shadow-level-1">
+          <div class="flex items-center justify-between mb-6">
+              <div>
+                  <h3 class="font-title-lg text-title-lg text-on-surface font-bold">Món bán chạy</h3>
+                  <span class="text-on-surface-variant text-[13px]">Cập nhật từ POS</span>
+              </div>
+          </div>
+          
+          <div class="flex flex-col gap-4">
+              @for (product of data.bestSellingProducts; track product.id) {
+                  <div class="flex items-center gap-4">
+                      <div class="w-14 h-14 rounded-lg bg-surface-container-low border border-outline-variant overflow-hidden flex-shrink-0">
+                          <img [src]="product.imageUrl || 'assets/placeholder.png'" [alt]="product.name" class="w-full h-full object-cover" />
+                      </div>
+                      <div class="flex-1 min-w-0">
+                          <strong class="font-title-md text-on-surface block truncate">{{ product.name }}</strong>
+                          <span class="text-[12px] text-on-surface-variant block">{{ product.category }} · {{ product.soldQuantity }} ly</span>
+                          <span class="text-primary font-bold text-sm block mt-0.5">{{ product.price | currency:'VND':'symbol':'1.0-0' }}</span>
+                      </div>
+                  </div>
+              }
+          </div>
+      </div>
+  </div>
+
+  <!-- Hoạt động gần đây -->
+  <div class="bg-white rounded-[24px] border border-outline-variant p-6 card-shadow-level-1">
+      <div class="flex items-center justify-between mb-6">
+          <div>
+              <h3 class="font-title-lg text-title-lg text-on-surface font-bold">Hoạt động gần đây</h3>
+              <span class="text-on-surface-variant text-[13px]">Cập nhật nội bộ hệ thống</span>
+          </div>
+      </div>
+      
+      <div class="flex flex-col">
+          @for (activity of activities; track activity.action) {
+              <div class="flex items-start gap-4 py-4 border-b border-outline-variant/30 last:border-0">
+                  <div class="mt-1 w-2.5 h-2.5 rounded-full flex-shrink-0" 
+                       [class.bg-primary]="activity.status === 'success'"
+                       [class.bg-secondary]="activity.status === 'warning'"
+                       [class.bg-outline]="activity.status === 'info'"></div>
+                  <div class="flex-1">
+                      <strong class="font-title-md text-on-surface block">{{ activity.action }}</strong>
+                      <p class="text-on-surface-variant text-[13px] mt-0.5">{{ activity.detail }}</p>
+                  </div>
+                  <span class="text-[12px] text-on-surface-variant whitespace-nowrap">{{ activity.time }}</span>
+              </div>
+          }
+      </div>
+  </div>
 }

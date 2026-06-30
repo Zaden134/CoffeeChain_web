@@ -2,6 +2,7 @@ using CoffeeChainManagement.Domain.Entities;
 using CoffeeChainManagement.Domain.Enums;
 using CoffeeChainManagement.Infrastructure.Persistence;
 using CoffeeChainManagement.Infrastructure.Services;
+using CoffeeChainManagement.Tests.TestDoubles;
 using Microsoft.EntityFrameworkCore;
 
 namespace CoffeeChainManagement.Tests.Infrastructure;
@@ -48,7 +49,8 @@ public sealed class ReportServiceTests
         });
         await db.SaveChangesAsync();
 
-        var service = new PostgresReportService(db);
+        var currentUser = new TestCurrentUserContext(Guid.NewGuid(), "admin", null, UserRole.Administrator);
+        var service = new PostgresReportService(db, currentUser);
         var report = await service.GetSalesReportAsync(null, null, branch.Id);
         var export = await service.ExportSalesReportAsync(null, null, branch.Id, "xlsx");
 
@@ -56,6 +58,19 @@ public sealed class ReportServiceTests
         Assert.Equal(1, report.TotalOrders);
         Assert.Equal("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", export.ContentType);
         Assert.NotEmpty(export.Content);
+    }
+
+    [Fact]
+    public async Task Branch_manager_cannot_access_other_branch_report()
+    {
+        await using var db = CreateDb();
+        var ownBranchId = Guid.NewGuid();
+        var otherBranchId = Guid.NewGuid();
+        var currentUser = new TestCurrentUserContext(Guid.NewGuid(), "manager.q1", ownBranchId, UserRole.BranchManager);
+        var service = new PostgresReportService(db, currentUser);
+
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
+            service.GetSalesReportAsync(null, null, otherBranchId));
     }
 
     private static CoffeeChainDbContext CreateDb()

@@ -1,55 +1,86 @@
-<div class="layout">
-  @if (sidebarOpen()) {
-    <button class="backdrop" type="button" (click)="closeSidebar()"></button>
-  }
-
-  <aside class="sidebar" [class.open]="sidebarOpen()">
-    <div class="brand">
-      <div class="brand-mark">CP</div>
-      <div>
-        <strong>CoffeePOS</strong>
-        <p>Chuỗi cửa hàng cà phê</p>
-      </div>
-      <button class="sidebar-close" type="button" (click)="closeSidebar()">x</button>
-    </div>
-
-    <nav class="nav">
-      @for (item of navigation(); track item.path) {
-        <a
-          [routerLink]="item.path"
-          routerLinkActive="active"
-          [routerLinkActiveOptions]="{ exact: item.path === '/' }"
-          class="nav-item"
-          (click)="closeSidebar()">
-          <span>{{ item.label }}</span>
-        </a>
-      }
-    </nav>
-
-    <div class="profile">
-      <div class="avatar">{{ user()?.fullName?.slice(0, 1) ?? 'U' }}</div>
-      <div class="profile-text">
-        <strong>{{ user()?.fullName }}</strong>
-        <p>{{ user()?.role }}</p>
-      </div>
-      <button type="button" class="logout" (click)="logout()">Đăng xuất</button>
-    </div>
-  </aside>
-
-  <div class="content-wrap">
-    <header class="topbar">
-      <div class="topbar-left">
-        <button type="button" class="menu-button" (click)="toggleSidebar()">Menu</button>
-        <div>
-          <h1>Hệ thống quản lý chuỗi cửa hàng cà phê</h1>
-          <p>Vận hành, kho, nhân sự và doanh thu trong một giao diện.</p>
+<!-- SideNavBar -->
+<nav class="hidden md:flex flex-col fixed left-0 top-0 h-full w-64 p-4 gap-4 bg-surface-container-low border-r border-outline-variant z-40 transition-transform" [class.-translate-x-full]="!sidebarOpen()" [class.md:translate-x-0]="true">
+    <!-- Header -->
+    <div class="flex items-center gap-3 px-2 py-4 mb-2">
+        <div class="w-10 h-10 rounded-lg overflow-hidden bg-white border border-outline-variant flex-shrink-0 flex items-center justify-center font-bold text-primary text-xl">
+            HQ
         </div>
-      </div>
-      <div class="status">Trực tuyến</div>
+        <div class="flex flex-col">
+            <span class="font-title-lg text-title-lg font-black text-primary">Hệ thống HQ</span>
+            <span class="font-label-md text-label-md text-on-surface-variant">{{ user()?.role }}</span>
+        </div>
+    </div>
+    
+    <!-- Main Tabs -->
+    <div class="flex flex-col gap-1 flex-1">
+        @for (item of navigation(); track item.path) {
+            <a
+                [routerLink]="item.path"
+                routerLinkActive="bg-secondary-container text-on-secondary-container font-bold"
+                [routerLinkActiveOptions]="{ exact: item.path === '/' }"
+                class="flex items-center gap-3 px-3 py-3 text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface rounded-lg font-label-md text-label-md transition-all active:scale-95"
+                (click)="closeSidebar()">
+                <span class="material-symbols-outlined" routerLinkActive="fill" [routerLinkActiveOptions]="{ exact: item.path === '/' }">{{ item.icon }}</span>
+                <span>{{ item.label }}</span>
+            </a>
+        }
+    </div>
+
+    <!-- CTA -->
+    <button class="w-full bg-primary-container text-white font-label-md text-label-md font-medium py-3 px-4 rounded-lg flex items-center justify-center gap-2 hover:opacity-90 transition-opacity mb-4">
+        <span class="material-symbols-outlined text-[18px]">add</span>
+        Thêm mới
+    </button>
+
+    <!-- Footer Tabs -->
+    <div class="flex flex-col gap-1 border-t border-outline-variant pt-4 mt-auto">
+        <a href="javascript:void(0)" class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface rounded-lg font-label-md text-label-md transition-all active:scale-95">
+            <span class="material-symbols-outlined">help</span>
+            <span>Hỗ trợ</span>
+        </a>
+        <a href="javascript:void(0)" (click)="logout()" class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface rounded-lg font-label-md text-label-md transition-all active:scale-95">
+            <span class="material-symbols-outlined">logout</span>
+            <span>Đăng xuất</span>
+        </a>
+    </div>
+</nav>
+
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col md:ml-64 min-w-0 transition-all">
+    <!-- TopNavBar (Mobile and Global Context) -->
+    <header class="sticky top-0 w-full z-30 flex justify-between items-center px-container-padding h-16 bg-surface border-b border-outline-variant shadow-sm">
+        <div class="flex items-center gap-2">
+            <button class="md:hidden text-on-surface-variant hover:text-primary transition-colors cursor-pointer active:opacity-80" (click)="toggleSidebar()">
+                <span class="material-symbols-outlined">menu</span>
+            </button>
+            <span class="font-headline-md text-headline-md font-bold text-primary md:hidden">Hệ thống HQ</span>
+            <div class="hidden md:flex flex-col">
+                <h1 class="text-on-surface font-semibold m-0 text-lg">Hệ thống quản lý chuỗi cửa hàng cà phê</h1>
+                <span class="text-on-surface-variant text-sm">Vận hành, kho, nhân sự và doanh thu</span>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <button class="text-on-surface-variant hover:text-primary transition-colors cursor-pointer active:opacity-80">
+                <span class="material-symbols-outlined">refresh</span>
+            </button>
+            <button class="text-on-surface-variant hover:text-primary transition-colors cursor-pointer active:opacity-80">
+                <span class="material-symbols-outlined">notifications</span>
+            </button>
+            <div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant bg-primary text-white flex items-center justify-center font-bold">
+                {{ user()?.fullName?.slice(0, 1) ?? 'U' }}
+            </div>
+            <span class="hidden md:block font-label-md font-bold text-on-surface">{{ user()?.fullName }}</span>
+        </div>
     </header>
 
-    <main class="page-content">
-      <router-outlet></router-outlet>
+    <!-- Main Canvas -->
+    <main class="flex-1 bg-background">
+        <router-outlet></router-outlet>
     </main>
-  </div>
 </div>
+
+<!-- Backdrop for mobile sidebar -->
+@if (sidebarOpen()) {
+    <div class="fixed inset-0 bg-black/50 z-30 md:hidden" (click)="closeSidebar()"></div>
+}

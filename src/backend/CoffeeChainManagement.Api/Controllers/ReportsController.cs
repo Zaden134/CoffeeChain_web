@@ -16,7 +16,7 @@ public sealed class ReportsController(IReportService reportService) : Controller
         [FromQuery] DateOnly? toDate,
         [FromQuery] Guid? branchId,
         CancellationToken cancellationToken)
-        => Ok(await reportService.GetSalesReportAsync(fromDate, toDate, branchId, cancellationToken));
+        => await ExecuteAsync(async () => Ok(await reportService.GetSalesReportAsync(fromDate, toDate, branchId, cancellationToken)));
 
     [HttpGet("sales/export")]
     public async Task<IActionResult> ExportSales(
@@ -25,8 +25,21 @@ public sealed class ReportsController(IReportService reportService) : Controller
         [FromQuery] Guid? branchId,
         [FromQuery] string format = "xlsx",
         CancellationToken cancellationToken = default)
+        => await ExecuteAsync(async () =>
+        {
+            var export = await reportService.ExportSalesReportAsync(fromDate, toDate, branchId, format, cancellationToken);
+            return File(export.Content, export.ContentType, export.FileName);
+        });
+
+    private async Task<IActionResult> ExecuteAsync(Func<Task<IActionResult>> action)
     {
-        var export = await reportService.ExportSalesReportAsync(fromDate, toDate, branchId, format, cancellationToken);
-        return File(export.Content, export.ContentType, export.FileName);
+        try
+        {
+            return await action();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
     }
 }

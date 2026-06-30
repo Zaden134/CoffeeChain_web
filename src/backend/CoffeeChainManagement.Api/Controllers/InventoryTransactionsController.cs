@@ -10,13 +10,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace CoffeeChainManagement.Api.Controllers;
 
 [ApiController]
-[Authorize(Roles = "Administrator,BranchManager")]
+[Authorize(Roles = "Administrator,BranchManager,WarehouseStaff")]
 [Route("api/inventory-transactions")]
 public sealed class InventoryTransactionsController(IInventoryTransactionService txService) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
-        => Ok(await txService.GetAllAsync(cancellationToken));
+        => await ExecuteAsync(async () => Ok(await txService.GetAllAsync(cancellationToken)));
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateInventoryTransactionRequestDto request, CancellationToken cancellationToken)
@@ -32,9 +32,25 @@ public sealed class InventoryTransactionsController(IInventoryTransactionService
             var result = await txService.CreateTransactionAsync(request, employeeId, cancellationToken);
             return Ok(result);
         }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
         catch (System.Collections.Generic.KeyNotFoundException ex)
         {
             return NotFound(new { message = ex.Message });
+        }
+    }
+
+    private async Task<IActionResult> ExecuteAsync(Func<Task<IActionResult>> action)
+    {
+        try
+        {
+            return await action();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
         }
     }
 }

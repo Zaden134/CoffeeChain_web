@@ -5,7 +5,6 @@ import { Router } from '@angular/router';
 
 import { AuthStore } from '../../core/services/auth.store';
 
-// LoginPage dung giao dien tu mau tham chieu va goi backend JWT login that.
 @Component({
   selector: 'ccm-login-page',
   standalone: true,
@@ -29,7 +28,7 @@ export class LoginPage {
       await this.authStore.login(this.username(), this.password());
       await this.router.navigate(['/']);
     } catch {
-      this.error.set('Dang nhap that bai. Kiem tra username va password.');
+      this.error.set('Đăng nhập thất bại. Kiểm tra lại tên đăng nhập và mật khẩu.');
     }
   }
 }

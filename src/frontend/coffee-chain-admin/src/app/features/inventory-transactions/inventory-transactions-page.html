@@ -1,101 +1,163 @@
-<section class="page-card">
-  <div class="page-head">
-    <div>
-      <h2>Lịch sử Nhập / Xuất Kho</h2>
-      <p>Theo dõi luân chuyển nguyên liệu tại các chi nhánh.</p>
-    </div>
-    <div class="header-actions">
-      <button class="btn btn-secondary" (click)="load()">Làm mới</button>
-      <button class="btn btn-primary" *ngIf="!isCreating() && authStore.can('inventory.write', null)" (click)="startCreate()">+ Tạo giao dịch</button>
-    </div>
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+  <div class="max-w-2xl">
+      <h1 class="font-display-lg text-display-lg md:text-display-lg text-on-surface mb-2 tracking-tight">Lịch sử Nhập / Xuất Kho</h1>
+      <p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">Theo dõi luân chuyển nguyên liệu tại các chi nhánh.</p>
   </div>
+  <div class="flex items-center gap-3">
+      <button type="button" class="flex items-center justify-center gap-2 px-4 py-2 border border-outline-variant text-on-surface font-label-md text-label-md font-medium rounded-lg hover:bg-surface-container-high transition-colors bg-white" (click)="load()">
+          <span class="material-symbols-outlined text-[18px]">refresh</span>
+          Làm mới
+      </button>
+      <button *ngIf="!isCreating() && authStore.can('inventory.write', null)" type="button" class="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white font-label-md text-label-md font-medium rounded-lg hover:opacity-90 transition-opacity" (click)="startCreate()">
+          <span class="material-symbols-outlined text-[18px]">add</span>
+          Tạo giao dịch
+      </button>
+  </div>
+</div>
 
-  <div *ngIf="error()" class="alert alert-error">{{ error() }}</div>
-  <div *ngIf="success()" class="alert alert-success">{{ success() }}</div>
+@if (error()) {
+  <div class="flex items-center gap-2 p-4 bg-error-container text-error rounded-lg mb-6 text-body-md border border-error/20">
+      <span class="material-symbols-outlined">error</span>
+      {{ error() }}
+  </div>
+}
 
-  <!-- Form Tạo Giao Dịch Mới -->
-  <div *ngIf="isCreating()" class="create-form-panel">
-    <h3>Tạo giao dịch Nhập/Xuất kho</h3>
-    
-    <div class="form-grid">
-      <div class="form-group">
-        <label>Loại giao dịch <span class="required">*</span></label>
-        <select class="form-control" [ngModel]="form().type" (ngModelChange)="form().type = $event">
-          <option [ngValue]="1">Nhập kho (Import)</option>
-          <option [ngValue]="2">Xuất kho (Export)</option>
-        </select>
-      </div>
+@if (success()) {
+  <div class="flex items-center gap-2 p-4 bg-[#E6F4EA] text-[#137333] rounded-lg mb-6 text-body-md border border-[#137333]/20">
+      <span class="material-symbols-outlined">check_circle</span>
+      {{ success() }}
+  </div>
+}
 
-      <div class="form-group">
-        <label>Chi nhánh <span class="required">*</span></label>
-        <select class="form-control" [ngModel]="form().branchId" (ngModelChange)="form().branchId = $event">
-          <option value="">-- Chọn chi nhánh --</option>
-          <option *ngFor="let b of branches()" [value]="b.id">{{ b.name }}</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Nguyên liệu <span class="required">*</span></label>
-        <select class="form-control" [ngModel]="form().ingredientId" (ngModelChange)="form().ingredientId = $event">
-          <option value="">-- Chọn nguyên liệu --</option>
-          <option *ngFor="let item of ingredients()" [value]="item.id">{{ item.label }}</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Số lượng <span class="required">*</span></label>
-        <input type="number" class="form-control" min="1" [ngModel]="form().quantity" (ngModelChange)="form().quantity = $event">
-      </div>
-
-      <div class="form-group">
-        <label>Mã chứng từ (Tùy chọn)</label>
-        <input type="text" class="form-control" placeholder="Mã phiếu nhập/xuất" [ngModel]="form().referenceNumber" (ngModelChange)="form().referenceNumber = $event">
+<!-- Form Tạo Giao Dịch Mới -->
+@if (isCreating()) {
+  <div class="bg-white rounded-[24px] border border-outline-variant p-6 md:p-8 card-shadow-level-1 mb-8 animate-fade-in">
+      <div class="flex items-center gap-3 mb-8">
+          <div class="w-12 h-12 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center">
+              <span class="material-symbols-outlined">swap_horiz</span>
+          </div>
+          <div>
+              <h2 class="font-title-lg text-[22px] text-on-surface font-bold">Tạo giao dịch kho</h2>
+              <p class="text-on-surface-variant text-[14px]">Nhập hoặc xuất nguyên liệu khỏi kho</p>
+          </div>
       </div>
       
-      <div class="form-group">
-        <label>Ghi chú</label>
-        <input type="text" class="form-control" placeholder="Lý do, nguồn gốc..." [ngModel]="form().notes" (ngModelChange)="form().notes = $event">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="flex flex-col gap-1.5">
+              <label class="font-label-md text-[13px] text-on-surface-variant uppercase tracking-wider">Loại giao dịch <span class="text-error">*</span></label>
+              <select class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-on-surface bg-surface-container-lowest" [ngModel]="form().type" (ngModelChange)="form().type = $event">
+                  <option [ngValue]="1">📥 Nhập kho (Import)</option>
+                  <option [ngValue]="2">📤 Xuất kho (Export)</option>
+              </select>
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+              <label class="font-label-md text-[13px] text-on-surface-variant uppercase tracking-wider">Chi nhánh <span class="text-error">*</span></label>
+              <select class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-on-surface bg-surface-container-lowest" [ngModel]="form().branchId" (ngModelChange)="form().branchId = $event">
+                  <option value="">-- Chọn chi nhánh --</option>
+                  <option *ngFor="let b of branches()" [value]="b.id">{{ b.name }}</option>
+              </select>
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+              <label class="font-label-md text-[13px] text-on-surface-variant uppercase tracking-wider">Nguyên liệu <span class="text-error">*</span></label>
+              <select class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-on-surface bg-surface-container-lowest" [ngModel]="form().ingredientId" (ngModelChange)="form().ingredientId = $event">
+                  <option value="">-- Chọn nguyên liệu --</option>
+                  <option *ngFor="let item of ingredients()" [value]="item.id">{{ item.label }}</option>
+              </select>
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+              <label class="font-label-md text-[13px] text-on-surface-variant uppercase tracking-wider">Số lượng <span class="text-error">*</span></label>
+              <input type="number" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-on-surface bg-surface-container-lowest" min="1" [ngModel]="form().quantity" (ngModelChange)="form().quantity = $event">
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+              <label class="font-label-md text-[13px] text-on-surface-variant uppercase tracking-wider">Mã chứng từ</label>
+              <input type="text" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-on-surface bg-surface-container-lowest" placeholder="Mã phiếu nhập/xuất" [ngModel]="form().referenceNumber" (ngModelChange)="form().referenceNumber = $event">
+          </div>
+          
+          <div class="flex flex-col gap-1.5 lg:col-span-3">
+              <label class="font-label-md text-[13px] text-on-surface-variant uppercase tracking-wider">Ghi chú</label>
+              <input type="text" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-on-surface bg-surface-container-lowest" placeholder="Lý do, nguồn gốc..." [ngModel]="form().notes" (ngModelChange)="form().notes = $event">
+          </div>
       </div>
-    </div>
 
-    <div class="form-actions">
-      <button class="btn btn-secondary" [disabled]="submitting()" (click)="cancelCreate()">Hủy</button>
-      <button class="btn btn-primary" [disabled]="submitting()" (click)="submit()">Xác nhận giao dịch</button>
-    </div>
+      <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-outline-variant">
+          <button type="button" class="px-6 py-2.5 rounded-lg border border-outline-variant text-on-surface font-label-md font-medium hover:bg-surface-container-low transition-colors disabled:opacity-50" [disabled]="submitting()" (click)="cancelCreate()">Hủy bỏ</button>
+          <button type="button" class="px-6 py-2.5 rounded-lg bg-primary text-white font-label-md font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-2" [disabled]="submitting()" (click)="submit()">
+              @if (submitting()) {
+                  <span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                  Đang lưu...
+              } @else {
+                  <span class="material-symbols-outlined text-[18px]">check</span>
+                  Xác nhận giao dịch
+              }
+          </button>
+      </div>
   </div>
+}
 
-  <div *ngIf="loading()" class="loading-state">
-    Đang tải dữ liệu...
-  </div>
+@if (loading()) {
+  <div class="flex justify-center p-8 text-on-surface-variant">Đang tải lịch sử giao dịch...</div>
+}
 
-  <!-- Danh sách giao dịch -->
-  <div *ngIf="!loading() && !isCreating()" class="table-container">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>Thời gian</th>
-          <th>Chi nhánh</th>
-          <th>Loại</th>
-          <th>Nguyên liệu</th>
-          <th>SL</th>
-          <th>Mã chứng từ</th>
-          <th>Ghi chú</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let tx of transactions()">
-          <td>{{ tx.createdAtUtc | date:'dd/MM/yyyy HH:mm' }}</td>
-          <td>{{ tx.branchName }}</td>
-          <td><span class="badge" [ngClass]="getTypeClass(tx.type)">{{ getTypeName(tx.type) }}</span></td>
-          <td>{{ tx.ingredientName }}</td>
-          <td><strong>{{ tx.quantity > 0 ? '+' + tx.quantity : tx.quantity }}</strong></td>
-          <td>{{ tx.referenceNumber || '-' }}</td>
-          <td>{{ tx.notes }}</td>
-        </tr>
-        <tr *ngIf="transactions().length === 0">
-          <td colspan="7" class="text-center empty-state">Chưa có lịch sử giao dịch nào.</td>
-        </tr>
-      </tbody>
-    </table>
+<!-- Danh sách giao dịch -->
+@if (!loading() && !isCreating()) {
+  <div class="bg-white rounded-[24px] border border-outline-variant overflow-hidden card-shadow-level-1">
+      <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse min-w-[800px]">
+              <thead>
+                  <tr class="bg-surface-container-low border-b border-outline-variant">
+                      <th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Thời gian</th>
+                      <th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Chi nhánh</th>
+                      <th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Loại</th>
+                      <th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Nguyên liệu</th>
+                      <th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider text-right">SL</th>
+                      <th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Mã chứng từ</th>
+                      <th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Ghi chú</th>
+                  </tr>
+              </thead>
+              <tbody class="divide-y divide-outline-variant/50">
+                  @for (tx of transactions(); track tx.id) {
+                      <tr class="hover:bg-surface-container-lowest transition-colors">
+                          <td class="px-6 py-4 font-body-md text-on-surface">{{ tx.createdAtUtc | date:'dd/MM/yyyy HH:mm' }}</td>
+                          <td class="px-6 py-4 font-title-md text-on-surface font-medium">{{ tx.branchName }}</td>
+                          <td class="px-6 py-4">
+                              <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-bold tracking-wide uppercase"
+                                   [class.bg-[#E6F4EA]]="tx.type === 1" [class.text-[#137333]]="tx.type === 1"
+                                   [class.bg-error-container]="tx.type === 2" [class.text-error]="tx.type === 2"
+                                   [class.bg-surface-variant]="tx.type !== 1 && tx.type !== 2" [class.text-on-surface]="tx.type !== 1 && tx.type !== 2">
+                                  <span class="material-symbols-outlined text-[14px]">
+                                      {{ tx.type === 1 ? 'arrow_downward' : (tx.type === 2 ? 'arrow_upward' : 'help') }}
+                                  </span>
+                                  {{ getTypeName(tx.type) }}
+                              </div>
+                          </td>
+                          <td class="px-6 py-4 font-body-md text-on-surface">{{ tx.ingredientName }}</td>
+                          <td class="px-6 py-4 text-right">
+                              <strong class="font-title-md" [class.text-[#137333]]="tx.type === 1" [class.text-error]="tx.type === 2">
+                                  {{ tx.type === 1 ? '+' : (tx.type === 2 ? '-' : '') }}{{ tx.quantity }}
+                              </strong>
+                          </td>
+                          <td class="px-6 py-4 text-[13px] text-on-surface-variant">{{ tx.referenceNumber || '-' }}</td>
+                          <td class="px-6 py-4 text-[13px] text-on-surface-variant max-w-[200px] truncate" [title]="tx.notes">{{ tx.notes || '-' }}</td>
+                      </tr>
+                  }
+                  
+                  @if (transactions().length === 0) {
+                      <tr>
+                          <td colspan="7" class="px-6 py-12 text-center">
+                              <div class="flex flex-col items-center justify-center text-on-surface-variant">
+                                  <span class="material-symbols-outlined text-[48px] mb-4 opacity-50">history</span>
+                                  <p class="font-body-lg">Chưa có lịch sử giao dịch nào.</p>
+                              </div>
+                          </td>
+                      </tr>
+                  }
+              </tbody>
+          </table>
+      </div>
   </div>
-</section>
+}

@@ -7,19 +7,21 @@ import { AuthStore } from '../core/services/auth.store';
 interface NavigationItem {
   label: string;
   path: string;
+  icon: string;
   roles: string[];
 }
 
 const NAVIGATION: NavigationItem[] = [
-  { label: 'Dashboard', path: '/', roles: ['Administrator', 'BranchManager', 'Cashier'] },
-  { label: 'Chi nhánh', path: '/branches', roles: ['Administrator', 'BranchManager'] },
-  { label: 'Sản phẩm', path: '/products', roles: ['Administrator', 'BranchManager', 'Cashier'] },
-  { label: 'Kho hàng', path: '/inventory', roles: ['Administrator', 'BranchManager'] },
-  { label: 'Nhập / Xuất kho', path: '/inventory/transactions', roles: ['Administrator', 'BranchManager'] },
-  { label: 'Nhân viên', path: '/employees', roles: ['Administrator', 'BranchManager'] },
-  { label: 'Báo cáo', path: '/reports', roles: ['Administrator', 'BranchManager'] },
-  { label: 'Khuyến mãi', path: '/promotions', roles: ['Administrator', 'BranchManager'] },
-  { label: 'Yêu cầu tuyển', path: '/recruitment-requests', roles: ['Administrator', 'BranchManager'] }
+  { label: 'Bảng điều khiển', path: '/', icon: 'dashboard', roles: ['Administrator', 'BranchManager', 'Cashier', 'WarehouseStaff'] },
+  { label: 'Chi nhánh', path: '/branches', icon: 'storefront', roles: ['Administrator', 'BranchManager'] },
+  { label: 'Sản phẩm', path: '/products', icon: 'coffee', roles: ['Administrator', 'BranchManager', 'Cashier'] },
+  { label: 'Kho hàng', path: '/inventory', icon: 'inventory_2', roles: ['Administrator', 'BranchManager', 'WarehouseStaff'] },
+  { label: 'Giao dịch', path: '/inventory/transactions', icon: 'receipt_long', roles: ['Administrator', 'BranchManager', 'WarehouseStaff'] },
+  { label: 'Nhân viên', path: '/employees', icon: 'group', roles: ['Administrator', 'BranchManager'] },
+  { label: 'Báo cáo', path: '/reports', icon: 'analytics', roles: ['Administrator', 'BranchManager'] },
+  { label: 'Khuyến mãi', path: '/promotions', icon: 'local_offer', roles: ['Administrator', 'BranchManager'] },
+  { label: 'Tuyển dụng', path: '/recruitment-requests', icon: 'work', roles: ['Administrator', 'BranchManager'] },
+  { label: 'Audit log', path: '/audit-logs', icon: 'manage_search', roles: ['Administrator'] }
 ];
 
 // MainLayout la shell chinh cua he thong sau khi user dang nhap.

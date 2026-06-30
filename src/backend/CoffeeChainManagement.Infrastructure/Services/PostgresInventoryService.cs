@@ -21,7 +21,7 @@ internal sealed class PostgresInventoryService(
         var branchQuery = dbContext.Branches.AsNoTracking();
         var inventoryQuery = dbContext.InventoryItems.AsNoTracking();
 
-        if (currentUser.Role == UserRole.BranchManager)
+        if (currentUser.Role is UserRole.BranchManager or UserRole.WarehouseStaff)
         {
             inventoryQuery = inventoryQuery.Where(item => item.BranchId == currentUser.BranchId);
             branchQuery = branchQuery.Where(branch => branch.Id == currentUser.BranchId);
@@ -182,7 +182,7 @@ internal sealed class PostgresInventoryService(
 
     private void EnsureReadable()
     {
-        if (!currentUser.IsAuthenticated || (currentUser.Role != UserRole.Administrator && currentUser.Role != UserRole.BranchManager))
+        if (!currentUser.IsAuthenticated || currentUser.Role is not (UserRole.Administrator or UserRole.BranchManager or UserRole.WarehouseStaff))
         {
             throw new UnauthorizedAccessException("You do not have permission to access inventory.");
         }
@@ -190,12 +190,12 @@ internal sealed class PostgresInventoryService(
 
     private void EnsureWritable(Guid branchId)
     {
-        if (!currentUser.IsAuthenticated || (currentUser.Role != UserRole.Administrator && currentUser.Role != UserRole.BranchManager))
+        if (!currentUser.IsAuthenticated || currentUser.Role is not (UserRole.Administrator or UserRole.BranchManager or UserRole.WarehouseStaff))
         {
             throw new UnauthorizedAccessException("You do not have permission to modify inventory.");
         }
 
-        if (currentUser.Role == UserRole.BranchManager && currentUser.BranchId != branchId)
+        if (currentUser.Role is (UserRole.BranchManager or UserRole.WarehouseStaff) && currentUser.BranchId != branchId)
         {
             throw new UnauthorizedAccessException("Branch managers can only modify inventory in their own branch.");
         }

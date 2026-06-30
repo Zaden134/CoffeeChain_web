@@ -6,4 +6,8 @@ namespace CoffeeChainManagement.Application.Interfaces;
 public interface IProductService
 {
     Task<IReadOnlyCollection<ProductSummaryDto>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<ProductSummaryDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<ProductSummaryDto> CreateAsync(UpsertProductRequestDto request, CancellationToken cancellationToken = default);
+    Task<ProductSummaryDto> UpdateAsync(Guid id, UpsertProductRequestDto request, CancellationToken cancellationToken = default);
+    Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 }

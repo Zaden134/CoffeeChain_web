@@ -153,12 +153,16 @@ export class AuthStore {
 
     switch (permission) {
       case 'employees.read':
+        return role === 'BranchManager';
       case 'inventory.read':
+        return role === 'BranchManager' || role === 'WarehouseStaff';
       case 'recruitment.read':
       case 'promotions.write':
         return role === 'BranchManager';
       case 'employees.write':
+        return role === 'BranchManager' && sameBranch;
       case 'inventory.write':
+        return (role === 'BranchManager' || role === 'WarehouseStaff') && sameBranch;
       case 'recruitment.write':
         return role === 'BranchManager' && sameBranch;
       case 'recruitment.review':

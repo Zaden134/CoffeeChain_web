@@ -1,46 +1,105 @@
-<section class="page-card">
-  <div class="page-head">
-    <div>
-      <h2>Chi nhánh</h2>
-      <p>Theo doi doanh thu va canh bao ton kho cua tung cua hang.</p>
-    </div>
-    <button type="button" (click)="load()">Làm mới</button>
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+  <div class="max-w-2xl">
+      <h1 class="font-display-lg text-display-lg md:text-display-lg text-on-surface mb-2 tracking-tight">Quản lý chi nhánh</h1>
+      <p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">Theo dõi doanh thu, trạng thái hoạt động và cảnh báo tồn kho của từng chi nhánh trên toàn hệ thống.</p>
   </div>
+  <div class="flex items-center gap-3">
+      <button (click)="load()" class="flex items-center justify-center gap-2 px-4 py-2 border border-outline-variant text-on-surface font-label-md text-label-md font-medium rounded-lg hover:bg-surface-container-high transition-colors bg-white">
+          <span class="material-symbols-outlined text-[18px]">refresh</span>
+          Làm mới
+      </button>
+      <button class="flex items-center justify-center gap-2 px-4 py-2 bg-secondary-container text-on-secondary-container font-label-md text-label-md font-medium rounded-lg hover:opacity-90 transition-opacity">
+          <span class="material-symbols-outlined text-[18px]">add</span>
+          Thêm chi nhánh
+      </button>
+  </div>
+</div>
 
-  @if (loading()) {
-    <p>Đang tải chi nhánh...</p>
-  } @else if (error()) {
-    <p class="error">{{ error() }}</p>
-  } @else {
-    <div class="branch-grid">
-      @for (branch of branches(); track branch.id) {
-        <article class="branch-card">
-          <div class="branch-top">
+@if (loading()) {
+  <div class="flex justify-center p-8 text-on-surface-variant">Đang tải chi nhánh...</div>
+} @else if (error()) {
+  <div class="p-4 bg-error-container text-error rounded-lg mb-4">{{ error() }}</div>
+} @else {
+  <!-- Branch Cards Grid (Data-Focused Variant) -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-card-gap">
+    
+    @for (branch of branches(); track branch.id) {
+      <div class="bg-white rounded-[20px] border border-outline-variant p-5 card-shadow-level-1 card-shadow-level-2 transition-shadow flex flex-col gap-4 relative overflow-hidden group h-full">
+        <!-- Colored Indicator based on active status -->
+        <div class="absolute top-0 left-0 w-1 h-full" 
+             [class.bg-primary-container]="branch.isActive"
+             [class.bg-surface-variant]="!branch.isActive"></div>
+        
+        <div class="flex justify-between items-start pl-2">
             <div>
-              <strong>{{ branch.name }}</strong>
-              <p>{{ branch.code }} · {{ branch.address }}</p>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="font-title-lg text-title-lg text-on-surface font-bold">{{ branch.name }}</span>
+                    <div class="w-2 h-2 rounded-full" [class.bg-[#137333]]="branch.isActive" [class.bg-[#C5221F]]="!branch.isActive"></div>
+                </div>
+                <div class="flex items-center gap-2 text-on-surface-variant font-body-md text-[13px]">
+                    <span class="font-medium text-on-surface">{{ branch.code }}</span>
+                    <span>•</span>
+                    <span class="truncate max-w-[180px]" [title]="branch.address">{{ branch.address }}</span>
+                </div>
             </div>
-            <span class="badge" [class.inactive]="!branch.isActive">
-              {{ branch.isActive ? 'Hoạt động' : 'Tam dung' }}
-            </span>
-          </div>
+            <button class="text-on-surface-variant hover:text-on-surface p-1 rounded-full hover:bg-surface-container transition-colors">
+                <span class="material-symbols-outlined">more_vert</span>
+            </button>
+        </div>
 
-          <div class="branch-stats">
-            <div>
-              <span>Doanh thu hôm nay</span>
-              <strong>{{ branch.revenueToday | currency:'VND':'symbol':'1.0-0' }}</strong>
+        <div class="bg-surface-container-lowest border border-outline-variant/50 rounded-lg p-3 grid grid-cols-2 gap-3 pl-2">
+            <div class="flex flex-col">
+                <span class="font-label-md text-[11px] text-on-surface-variant uppercase tracking-wider mb-1">Doanh thu hôm nay</span>
+                <span class="font-headline-md text-[20px] text-on-surface font-semibold leading-tight">{{ branch.revenueToday | currency:'VND':'symbol':'1.0-0' }}</span>
+                <span class="text-[#137333] font-label-md text-[11px] flex items-center gap-0.5 mt-1">
+                    <span class="material-symbols-outlined text-[12px]">trending_up</span> +0% so với T7
+                </span>
             </div>
-            <div>
-              <span>Quản lý</span>
-              <strong>{{ branch.managerName }}</strong>
+            <div class="flex flex-col justify-end">
+                <div class="sparkline w-full">
+                    <div class="sparkline-bar" style="height: 40%"></div>
+                    <div class="sparkline-bar" style="height: 60%"></div>
+                    <div class="sparkline-bar" style="height: 50%"></div>
+                    <div class="sparkline-bar" style="height: 80%"></div>
+                    <div class="sparkline-bar" style="height: 70%"></div>
+                    <div class="sparkline-bar" style="height: 90%"></div>
+                    <div class="sparkline-bar active" style="height: 100%"></div>
+                </div>
+                <span class="font-label-md text-[10px] text-center text-on-surface-variant mt-1">7 ngày qua</span>
             </div>
-            <div>
-              <span>Cảnh báo kho</span>
-              <strong>{{ branch.lowStockItems }}</strong>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 pl-2">
+            <div class="flex flex-col gap-1">
+                <span class="font-label-md text-[11px] text-on-surface-variant uppercase tracking-wider">Cảnh báo kho</span>
+                <div class="flex items-center gap-1.5" [class.text-error]="branch.lowStockItems > 0">
+                    <span class="material-symbols-outlined text-[16px] text-secondary">inventory_2</span>
+                    <span class="font-body-lg font-medium text-on-surface">{{ branch.lowStockItems }} mặt hàng</span>
+                </div>
             </div>
-          </div>
-        </article>
-      }
-    </div>
-  }
-</section>
+            <div class="flex flex-col gap-1">
+                <span class="font-label-md text-[11px] text-on-surface-variant uppercase tracking-wider">Trạng thái</span>
+                <div class="flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px] text-secondary">verified</span>
+                    <span class="font-body-lg font-medium text-on-surface">{{ branch.isActive ? 'Hoạt động' : 'Tạm dừng' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-between mt-auto pt-3 border-t border-outline-variant/30 pl-2">
+            <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded-full bg-surface-container-high overflow-hidden flex-shrink-0 flex items-center justify-center text-primary font-bold text-[10px]">
+                    {{ branch.managerName ? branch.managerName.slice(0, 1) : '?' }}
+                </div>
+                <span class="font-body-md text-[13px] text-on-surface font-medium">{{ branch.managerName || 'Chưa phân công' }}</span>
+            </div>
+            <button class="text-secondary font-label-md text-label-md font-medium hover:bg-secondary-container/50 px-2 py-1 rounded transition-colors flex items-center gap-1">
+                Chi tiết <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+            </button>
+        </div>
+      </div>
+    }
+    
+  </div>
+}
