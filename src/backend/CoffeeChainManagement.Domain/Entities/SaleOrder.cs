@@ -10,6 +10,8 @@ public sealed class SaleOrder : BaseEntity
     public required Guid EmployeeId { get; set; }
     public required PaymentMethod PaymentMethod { get; set; }
     public required OrderStatus Status { get; set; }
+    public string? PromotionCode { get; set; }
+    public decimal DiscountAmount { get; set; }
     public List<SaleOrderItem> Items { get; set; } = [];
-    public decimal TotalAmount => Items.Sum(item => item.LineTotal);
+    public decimal TotalAmount => Items.Sum(item => item.LineTotal) - DiscountAmount;
 }

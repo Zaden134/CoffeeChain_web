@@ -21,13 +21,19 @@ internal sealed class PostgresPromotionService(
         }
 
         var query = dbContext.Promotions.AsNoTracking();
+        if (currentUser.Role is UserRole.BranchManager or UserRole.Cashier)
+        {
+            query = query.Where(promotion => promotion.BranchId == null || promotion.BranchId == currentUser.BranchId);
+        }
+
         if (currentUser.Role == UserRole.Cashier)
         {
             query = query.Where(promotion => promotion.IsActive);
         }
 
         var promotions = await query.OrderByDescending(promotion => promotion.StartDate).ToListAsync(cancellationToken);
-        return promotions.Select(MapPromotion).ToArray();
+        var branches = await dbContext.Branches.AsNoTracking().ToDictionaryAsync(branch => branch.Id, branch => branch.Name, cancellationToken);
+        return promotions.Select(promotion => MapPromotion(promotion, branches)).ToArray();
     }
 
     public async Task<PromotionDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -43,26 +49,40 @@ internal sealed class PostgresPromotionService(
             return null;
         }
 
-        return MapPromotion(promotion);
+        if (currentUser.Role is UserRole.BranchManager or UserRole.Cashier
+            && promotion.BranchId.HasValue
+            && promotion.BranchId != currentUser.BranchId)
+        {
+            return null;
+        }
+
+        var branches = await dbContext.Branches.AsNoTracking().ToDictionaryAsync(branch => branch.Id, branch => branch.Name, cancellationToken);
+        return MapPromotion(promotion, branches);
     }
 
     public async Task<PromotionDto> CreateAsync(UpsertPromotionRequestDto request, CancellationToken cancellationToken = default)
     {
         EnsureWritable();
         EnsureDateRange(request.StartDate, request.EndDate);
+        EnsureBranchScope(request.BranchId);
 
         var promotion = new Promotion
         {
+            Code = request.Code.Trim(),
             Name = request.Name.Trim(),
             DiscountPercent = request.DiscountPercent,
+            DiscountAmount = request.DiscountAmount,
             StartDate = request.StartDate,
             EndDate = request.EndDate,
+            BranchId = request.BranchId,
+            CustomerSegment = string.IsNullOrWhiteSpace(request.CustomerSegment) ? null : request.CustomerSegment.Trim(),
+            CustomerPhone = string.IsNullOrWhiteSpace(request.CustomerPhone) ? null : request.CustomerPhone.Trim(),
             IsActive = request.IsActive
         };
 
         dbContext.Promotions.Add(promotion);
         await dbContext.SaveChangesAsync(cancellationToken);
-        var result = MapPromotion(promotion);
+        var result = await MapPromotionAsync(promotion, cancellationToken);
         await auditLogService.WriteAsync("PROMOTION_CREATE", nameof(Promotion), $"Created promotion {promotion.Name}", true, promotion.Id, entityId: promotion.Id, cancellationToken: cancellationToken);
         return result;
     }
@@ -71,19 +91,26 @@ internal sealed class PostgresPromotionService(
     {
         EnsureWritable();
         EnsureDateRange(request.StartDate, request.EndDate);
+        EnsureBranchScope(request.BranchId);
 
         var promotion = await dbContext.Promotions.SingleOrDefaultAsync(item => item.Id == id, cancellationToken)
             ?? throw new KeyNotFoundException("Promotion not found.");
+        EnsureBranchScope(promotion.BranchId);
 
+        promotion.Code = request.Code.Trim();
         promotion.Name = request.Name.Trim();
         promotion.DiscountPercent = request.DiscountPercent;
+        promotion.DiscountAmount = request.DiscountAmount;
         promotion.StartDate = request.StartDate;
         promotion.EndDate = request.EndDate;
+        promotion.BranchId = request.BranchId;
+        promotion.CustomerSegment = string.IsNullOrWhiteSpace(request.CustomerSegment) ? null : request.CustomerSegment.Trim();
+        promotion.CustomerPhone = string.IsNullOrWhiteSpace(request.CustomerPhone) ? null : request.CustomerPhone.Trim();
         promotion.IsActive = request.IsActive;
         promotion.UpdatedAtUtc = DateTime.UtcNow;
 
         await dbContext.SaveChangesAsync(cancellationToken);
-        var result = MapPromotion(promotion);
+        var result = await MapPromotionAsync(promotion, cancellationToken);
         await auditLogService.WriteAsync("PROMOTION_UPDATE", nameof(Promotion), $"Updated promotion {promotion.Name}", true, promotion.Id, entityId: promotion.Id, cancellationToken: cancellationToken);
         return result;
     }
@@ -94,6 +121,7 @@ internal sealed class PostgresPromotionService(
 
         var promotion = await dbContext.Promotions.SingleOrDefaultAsync(item => item.Id == id, cancellationToken)
             ?? throw new KeyNotFoundException("Promotion not found.");
+        EnsureBranchScope(promotion.BranchId);
 
         dbContext.Promotions.Remove(promotion);
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -116,12 +144,37 @@ internal sealed class PostgresPromotionService(
         }
     }
 
-    private static PromotionDto MapPromotion(Promotion promotion)
+    private void EnsureBranchScope(Guid? branchId)
+    {
+        if (currentUser.Role == UserRole.Administrator)
+        {
+            return;
+        }
+
+        if (branchId != currentUser.BranchId)
+        {
+            throw new UnauthorizedAccessException("Branch managers can only manage promotions for their own branch.");
+        }
+    }
+
+    private async Task<PromotionDto> MapPromotionAsync(Promotion promotion, CancellationToken cancellationToken)
+    {
+        var branches = await dbContext.Branches.AsNoTracking().ToDictionaryAsync(branch => branch.Id, branch => branch.Name, cancellationToken);
+        return MapPromotion(promotion, branches);
+    }
+
+    private static PromotionDto MapPromotion(Promotion promotion, IReadOnlyDictionary<Guid, string> branches)
         => new(
             promotion.Id,
+            promotion.Code,
             promotion.Name,
             promotion.DiscountPercent,
+            promotion.DiscountAmount,
             promotion.StartDate,
             promotion.EndDate,
+            promotion.BranchId,
+            promotion.BranchId.HasValue && branches.TryGetValue(promotion.BranchId.Value, out var branchName) ? branchName : null,
+            promotion.CustomerSegment,
+            promotion.CustomerPhone,
             promotion.IsActive);
 }

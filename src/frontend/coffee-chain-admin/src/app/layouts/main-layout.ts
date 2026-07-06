@@ -36,6 +36,7 @@ const NAVIGATION: NavigationItem[] = [
 export class MainLayout {
   protected readonly authStore = inject(AuthStore);
   protected readonly sidebarOpen = signal(false);
+  protected readonly sidebarCollapsed = signal(false);
   protected readonly user = this.authStore.user;
   protected readonly navigation = computed(() => {
     const role = this.authStore.role();
@@ -44,6 +45,10 @@ export class MainLayout {
 
   protected toggleSidebar(): void {
     this.sidebarOpen.update((value) => !value);
+  }
+
+  protected toggleSidebarCollapsed(): void {
+    this.sidebarCollapsed.update((value) => !value);
   }
 
   protected closeSidebar(): void {

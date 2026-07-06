@@ -15,6 +15,8 @@ public class SaleOrderDto
     public required Guid EmployeeId { get; set; }
     public required string PaymentMethod { get; set; }
     public required string Status { get; set; }
+    public string? PromotionCode { get; set; }
+    public decimal DiscountAmount { get; set; }
     public required DateTime CreatedAtUtc { get; set; }
     public List<SaleOrderItemDto> Items { get; set; } = [];
 }

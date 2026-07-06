@@ -34,6 +34,8 @@ public sealed class PostgresSaleOrderService(CoffeeChainDbContext dbContext) : I
                 EmployeeId = orderDto.EmployeeId,
                 PaymentMethod = Enum.TryParse<PaymentMethod>(orderDto.PaymentMethod, true, out var pm) ? pm : PaymentMethod.Cash,
                 Status = Enum.TryParse<OrderStatus>(orderDto.Status, true, out var status) ? status : OrderStatus.Paid,
+                PromotionCode = orderDto.PromotionCode,
+                DiscountAmount = orderDto.DiscountAmount,
                 CreatedAtUtc = orderDto.CreatedAtUtc,
                 Items = orderDto.Items.Select(i => new SaleOrderItem
                 {

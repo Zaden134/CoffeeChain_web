@@ -164,6 +164,7 @@ public sealed class CoffeeChainDbSeeder(
             new Promotion
             {
                 Id = Guid.Parse("40000000-0000-0000-0000-000000000001"),
+                Code = "HAPPY15",
                 Name = "Happy Morning 15%",
                 DiscountPercent = 15m,
                 StartDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(-5)),
@@ -173,6 +174,7 @@ public sealed class CoffeeChainDbSeeder(
             new Promotion
             {
                 Id = Guid.Parse("40000000-0000-0000-0000-000000000002"),
+                Code = "TEA10",
                 Name = "Tea Combo 10%",
                 DiscountPercent = 10m,
                 StartDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(-2)),

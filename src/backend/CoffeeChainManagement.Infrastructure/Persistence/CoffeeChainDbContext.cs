@@ -92,6 +92,9 @@ public sealed class CoffeeChainDbContext(DbContextOptions<CoffeeChainDbContext> 
             entity.HasKey(promotion => promotion.Id);
             entity.Property(promotion => promotion.Name).HasMaxLength(150);
             entity.Property(promotion => promotion.DiscountPercent).HasPrecision(5, 2);
+            entity.Property(promotion => promotion.CustomerSegment).HasMaxLength(100);
+            entity.Property(promotion => promotion.CustomerPhone).HasMaxLength(30);
+            entity.HasIndex(promotion => promotion.BranchId);
         });
 
         modelBuilder.Entity<RefreshTokenSession>(entity =>

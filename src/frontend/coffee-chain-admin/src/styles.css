@@ -4,6 +4,8 @@
 
 :root {
   /* Font size definitions to use globally without needing tailwind classes everywhere if we don't want to */
+  --container-padding: 24px;
+  --card-gap: 24px;
 }
 
 body {
@@ -68,4 +70,20 @@ body {
 /* Custom form inputs to match the design system if not strictly using tailwind classes */
 input, select, textarea {
   font-family: inherit;
+}
+
+.px-container-padding {
+  padding-left: var(--container-padding);
+  padding-right: var(--container-padding);
+}
+
+.gap-card-gap {
+  gap: var(--card-gap);
+}
+
+@media (max-width: 767px) {
+  :root {
+    --container-padding: 16px;
+    --card-gap: 16px;
+  }
 }

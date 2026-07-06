@@ -104,6 +104,10 @@ internal sealed class PostgresEmployeeService(
 
         var role = ParseRole(request.Role);
         EnsureCanManageEmployeeRole(role, request.BranchId, employee);
+        if (employee.Id == currentUser.UserId && !request.IsActive)
+        {
+            throw new InvalidOperationException("You cannot deactivate your own account.");
+        }
 
         if (await dbContext.Employees.AnyAsync(item => item.Id != id && item.Username == request.Username.Trim(), cancellationToken))
         {
@@ -150,6 +154,11 @@ internal sealed class PostgresEmployeeService(
 
         var employee = await dbContext.Employees.SingleOrDefaultAsync(item => item.Id == id, cancellationToken)
             ?? throw new KeyNotFoundException("Employee not found.");
+
+        if (employee.Id == currentUser.UserId)
+        {
+            throw new InvalidOperationException("You cannot deactivate your own account.");
+        }
 
         EnsureCanManageEmployeeRole(employee.Role, employee.BranchId, employee);
         employee.IsActive = false;
