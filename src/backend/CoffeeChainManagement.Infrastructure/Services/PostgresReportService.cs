@@ -61,6 +61,13 @@ internal sealed class PostgresReportService(
             .ToArray();
 
         var totalRevenue = orders.Sum(order => order.Items.Sum(item => item.LineTotal));
+        var inventoryExpense = await dbContext.InventoryTransactions
+            .AsNoTracking()
+            .Where(transaction => !effectiveBranchId.HasValue || transaction.BranchId == effectiveBranchId.Value)
+            .Where(transaction => !fromDate.HasValue || transaction.CreatedAtUtc >= fromDate.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc))
+            .Where(transaction => !toDate.HasValue || transaction.CreatedAtUtc <= toDate.Value.ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc))
+            .SumAsync(transaction => transaction.TransactionAmount, cancellationToken);
+        var netRevenue = totalRevenue + inventoryExpense;
         var totalOrders = orders.Count;
         var averageOrderValue = totalOrders == 0 ? 0 : totalRevenue / totalOrders;
 
@@ -86,6 +93,8 @@ internal sealed class PostgresReportService(
             effectiveBranchId,
             effectiveBranchId.HasValue && branches.TryGetValue(effectiveBranchId.Value, out var branchName) ? branchName : null,
             totalRevenue,
+            inventoryExpense,
+            netRevenue,
             totalOrders,
             averageOrderValue,
             await dbContext.Branches.AsNoTracking().CountAsync(
@@ -111,11 +120,11 @@ internal sealed class PostgresReportService(
         return format.Trim().ToLowerInvariant() switch
         {
             "pdf" => new ReportExportResultDto(
-                BuildFileName("sales-report", "pdf"),
+                BuildFileName(report, "pdf"),
                 "application/pdf",
                 BuildPdf(report)),
             _ => new ReportExportResultDto(
-                BuildFileName("sales-report", "xlsx"),
+                BuildFileName(report, "xlsx"),
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 BuildExcel(report))
         };
@@ -186,8 +195,12 @@ internal sealed class PostgresReportService(
         sheet.Cell(5, 2).Value = report.TotalRevenue;
         sheet.Cell(6, 1).Value = "Total Orders";
         sheet.Cell(6, 2).Value = report.TotalOrders;
+        sheet.Cell(7, 1).Value = "Inventory Expense";
+        sheet.Cell(7, 2).Value = report.InventoryExpense;
+        sheet.Cell(8, 1).Value = "Net Revenue";
+        sheet.Cell(8, 2).Value = report.NetRevenue;
 
-        var row = 8;
+        var row = 10;
         sheet.Cell(row, 1).Value = "Daily Revenue";
         row++;
         sheet.Cell(row, 1).Value = "Date";
@@ -256,6 +269,8 @@ internal sealed class PostgresReportService(
                     column.Item().Text($"To: {report.ToDate?.ToString("yyyy-MM-dd") ?? "All"}");
                     column.Item().Text($"Branch: {report.BranchName ?? "All branches"}");
                     column.Item().Text($"Revenue: {report.TotalRevenue:N0}");
+                    column.Item().Text($"Inventory expense: {report.InventoryExpense:N0}");
+                    column.Item().Text($"Net revenue: {report.NetRevenue:N0}");
                     column.Item().Text($"Orders: {report.TotalOrders}");
 
                     column.Item().PaddingTop(12).Text("Daily Revenue").SemiBold();
@@ -289,6 +304,22 @@ internal sealed class PostgresReportService(
         return document.GeneratePdf();
     }
 
-    private static string BuildFileName(string prefix, string extension)
-        => $"{prefix}-{DateTime.UtcNow:yyyyMMddHHmmss}.{extension}";
+    private static string BuildFileName(SalesReportDto report, string extension)
+    {
+        var branch = Slugify(report.BranchName ?? "toan-he-thong");
+        var from = report.FromDate?.ToString("yyyyMMdd") ?? "tu-dau";
+        var to = report.ToDate?.ToString("yyyyMMdd") ?? DateTime.UtcNow.ToString("yyyyMMdd");
+        return $"bao-cao-doanh-thu_{branch}_{from}_{to}.{extension}";
+    }
+
+    private static string Slugify(string value)
+    {
+        var chars = value
+            .Trim()
+            .ToLowerInvariant()
+            .Select(character => char.IsLetterOrDigit(character) ? character : '-')
+            .ToArray();
+
+        return string.Join('-', new string(chars).Split('-', StringSplitOptions.RemoveEmptyEntries));
+    }
 }

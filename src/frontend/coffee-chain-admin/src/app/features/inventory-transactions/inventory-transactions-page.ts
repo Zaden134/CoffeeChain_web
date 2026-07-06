@@ -38,6 +38,7 @@ export class InventoryTransactionsPage {
     branchId: this.authStore.branchId() ?? '',
     type: 1, // 1 = Nhập, 2 = Xuất
     quantity: 1,
+    unitCost: 0,
     referenceNumber: '',
     notes: ''
   });
@@ -74,6 +75,7 @@ export class InventoryTransactionsPage {
       branchId: this.authStore.branchId() ?? '',
       type: 1,
       quantity: 1,
+      unitCost: 0,
       referenceNumber: '',
       notes: ''
     });
@@ -90,6 +92,11 @@ export class InventoryTransactionsPage {
 
     if (!payload.branchId || !payload.ingredientId || payload.quantity <= 0) {
       this.error.set('Vui lòng điền chi nhánh, nguyên liệu và số lượng hợp lệ.');
+      return;
+    }
+
+    if (payload.type === 1 && payload.unitCost <= 0) {
+      this.error.set('Vui lòng nhập đơn giá khi nhập kho để tính chi phí âm.');
       return;
     }
 

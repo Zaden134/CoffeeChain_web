@@ -1,41 +1,36 @@
-<!-- SideNavBar -->
 <nav
-  class="app-sidebar flex flex-col p-4 gap-4 bg-surface-container-low border-r border-outline-variant z-40"
+  class="app-sidebar"
   [class.app-sidebar--open]="sidebarOpen()"
   [class.app-sidebar--collapsed]="sidebarCollapsed()">
-  <!-- Header -->
-  <div class="flex items-center gap-3 px-2 py-4 mb-2">
-    <div class="w-10 h-10 rounded-lg overflow-hidden bg-white border border-outline-variant flex-shrink-0 flex items-center justify-center font-bold text-primary text-xl">
-      HQ
-    </div>
+  <div class="sidebar-brand">
+    <div class="brand-mark">HQ</div>
 
     @if (!sidebarCollapsed()) {
-      <div class="flex flex-col min-w-0">
-        <span class="sidebar-text font-title-lg text-title-lg font-black text-primary">Hệ thống HQ</span>
-        <span class="sidebar-text font-label-md text-label-md text-on-surface-variant">{{ user()?.role }}</span>
+      <div class="brand-copy">
+        <span class="sidebar-text brand-title">Hệ thống HQ</span>
+        <span class="sidebar-text brand-role">{{ user()?.role }}</span>
       </div>
     }
 
     <button
       type="button"
-      class="sidebar-collapse-button hidden md:flex"
+      class="sidebar-collapse-button"
       (click)="toggleSidebarCollapsed()"
       [attr.aria-label]="sidebarCollapsed() ? 'Mở rộng menu' : 'Thu gọn menu'">
       <span class="material-symbols-outlined">{{ sidebarCollapsed() ? 'chevron_right' : 'chevron_left' }}</span>
     </button>
   </div>
 
-  <!-- Main Tabs -->
-  <div class="sidebar-nav-scroll flex flex-col gap-1 flex-1">
+  <div class="sidebar-nav-scroll">
     @for (item of navigation(); track item.path) {
       <a
         [routerLink]="item.path"
-        routerLinkActive="bg-secondary-container text-on-secondary-container font-bold"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: item.path === '/' }"
-        class="sidebar-nav-item flex items-center gap-3 px-3 py-3 text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface rounded-lg font-label-md text-label-md transition-all active:scale-95"
+        class="sidebar-nav-item"
         [class.sidebar-nav-item--collapsed]="sidebarCollapsed()"
         (click)="closeSidebar()">
-        <span class="material-symbols-outlined" routerLinkActive="fill" [routerLinkActiveOptions]="{ exact: item.path === '/' }">{{ item.icon }}</span>
+        <span class="material-symbols-outlined">{{ item.icon }}</span>
         @if (!sidebarCollapsed()) {
           <span class="sidebar-text">{{ item.label }}</span>
         }
@@ -43,29 +38,21 @@
     }
   </div>
 
-  <!-- CTA -->
-  @if (!sidebarCollapsed()) {
-    <button class="w-full bg-primary-container text-white font-label-md text-label-md font-medium py-3 px-4 rounded-lg flex items-center justify-center gap-2 hover:opacity-90 transition-opacity mb-4">
-      <span class="material-symbols-outlined text-[18px]">add</span>
-      Thêm mới
-    </button>
-  }
-
-  <!-- Footer Tabs -->
-  <div class="flex flex-col gap-1 border-t border-outline-variant pt-4 mt-auto">
-    <a
-      href="javascript:void(0)"
-      class="sidebar-nav-item flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface rounded-lg font-label-md text-label-md transition-all active:scale-95"
+  <div class="sidebar-footer">
+    <button
+      type="button"
+      (click)="openSupport()"
+      class="sidebar-nav-item"
       [class.sidebar-nav-item--collapsed]="sidebarCollapsed()">
       <span class="material-symbols-outlined">help</span>
       @if (!sidebarCollapsed()) {
         <span class="sidebar-text">Hỗ trợ</span>
       }
-    </a>
+    </button>
     <a
       href="javascript:void(0)"
       (click)="logout()"
-      class="sidebar-nav-item flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface rounded-lg font-label-md text-label-md transition-all active:scale-95"
+      class="sidebar-nav-item"
       [class.sidebar-nav-item--collapsed]="sidebarCollapsed()">
       <span class="material-symbols-outlined">logout</span>
       @if (!sidebarCollapsed()) {
@@ -75,42 +62,73 @@
   </div>
 </nav>
 
-<!-- Main Content Area -->
-<div class="app-shell flex-1 flex flex-col min-w-0" [class.app-shell--collapsed]="sidebarCollapsed()">
-  <!-- TopNavBar (Mobile and Global Context) -->
-  <header class="sticky top-0 w-full z-30 flex justify-between items-center px-container-padding h-16 bg-surface border-b border-outline-variant shadow-sm">
-    <div class="topbar-left flex items-center gap-2">
-      <button class="md:hidden text-on-surface-variant hover:text-primary transition-colors cursor-pointer active:opacity-80" (click)="toggleSidebar()">
+<div class="app-shell" [class.app-shell--collapsed]="sidebarCollapsed()">
+  <header class="app-topbar">
+    <div class="topbar-left">
+      <button class="mobile-menu-button" type="button" (click)="toggleSidebar()">
         <span class="material-symbols-outlined">menu</span>
       </button>
-      <span class="font-headline-md text-headline-md font-bold text-primary md:hidden">Hệ thống HQ</span>
-      <div class="topbar-title-row hidden md:flex">
-        <h1 class="topbar-title text-on-surface font-semibold m-0 text-lg">Hệ thống quản lý chuỗi cửa hàng cà phê</h1>
-        <span class="topbar-subtitle text-on-surface-variant text-sm">Vận hành, kho, nhân sự và doanh thu</span>
+      <span class="mobile-title">Hệ thống HQ</span>
+      <div class="topbar-title-row">
+        <h1 class="topbar-title">Hệ thống quản lý chuỗi cửa hàng cà phê</h1>
+        <span class="topbar-subtitle">Vận hành, kho, nhân sự và doanh thu</span>
       </div>
     </div>
 
-    <div class="topbar-actions flex items-center gap-4">
-      <button class="text-on-surface-variant hover:text-primary transition-colors cursor-pointer active:opacity-80">
+    <div class="topbar-actions">
+      <button type="button" class="topbar-icon-button">
         <span class="material-symbols-outlined">refresh</span>
       </button>
-      <button class="text-on-surface-variant hover:text-primary transition-colors cursor-pointer active:opacity-80">
+      <button type="button" class="topbar-icon-button">
         <span class="material-symbols-outlined">notifications</span>
       </button>
-      <div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant bg-primary text-white flex items-center justify-center font-bold">
-        {{ user()?.fullName?.slice(0, 1) ?? 'U' }}
-      </div>
-      <span class="topbar-user hidden md:block font-label-md font-bold text-on-surface">{{ user()?.fullName }}</span>
+      <div class="topbar-avatar">{{ user()?.fullName?.slice(0, 1) ?? 'U' }}</div>
+      <span class="topbar-user">{{ user()?.fullName }}</span>
     </div>
   </header>
 
-  <!-- Main Canvas -->
-  <main class="app-main flex-1 bg-background">
+  <main class="app-main">
     <router-outlet></router-outlet>
   </main>
 </div>
 
-<!-- Backdrop for mobile sidebar -->
 @if (sidebarOpen()) {
-  <div class="fixed inset-0 bg-black/50 z-30 md:hidden" (click)="closeSidebar()"></div>
+  <div class="mobile-backdrop" (click)="closeSidebar()"></div>
+}
+
+@if (supportOpen()) {
+  <div class="support-backdrop" (click)="closeSupport()"></div>
+  <section class="support-panel" aria-label="Gửi yêu cầu hỗ trợ">
+    <div class="support-panel__head">
+      <div>
+        <h2>Gửi yêu cầu hỗ trợ</h2>
+        <p>Mô tả lỗi hoặc yêu cầu, hệ thống sẽ ghi nhận vào audit log.</p>
+      </div>
+      <button type="button" class="topbar-icon-button" (click)="closeSupport()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <label class="support-field">
+      <span>Tiêu đề</span>
+      <input [ngModel]="supportForm().subject" (ngModelChange)="supportForm.update(v => ({ ...v, subject: $event }))" name="supportSubject" />
+    </label>
+
+    <label class="support-field">
+      <span>Nội dung</span>
+      <textarea rows="5" [ngModel]="supportForm().message" (ngModelChange)="supportForm.update(v => ({ ...v, message: $event }))" name="supportMessage" placeholder="Ví dụ: Không xuất được báo cáo PDF ở chi nhánh Q1..."></textarea>
+    </label>
+
+    @if (supportError()) {
+      <div class="support-alert support-alert--error">{{ supportError() }}</div>
+    }
+
+    @if (supportMessage()) {
+      <div class="support-alert support-alert--success">{{ supportMessage() }}</div>
+    }
+
+    <button type="button" class="support-submit" [disabled]="supportSubmitting()" (click)="submitSupport()">
+      {{ supportSubmitting() ? 'Đang gửi...' : 'Gửi hỗ trợ' }}
+    </button>
+  </section>
 }

@@ -206,9 +206,11 @@ dotnet test .\CoffeeChainManagement.slnx
 
 - Minh da them comment ngan o dau nhieu file de nhin vao biet file do phuc vu gi.
 - Hien tai `Infrastructure` da dung `EF Core + Npgsql`, migration files va seed dev data vao PostgreSQL luc app startup.
+- Khuyen mai (Promotions) moi duoc bo sung them truong `Code` (nhu `HAPPY15`) va `DiscountAmount` giup chi nhanh co the tao khuyen mai theo ca % lan so tien.
 - Auth dang dung JWT bearer token va role authorization tren cac endpoint chinh.
 - App startup da tach ro `MigrateAsync()` va `SeedAsync()`.
 - Frontend da co login flow, guard, interceptor va bo cuc quan tri theo mau tham chieu.
+- Ung dung WPF POS rieng biet (nam o `../app/CoffeeChainPOS`) da duoc tich hop giao dien Material Design, Background Sync (tu dong cap nhat Menu & Khuyen mai luc 1:00 AM) va ban hang Offline.
 
 ## GitHub va Docker Hub
 

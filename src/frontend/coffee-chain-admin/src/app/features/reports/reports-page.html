@@ -60,6 +60,14 @@
           <span class="font-display-sm text-[28px] font-black leading-tight">{{ data.totalRevenue | currency:'VND':'symbol':'1.0-0' }}</span>
           <div class="absolute right-0 top-0 w-24 h-24 bg-white/10 rounded-full -mr-8 -mt-8 pointer-events-none"></div>
       </div>
+      <div class="bg-error text-white rounded-[20px] p-6 card-shadow-level-1 flex flex-col gap-2">
+          <span class="font-label-md text-[13px] uppercase tracking-wider text-white/80">Chi phí nhập kho</span>
+          <span class="font-display-sm text-[28px] font-black leading-tight">{{ data.inventoryExpense | currency:'VND':'symbol':'1.0-0' }}</span>
+      </div>
+      <div class="bg-white rounded-[20px] border border-outline-variant p-6 card-shadow-level-1 flex flex-col gap-2">
+          <span class="font-label-md text-[13px] uppercase tracking-wider text-on-surface-variant">Doanh thu ròng</span>
+          <span class="font-headline-md text-headline-md font-bold text-on-surface">{{ data.netRevenue | currency:'VND':'symbol':'1.0-0' }}</span>
+      </div>
       <div class="bg-white rounded-[20px] border border-outline-variant p-6 card-shadow-level-1 flex flex-col gap-2">
           <div class="flex items-center justify-between">
               <span class="font-label-md text-[13px] uppercase tracking-wider text-on-surface-variant">Tổng đơn hàng</span>

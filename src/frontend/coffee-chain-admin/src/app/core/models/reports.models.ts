@@ -25,6 +25,8 @@ export interface SalesReport {
   branchId: string | null;
   branchName: string | null;
   totalRevenue: number;
+  inventoryExpense: number;
+  netRevenue: number;
   totalOrders: number;
   averageOrderValue: number;
   activeBranches: number;

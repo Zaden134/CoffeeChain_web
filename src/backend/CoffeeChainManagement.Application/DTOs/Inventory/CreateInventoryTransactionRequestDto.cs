@@ -18,6 +18,9 @@ public sealed record CreateInventoryTransactionRequestDto
     [Range(1, int.MaxValue)]
     public int Quantity { get; init; }
 
+    [Range(0, double.MaxValue)]
+    public decimal UnitCost { get; init; }
+
     [MaxLength(50)]
     public string ReferenceNumber { get; init; } = string.Empty;
 

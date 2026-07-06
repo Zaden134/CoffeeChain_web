@@ -2,6 +2,10 @@
 export interface KpiSummary {
   dailyRevenue: number;
   monthlyRevenue: number;
+  dailyInventoryExpense: number;
+  monthlyInventoryExpense: number;
+  dailyNetRevenue: number;
+  monthlyNetRevenue: number;
   totalOrders: number;
   activeBranches: number;
   lowStockAlerts: number;

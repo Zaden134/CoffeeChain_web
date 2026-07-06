@@ -34,6 +34,11 @@ function authorizeRole(route: ActivatedRouteSnapshot, authStore: AuthStore, rout
   if (requiredRoles && requiredRoles.length > 0) {
     const userRole = authStore.role();
     if (!userRole || !requiredRoles.includes(userRole)) {
+      if (route.routeConfig?.path === '') {
+        authStore.logout();
+        return router.createUrlTree(['/login']);
+      }
+
       return router.createUrlTree(['/']);
     }
   }

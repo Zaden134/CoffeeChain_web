@@ -12,14 +12,54 @@ public sealed class CoffeeChainDbSeeder(
 {
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
-        if (await dbContext.Branches.AnyAsync(cancellationToken))
-        {
-            return;
-        }
-
         var branch1Id = Guid.Parse("11111111-1111-1111-1111-111111111111");
         var branch2Id = Guid.Parse("22222222-2222-2222-2222-222222222222");
         var branch3Id = Guid.Parse("33333333-3333-3333-3333-333333333333");
+
+        if (await dbContext.Branches.AnyAsync(cancellationToken))
+        {
+            var fallbackBranchId = await ResolveSeedBranchIdAsync(branch1Id, cancellationToken);
+            await EnsureSeedProductsAsync(cancellationToken);
+            await EnsureSeedEmployeeAsync(
+                Guid.Parse("10000000-0000-0000-0000-000000000001"),
+                "admin",
+                "System Administrator",
+                "admin@coffeechain.local",
+                "Admin@123",
+                UserRole.Administrator,
+                null,
+                cancellationToken);
+            await EnsureSeedEmployeeAsync(
+                Guid.Parse("10000000-0000-0000-0000-000000000002"),
+                "manager.q1",
+                "Nguyen Minh Chau",
+                "manager.q1@coffeechain.local",
+                "Manager@123",
+                UserRole.BranchManager,
+                fallbackBranchId,
+                cancellationToken);
+            await EnsureSeedEmployeeAsync(
+                Guid.Parse("10000000-0000-0000-0000-000000000003"),
+                "cashier.q1",
+                "Tran Bao Han",
+                "cashier.q1@coffeechain.local",
+                "Cashier@123",
+                UserRole.Cashier,
+                fallbackBranchId,
+                cancellationToken);
+            await EnsureSeedEmployeeAsync(
+                Guid.Parse("10000000-0000-0000-0000-000000000004"),
+                "warehouse.q1",
+                "Pham Duc Anh",
+                "warehouse.q1@coffeechain.local",
+                "Warehouse@123",
+                UserRole.WarehouseStaff,
+                fallbackBranchId,
+                cancellationToken);
+            await EnsureSeedInventoryTransactionsAsync(fallbackBranchId, cancellationToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
+            return;
+        }
 
         var espressoId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
         var latteId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
@@ -238,6 +278,198 @@ public sealed class CoffeeChainDbSeeder(
                 ]
             });
 
+        dbContext.InventoryTransactions.AddRange(
+            new InventoryTransaction
+            {
+                Id = Guid.Parse("60000000-0000-0000-0000-000000000001"),
+                BranchId = branch1Id,
+                IngredientId = coffeeBeansId,
+                Type = TransactionType.Import,
+                Quantity = 18,
+                UnitCost = 120000m,
+                TransactionAmount = -2160000m,
+                ReferenceNumber = "PN-Q1-001",
+                Notes = "Nhap hat ca phe cho chi nhanh Q1",
+                CreatedBy = warehouseStaff.Id,
+                CreatedAtUtc = DateTime.UtcNow.AddHours(-5)
+            },
+            new InventoryTransaction
+            {
+                Id = Guid.Parse("60000000-0000-0000-0000-000000000002"),
+                BranchId = branch1Id,
+                IngredientId = milkId,
+                Type = TransactionType.Import,
+                Quantity = 25,
+                UnitCost = 32000m,
+                TransactionAmount = -800000m,
+                ReferenceNumber = "PN-Q1-002",
+                Notes = "Nhap sua tuoi",
+                CreatedBy = warehouseStaff.Id,
+                CreatedAtUtc = DateTime.UtcNow.AddHours(-3)
+            },
+            new InventoryTransaction
+            {
+                Id = Guid.Parse("60000000-0000-0000-0000-000000000003"),
+                BranchId = branch1Id,
+                IngredientId = peachSyrupId,
+                Type = TransactionType.Export,
+                Quantity = -3,
+                UnitCost = 0m,
+                TransactionAmount = 0m,
+                ReferenceNumber = "PX-Q1-001",
+                Notes = "Xuat syrup cho ca chieu",
+                CreatedBy = warehouseStaff.Id,
+                CreatedAtUtc = DateTime.UtcNow.AddHours(-1)
+            });
+
         await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task<Guid> ResolveSeedBranchIdAsync(Guid preferredBranchId, CancellationToken cancellationToken)
+        => await dbContext.Branches.AnyAsync(branch => branch.Id == preferredBranchId, cancellationToken)
+            ? preferredBranchId
+            : await dbContext.Branches
+                .OrderBy(branch => branch.CreatedAtUtc)
+                .Select(branch => branch.Id)
+                .FirstAsync(cancellationToken);
+
+    private async Task EnsureSeedEmployeeAsync(
+        Guid id,
+        string username,
+        string fullName,
+        string email,
+        string password,
+        UserRole role,
+        Guid? branchId,
+        CancellationToken cancellationToken)
+    {
+        var employee = await dbContext.Employees.SingleOrDefaultAsync(item => item.Username == username, cancellationToken);
+        if (employee is null)
+        {
+            employee = new Employee
+            {
+                Id = id,
+                Username = username,
+                FullName = fullName,
+                Email = email,
+                PasswordHash = string.Empty,
+                Role = role,
+                BranchId = branchId,
+                IsActive = true
+            };
+            dbContext.Employees.Add(employee);
+        }
+        else
+        {
+            employee.FullName = fullName;
+            employee.Email = email;
+            employee.Role = role;
+            employee.BranchId = branchId;
+            employee.IsActive = true;
+            employee.UpdatedAtUtc = DateTime.UtcNow;
+        }
+
+        employee.PasswordHash = passwordHasher.HashPassword(employee, password);
+    }
+
+    private async Task EnsureSeedInventoryTransactionsAsync(Guid branchId, CancellationToken cancellationToken)
+    {
+        if (await dbContext.InventoryTransactions.AnyAsync(cancellationToken))
+        {
+            return;
+        }
+
+        var coffeeBeansId = await dbContext.Ingredients
+            .Where(ingredient => ingredient.Name == "Coffee Beans")
+            .Select(ingredient => ingredient.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+        var milkId = await dbContext.Ingredients
+            .Where(ingredient => ingredient.Name == "Fresh Milk")
+            .Select(ingredient => ingredient.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+        var warehouseStaffId = await dbContext.Employees
+            .Where(employee => employee.Username == "warehouse.q1")
+            .Select(employee => employee.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (coffeeBeansId == Guid.Empty || milkId == Guid.Empty || warehouseStaffId == Guid.Empty)
+        {
+            return;
+        }
+
+        dbContext.InventoryTransactions.AddRange(
+            new InventoryTransaction
+            {
+                Id = Guid.Parse("60000000-0000-0000-0000-000000000001"),
+                BranchId = branchId,
+                IngredientId = coffeeBeansId,
+                Type = TransactionType.Import,
+                Quantity = 18,
+                UnitCost = 120000m,
+                TransactionAmount = -2160000m,
+                ReferenceNumber = "PN-Q1-001",
+                Notes = "Nhap hat ca phe cho chi nhanh Q1",
+                CreatedBy = warehouseStaffId,
+                CreatedAtUtc = DateTime.UtcNow.AddHours(-5)
+            },
+            new InventoryTransaction
+            {
+                Id = Guid.Parse("60000000-0000-0000-0000-000000000002"),
+                BranchId = branchId,
+                IngredientId = milkId,
+                Type = TransactionType.Import,
+                Quantity = 25,
+                UnitCost = 32000m,
+                TransactionAmount = -800000m,
+                ReferenceNumber = "PN-Q1-002",
+                Notes = "Nhap sua tuoi",
+                CreatedBy = warehouseStaffId,
+                CreatedAtUtc = DateTime.UtcNow.AddHours(-3)
+            });
+    }
+
+    private async Task EnsureSeedProductsAsync(CancellationToken cancellationToken)
+    {
+        var existingSkus = await dbContext.Products.Select(p => p.Sku).ToListAsync(cancellationToken);
+        
+        var productsToSeed = new List<Product>
+        {
+            new Product { Id = Guid.NewGuid(), Sku = "CF-BX-01", Name = "Bạc Xỉu", Category = "Coffee", Price = 35000m, ImageUrl = "https://images.unsplash.com/photo-1572442388796-11668a67e53d?auto=format&fit=crop&w=600&q=80", IsAvailable = true },
+            new Product { Id = Guid.NewGuid(), Sku = "CF-DD-02", Name = "Cà Phê Đen Đá", Category = "Coffee", Price = 29000m, ImageUrl = "https://images.unsplash.com/photo-1514432324607-a128b3715f58?auto=format&fit=crop&w=600&q=80", IsAvailable = true },
+            new Product { Id = Guid.NewGuid(), Sku = "CF-SD-03", Name = "Cà Phê Sữa Đá", Category = "Coffee", Price = 35000m, ImageUrl = "https://images.unsplash.com/photo-1550585640-7e3f847d0663?auto=format&fit=crop&w=600&q=80", IsAvailable = true },
+            new Product { Id = Guid.NewGuid(), Sku = "CF-LM-04", Name = "Latte Macchiato", Category = "Coffee", Price = 55000m, ImageUrl = "https://images.unsplash.com/photo-1570968915860-54d5c301fa9f?auto=format&fit=crop&w=600&q=80", IsAvailable = true },
+            new Product { Id = Guid.NewGuid(), Sku = "CF-CP-05", Name = "Cappuccino", Category = "Coffee", Price = 55000m, ImageUrl = "https://images.unsplash.com/photo-1534778101976-62847782c213?auto=format&fit=crop&w=600&q=80", IsAvailable = true },
+            new Product { Id = Guid.NewGuid(), Sku = "CF-AM-06", Name = "Americano", Category = "Coffee", Price = 45000m, ImageUrl = "https://images.unsplash.com/photo-1551030173-122aabc4489c?auto=format&fit=crop&w=600&q=80", IsAvailable = true },
+            
+            new Product { Id = Guid.NewGuid(), Sku = "MT-TCD-01", Name = "Trà Sữa Trân Châu Đen", Category = "Milk Tea", Price = 45000m, ImageUrl = "https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=600&q=80", IsAvailable = true },
+            new Product { Id = Guid.NewGuid(), Sku = "MT-TX-02", Name = "Trà Sữa Thái Xanh", Category = "Milk Tea", Price = 45000m, ImageUrl = "https://images.unsplash.com/photo-1558160074-4d7d8bdf4256?auto=format&fit=crop&w=600&q=80", IsAvailable = true },
+            new Product { Id = Guid.NewGuid(), Sku = "MT-OL-03", Name = "Trà Sữa Oolong Lộc Đỉnh", Category = "Milk Tea", Price = 55000m, ImageUrl = "https://images.unsplash.com/photo-1622614569080-b7dc4468f0a0?auto=format&fit=crop&w=600&q=80", IsAvailable = true },
+            new Product { Id = Guid.NewGuid(), Sku = "MT-MC-04", Name = "Trà Sữa Matcha", Category = "Milk Tea", Price = 50000m, ImageUrl = "https://images.unsplash.com/photo-1582787031149-14a51eb8c9cb?auto=format&fit=crop&w=600&q=80", IsAvailable = true },
+            new Product { Id = Guid.NewGuid(), Sku = "MT-HN-05", Name = "Trà Sữa Hạnh Nhân", Category = "Milk Tea", Price = 55000m, ImageUrl = "https://images.unsplash.com/photo-1595180554585-703d15db157d?auto=format&fit=crop&w=600&q=80", IsAvailable = true },
+            
+            new Product { Id = Guid.NewGuid(), Sku = "TE-DCS-01", Name = "Trà Đào Cam Sả", Category = "Tea", Price = 49000m, ImageUrl = "https://images.unsplash.com/photo-1499638673689-79a0b5115d87?auto=format&fit=crop&w=600&q=80", IsAvailable = true },
+            new Product { Id = Guid.NewGuid(), Sku = "TE-VND-02", Name = "Trà Vải Nhiệt Đới", Category = "Tea", Price = 49000m, ImageUrl = "https://images.unsplash.com/photo-1519623286359-e9f3cbef015b?auto=format&fit=crop&w=600&q=80", IsAvailable = true },
+            new Product { Id = Guid.NewGuid(), Sku = "TE-OSV-03", Name = "Trà Oolong Sen Vàng", Category = "Tea", Price = 55000m, ImageUrl = "https://images.unsplash.com/photo-1563227812-0ea4c22e6cc8?auto=format&fit=crop&w=600&q=80", IsAvailable = true },
+            new Product { Id = Guid.NewGuid(), Sku = "TE-HCM-04", Name = "Trà Hoa Cúc Mật Ong", Category = "Tea", Price = 45000m, ImageUrl = "https://images.unsplash.com/photo-1596489311166-70139b4b0e9a?auto=format&fit=crop&w=600&q=80", IsAvailable = true },
+            new Product { Id = Guid.NewGuid(), Sku = "TE-LMC-05", Name = "Trà Lài Macchiato", Category = "Tea", Price = 50000m, ImageUrl = "https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=600&q=80", IsAvailable = true },
+            
+            new Product { Id = Guid.NewGuid(), Sku = "JU-DH-01", Name = "Nước Ép Dưa Hấu", Category = "Juice", Price = 40000m, ImageUrl = "https://images.unsplash.com/photo-1595981267035-7b04d84b5c7f?auto=format&fit=crop&w=600&q=80", IsAvailable = true },
+            new Product { Id = Guid.NewGuid(), Sku = "JU-CA-02", Name = "Nước Ép Cam", Category = "Juice", Price = 45000m, ImageUrl = "https://images.unsplash.com/photo-1613478223719-2ab802602423?auto=format&fit=crop&w=600&q=80", IsAvailable = true },
+            new Product { Id = Guid.NewGuid(), Sku = "JU-TC-03", Name = "Nước Ép Táo Cần Tây", Category = "Juice", Price = 50000m, ImageUrl = "https://images.unsplash.com/photo-1600271886742-f049cd451bba?auto=format&fit=crop&w=600&q=80", IsAvailable = true },
+            new Product { Id = Guid.NewGuid(), Sku = "JU-TH-04", Name = "Nước Ép Thơm", Category = "Juice", Price = 40000m, ImageUrl = "https://images.unsplash.com/photo-1502741224143-9038af820c74?auto=format&fit=crop&w=600&q=80", IsAvailable = true },
+            
+            new Product { Id = Guid.NewGuid(), Sku = "SM-BO-01", Name = "Sinh Tố Bơ", Category = "Smoothie", Price = 55000m, ImageUrl = "https://images.unsplash.com/photo-1626343510619-3c74c93f0b09?auto=format&fit=crop&w=600&q=80", IsAvailable = true },
+            new Product { Id = Guid.NewGuid(), Sku = "SM-XO-02", Name = "Sinh Tố Xoài", Category = "Smoothie", Price = 50000m, ImageUrl = "https://images.unsplash.com/photo-1596637841972-e160a0f025e1?auto=format&fit=crop&w=600&q=80", IsAvailable = true },
+            new Product { Id = Guid.NewGuid(), Sku = "SM-DA-03", Name = "Sinh Tố Dâu", Category = "Smoothie", Price = 55000m, ImageUrl = "https://images.unsplash.com/photo-1553530666-ba11a7da3888?auto=format&fit=crop&w=600&q=80", IsAvailable = true },
+            new Product { Id = Guid.NewGuid(), Sku = "SM-MC-04", Name = "Sinh Tố Mãng Cầu", Category = "Smoothie", Price = 50000m, ImageUrl = "https://images.unsplash.com/photo-1623065422900-05832a2f8b5f?auto=format&fit=crop&w=600&q=80", IsAvailable = true },
+            
+            new Product { Id = Guid.NewGuid(), Sku = "IB-SC-01", Name = "Đá Xay Socola", Category = "Ice Blended", Price = 59000m, ImageUrl = "https://images.unsplash.com/photo-1572490122747-3968b75bb8ef?auto=format&fit=crop&w=600&q=80", IsAvailable = true }
+        };
+
+        var productsToAdd = productsToSeed.Where(p => !existingSkus.Contains(p.Sku)).ToList();
+        if (productsToAdd.Any())
+        {
+            dbContext.Products.AddRange(productsToAdd);
+        }
     }
 }

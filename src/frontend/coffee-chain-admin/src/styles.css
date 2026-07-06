@@ -81,6 +81,18 @@ input, select, textarea {
   gap: var(--card-gap);
 }
 
+.app-main p.font-body-lg.text-body-lg.text-on-surface-variant.leading-relaxed {
+  display: none !important;
+}
+
+.app-main > * > div:first-child {
+  margin-bottom: 18px !important;
+}
+
+.app-main > * > div:first-child h1 {
+  margin-bottom: 0 !important;
+}
+
 @media (max-width: 767px) {
   :root {
     --container-padding: 16px;

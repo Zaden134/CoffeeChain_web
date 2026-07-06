@@ -4,6 +4,10 @@ namespace CoffeeChainManagement.Application.DTOs.Dashboard;
 public sealed record KpiSummaryDto(
     decimal DailyRevenue,
     decimal MonthlyRevenue,
+    decimal DailyInventoryExpense,
+    decimal MonthlyInventoryExpense,
+    decimal DailyNetRevenue,
+    decimal MonthlyNetRevenue,
     int TotalOrders,
     int ActiveBranches,
     int LowStockAlerts);

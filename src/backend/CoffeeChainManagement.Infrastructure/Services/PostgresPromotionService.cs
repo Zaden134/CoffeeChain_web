@@ -64,6 +64,7 @@ internal sealed class PostgresPromotionService(
     {
         EnsureWritable();
         EnsureDateRange(request.StartDate, request.EndDate);
+        EnsureDiscount(request);
         EnsureBranchScope(request.BranchId);
 
         var promotion = new Promotion
@@ -91,6 +92,7 @@ internal sealed class PostgresPromotionService(
     {
         EnsureWritable();
         EnsureDateRange(request.StartDate, request.EndDate);
+        EnsureDiscount(request);
         EnsureBranchScope(request.BranchId);
 
         var promotion = await dbContext.Promotions.SingleOrDefaultAsync(item => item.Id == id, cancellationToken)
@@ -141,6 +143,17 @@ internal sealed class PostgresPromotionService(
         if (endDate < startDate)
         {
             throw new InvalidOperationException("End date must be greater than or equal to start date.");
+        }
+    }
+
+    private static void EnsureDiscount(UpsertPromotionRequestDto request)
+    {
+        var hasPercent = request.DiscountPercent.HasValue && request.DiscountPercent.Value > 0;
+        var hasAmount = request.DiscountAmount.HasValue && request.DiscountAmount.Value > 0;
+
+        if (hasPercent == hasAmount)
+        {
+            throw new InvalidOperationException("Promotion must use either a percent discount or a fixed amount discount.");
         }
     }
 

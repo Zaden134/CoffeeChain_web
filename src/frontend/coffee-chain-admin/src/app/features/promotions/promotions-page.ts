@@ -30,6 +30,7 @@ export class PromotionsPage {
   protected readonly searchTerm = signal('');
   protected readonly page = signal(1);
   protected readonly pageSize = signal(5);
+  protected readonly discountMode = signal<'percent' | 'amount'>('percent');
 
   protected readonly form = signal<UpsertPromotionRequest>({
     code: '',
@@ -105,6 +106,7 @@ export class PromotionsPage {
   protected startCreate(): void {
     this.editingId.set(null);
     this.page.set(1);
+    this.discountMode.set('percent');
     this.form.set({
       code: '',
       name: '',
@@ -122,6 +124,7 @@ export class PromotionsPage {
   protected startEdit(promotion: Promotion): void {
     this.editingId.set(promotion.id);
     this.page.set(1);
+    this.discountMode.set(promotion.discountAmount && promotion.discountAmount > 0 ? 'amount' : 'percent');
     this.form.set({
       code: promotion.code,
       name: promotion.name,
@@ -137,7 +140,7 @@ export class PromotionsPage {
   }
 
   protected submit(): void {
-    const payload = this.form();
+    const payload = this.normalizedPayload();
     this.error.set(this.validate(payload));
     if (this.error()) {
       return;
@@ -176,6 +179,15 @@ export class PromotionsPage {
     return this.authStore.can('promotions.write');
   }
 
+  protected setDiscountMode(mode: 'percent' | 'amount'): void {
+    this.discountMode.set(mode);
+    this.form.update((value) => ({
+      ...value,
+      discountPercent: mode === 'percent' ? (value.discountPercent ?? 0) : null,
+      discountAmount: mode === 'amount' ? (value.discountAmount ?? 0) : null
+    }));
+  }
+
   protected nextPage(): void {
     this.page.update((value) => Math.min(value + 1, this.totalPages()));
   }
@@ -198,6 +210,16 @@ export class PromotionsPage {
       return 'Mã khuyến mãi là bắt buộc.';
     }
 
+    const hasPercent = payload.discountPercent !== null && payload.discountPercent > 0;
+    const hasAmount = payload.discountAmount !== null && payload.discountAmount > 0;
+    if (hasPercent === hasAmount) {
+      return 'Chọn một kiểu giảm giá: phần trăm hoặc số tiền cố định.';
+    }
+
+    if (payload.discountPercent !== null && payload.discountPercent > 100) {
+      return 'Mức giảm phần trăm không được vượt quá 100%.';
+    }
+
     if (!payload.startDate || !payload.endDate) {
       return 'Ngày bắt đầu và kết thúc là bắt buộc.';
     }
@@ -211,5 +233,22 @@ export class PromotionsPage {
     }
 
     return null;
+  }
+
+  private normalizedPayload(): UpsertPromotionRequest {
+    const payload = this.form();
+    if (this.discountMode() === 'amount') {
+      return {
+        ...payload,
+        discountPercent: null,
+        discountAmount: payload.discountAmount ?? 0
+      };
+    }
+
+    return {
+      ...payload,
+      discountPercent: payload.discountPercent ?? 0,
+      discountAmount: null
+    };
   }
 }

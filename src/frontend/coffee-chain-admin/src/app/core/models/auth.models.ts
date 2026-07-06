@@ -9,7 +9,7 @@ export interface UserProfile {
   username: string;
   fullName: string;
   email: string;
-  role: 'Administrator' | 'BranchManager' | 'Cashier' | string;
+  role: 'Administrator' | 'BranchManager' | 'Cashier' | 'WarehouseStaff' | string;
   branchId: string | null;
 }
 

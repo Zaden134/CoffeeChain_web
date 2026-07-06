@@ -42,10 +42,26 @@ internal sealed class PostgresDashboardService(
             .Where(order => order.CreatedAtUtc >= startOfMonthUtc)
             .Sum(order => order.Items.Sum(item => item.LineTotal));
 
+        var inventoryTransactions = await dbContext.InventoryTransactions
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        var dailyInventoryExpense = inventoryTransactions
+            .Where(transaction => transaction.CreatedAtUtc >= startOfDayUtc)
+            .Sum(transaction => transaction.TransactionAmount);
+
+        var monthlyInventoryExpense = inventoryTransactions
+            .Where(transaction => transaction.CreatedAtUtc >= startOfMonthUtc)
+            .Sum(transaction => transaction.TransactionAmount);
+
         return new DashboardOverviewDto(
             new KpiSummaryDto(
                 dailyRevenue,
                 monthlyRevenue,
+                dailyInventoryExpense,
+                monthlyInventoryExpense,
+                dailyRevenue + dailyInventoryExpense,
+                monthlyRevenue + monthlyInventoryExpense,
                 paidOrders.Count,
                 branches.Count(branch => branch.IsActive),
                 lowStockAlerts),

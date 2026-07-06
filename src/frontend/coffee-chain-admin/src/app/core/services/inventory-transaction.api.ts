@@ -12,6 +12,8 @@ export interface InventoryTransactionDto {
   branchName: string;
   type: number; // 1 = Import, 2 = Export, 3 = Adjustment
   quantity: number;
+  unitCost: number;
+  transactionAmount: number;
   referenceNumber: string;
   notes: string;
   createdBy: string;
@@ -23,6 +25,7 @@ export interface CreateInventoryTransactionRequestDto {
   branchId: string;
   type: number;
   quantity: number;
+  unitCost: number;
   referenceNumber: string;
   notes: string;
 }
@@ -30,7 +33,7 @@ export interface CreateInventoryTransactionRequestDto {
 @Injectable({ providedIn: 'root' })
 export class InventoryTransactionApi {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = `${environment.apiBaseUrl}/api/inventory-transactions`;
+  private readonly baseUrl = `${environment.apiBaseUrl}/inventory-transactions`;
 
   getAll(): Observable<InventoryTransactionDto[]> {
     return this.http.get<InventoryTransactionDto[]>(this.baseUrl);

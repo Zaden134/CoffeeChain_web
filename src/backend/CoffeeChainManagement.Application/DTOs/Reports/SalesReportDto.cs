@@ -7,6 +7,8 @@ public sealed record SalesReportDto(
     Guid? BranchId,
     string? BranchName,
     decimal TotalRevenue,
+    decimal InventoryExpense,
+    decimal NetRevenue,
     int TotalOrders,
     decimal AverageOrderValue,
     int ActiveBranches,

@@ -87,7 +87,11 @@
                   {{ promotion.isActive ? 'Đang chạy' : 'Đã dừng' }}
                 </div>
                 <div class="bg-secondary-container text-on-secondary-container font-title-lg font-bold px-3 py-1 rounded-lg">
-                  -{{ promotion.discountPercent }}%
+                  @if (promotion.discountAmount && promotion.discountAmount > 0) {
+                    -{{ promotion.discountAmount | currency:'VND':'symbol':'1.0-0' }}
+                  } @else {
+                    -{{ promotion.discountPercent ?? 0 }}%
+                  }
                 </div>
               </div>
             </div>
@@ -126,7 +130,6 @@
           </div>
           <div>
             <h2 class="font-title-lg text-[18px] text-on-surface font-bold">{{ editingId() ? 'Cập nhật khuyến mãi' : 'Tạo khuyến mãi mới' }}</h2>
-            <p class="text-[12px] text-on-surface-variant">Thiết lập phạm vi áp dụng chiến dịch</p>
           </div>
         </div>
 
@@ -138,12 +141,28 @@
             </div>
 
             <div class="flex flex-col gap-1.5">
-              <label class="font-label-md text-[12px] text-on-surface-variant uppercase tracking-wider">Giảm giá (%) <span class="text-error">*</span></label>
-              <div class="relative">
-                <input type="number" class="w-full pl-3 pr-10 py-2.5 border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-on-surface bg-surface-container-lowest" [ngModel]="form().discountPercent" (ngModelChange)="form.update(v => ({ ...v, discountPercent: +$event }))" name="discountPercent" min="0" max="100" />
-                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant font-bold">%</span>
+              <label class="font-label-md text-[12px] text-on-surface-variant uppercase tracking-wider">Kiểu giảm <span class="text-error">*</span></label>
+              <div class="grid grid-cols-2 gap-2">
+                <button type="button" class="px-3 py-2 rounded-lg border border-outline-variant font-label-md text-[13px]" [class.bg-primary]="discountMode() === 'percent'" [class.text-white]="discountMode() === 'percent'" (click)="setDiscountMode('percent')">%</button>
+                <button type="button" class="px-3 py-2 rounded-lg border border-outline-variant font-label-md text-[13px]" [class.bg-primary]="discountMode() === 'amount'" [class.text-white]="discountMode() === 'amount'" (click)="setDiscountMode('amount')">VND</button>
               </div>
             </div>
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            @if (discountMode() === 'percent') {
+              <label class="font-label-md text-[12px] text-on-surface-variant uppercase tracking-wider">Giảm giá (%) <span class="text-error">*</span></label>
+              <div class="relative">
+                <input type="number" class="w-full pl-3 pr-10 py-2.5 border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-on-surface bg-surface-container-lowest" [ngModel]="form().discountPercent ?? 0" (ngModelChange)="form.update(v => ({ ...v, discountPercent: +$event }))" name="discountPercent" min="1" max="100" />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant font-bold">%</span>
+              </div>
+            } @else {
+              <label class="font-label-md text-[12px] text-on-surface-variant uppercase tracking-wider">Số tiền giảm cố định <span class="text-error">*</span></label>
+              <div class="relative">
+                <input type="number" class="w-full pl-3 pr-14 py-2.5 border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-on-surface bg-surface-container-lowest" [ngModel]="form().discountAmount ?? 0" (ngModelChange)="form.update(v => ({ ...v, discountAmount: +$event }))" name="discountAmount" min="1000" step="1000" />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant font-bold">VND</span>
+              </div>
+            }
           </div>
 
           <div class="flex flex-col gap-1.5">

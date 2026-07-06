@@ -18,6 +18,17 @@ const REFRESH_TOKEN_KEY = 'ccm.auth.refreshToken';
 const USER_KEY = 'ccm.auth.user';
 const EXPIRES_KEY = 'ccm.auth.expires';
 const REFRESH_EXPIRES_KEY = 'ccm.auth.refreshExpires';
+const ROLE_ALIASES: Record<string, UserProfile['role']> = {
+  admin: 'Administrator',
+  administrator: 'Administrator',
+  manager: 'BranchManager',
+  branchmanager: 'BranchManager',
+  branch_manager: 'BranchManager',
+  cashier: 'Cashier',
+  warehouse: 'WarehouseStaff',
+  warehousestaff: 'WarehouseStaff',
+  warehouse_staff: 'WarehouseStaff'
+};
 
 // AuthStore giu token, profile va helper auth cho toan bo ung dung.
 @Injectable({ providedIn: 'root' })
@@ -76,9 +87,10 @@ export class AuthStore {
       this.authApi.me().subscribe({
         next: (user) => {
           const current = this.state();
-          this.state.set({ ...current, user });
-          localStorage.setItem(USER_KEY, JSON.stringify(user));
-          resolve(user);
+          const normalizedUser = this.normalizeUser(user);
+          this.state.set({ ...current, user: normalizedUser });
+          localStorage.setItem(USER_KEY, JSON.stringify(normalizedUser));
+          resolve(normalizedUser);
         },
         error: async () => {
           const refreshed = await this.refreshSession();
@@ -91,9 +103,10 @@ export class AuthStore {
           this.authApi.me().subscribe({
             next: (user) => {
               const current = this.state();
-              this.state.set({ ...current, user });
-              localStorage.setItem(USER_KEY, JSON.stringify(user));
-              resolve(user);
+              const normalizedUser = this.normalizeUser(user);
+              this.state.set({ ...current, user: normalizedUser });
+              localStorage.setItem(USER_KEY, JSON.stringify(normalizedUser));
+              resolve(normalizedUser);
             },
             error: () => {
               this.clear(false);
@@ -175,16 +188,17 @@ export class AuthStore {
   }
 
   private persist(response: AuthResponse): void {
+    const user = this.normalizeUser(response.user);
     localStorage.setItem(TOKEN_KEY, response.accessToken);
     localStorage.setItem(REFRESH_TOKEN_KEY, response.refreshToken);
-    localStorage.setItem(USER_KEY, JSON.stringify(response.user));
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
     localStorage.setItem(EXPIRES_KEY, response.expiresAtUtc);
     localStorage.setItem(REFRESH_EXPIRES_KEY, response.refreshTokenExpiresAtUtc);
 
     this.state.set({
       token: response.accessToken,
       refreshToken: response.refreshToken,
-      user: response.user,
+      user,
       expiresAtUtc: response.expiresAtUtc,
       refreshTokenExpiresAtUtc: response.refreshTokenExpiresAtUtc,
       loading: false
@@ -214,6 +228,20 @@ export class AuthStore {
 
   private readUser(): UserProfile | null {
     const raw = localStorage.getItem(USER_KEY);
-    return raw ? (JSON.parse(raw) as UserProfile) : null;
+    if (!raw) {
+      return null;
+    }
+
+    try {
+      return this.normalizeUser(JSON.parse(raw) as UserProfile);
+    } catch {
+      localStorage.removeItem(USER_KEY);
+      return null;
+    }
+  }
+
+  private normalizeUser(user: UserProfile): UserProfile {
+    const normalizedRole = ROLE_ALIASES[user.role.replace(/\s+/g, '').toLowerCase()] ?? user.role;
+    return { ...user, role: normalizedRole };
   }
 }

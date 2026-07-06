@@ -141,6 +141,8 @@ public sealed class CoffeeChainDbContext(DbContextOptions<CoffeeChainDbContext> 
         {
             entity.ToTable("inventory_transactions");
             entity.HasKey(t => t.Id);
+            entity.Property(t => t.UnitCost).HasPrecision(18, 2);
+            entity.Property(t => t.TransactionAmount).HasPrecision(18, 2);
             entity.Property(t => t.ReferenceNumber).HasMaxLength(50);
             entity.Property(t => t.Notes).HasMaxLength(1000);
             entity.HasIndex(t => t.BranchId);

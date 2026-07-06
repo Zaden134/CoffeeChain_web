@@ -95,6 +95,24 @@ export class ReportsPage {
 
   private extractFilename(contentDisposition: string | null, format: 'xlsx' | 'pdf'): string {
     const match = contentDisposition?.match(/filename="?([^"]+)"?/i);
-    return match?.[1] ?? `sales-report.${format}`;
+    return match?.[1] ?? this.buildExportFilename(format);
+  }
+
+  private buildExportFilename(format: 'xlsx' | 'pdf'): string {
+    const query = this.query();
+    const branchName = this.branches().find((branch) => branch.id === query.branchId)?.name ?? 'toan-he-thong';
+    const from = query.fromDate || 'tu-dau';
+    const to = query.toDate || new Date().toISOString().slice(0, 10);
+    return `bao-cao-doanh-thu_${this.slugify(branchName)}_${from}_${to}.${format}`;
+  }
+
+  private slugify(value: string): string {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/đ/g, 'd')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
   }
 }

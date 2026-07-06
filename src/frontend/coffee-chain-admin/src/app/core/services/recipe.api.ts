@@ -35,7 +35,7 @@ export interface UpsertRecipeRequestDto {
 @Injectable({ providedIn: 'root' })
 export class RecipeApi {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = `${environment.apiBaseUrl}/api/recipes`;
+  private readonly baseUrl = `${environment.apiBaseUrl}/recipes`;
 
   getAll(): Observable<RecipeDto[]> {
     return this.http.get<RecipeDto[]>(this.baseUrl);

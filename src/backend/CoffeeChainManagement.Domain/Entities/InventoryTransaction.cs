@@ -16,6 +16,8 @@ public sealed class InventoryTransaction : BaseEntity
     public Guid BranchId { get; set; }
     public TransactionType Type { get; set; }
     public int Quantity { get; set; }
+    public decimal UnitCost { get; set; }
+    public decimal TransactionAmount { get; set; }
     public string ReferenceNumber { get; set; } = string.Empty;
     public string Notes { get; set; } = string.Empty;
     public Guid CreatedBy { get; set; }

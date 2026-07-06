@@ -12,6 +12,8 @@ public sealed record InventoryTransactionDto
     public string BranchName { get; init; } = string.Empty;
     public TransactionType Type { get; init; }
     public int Quantity { get; init; }
+    public decimal UnitCost { get; init; }
+    public decimal TransactionAmount { get; init; }
     public string ReferenceNumber { get; init; } = string.Empty;
     public string Notes { get; init; } = string.Empty;
     public Guid CreatedBy { get; init; }

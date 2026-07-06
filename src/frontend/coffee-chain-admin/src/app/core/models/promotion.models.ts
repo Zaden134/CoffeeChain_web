@@ -3,7 +3,7 @@ export interface Promotion {
   id: string;
   code: string;
   name: string;
-  discountPercent: number;
+  discountPercent: number | null;
   discountAmount: number | null;
   startDate: string;
   endDate: string;
@@ -17,7 +17,7 @@ export interface Promotion {
 export interface UpsertPromotionRequest {
   code: string;
   name: string;
-  discountPercent: number;
+  discountPercent: number | null;
   discountAmount: number | null;
   startDate: string;
   endDate: string;
