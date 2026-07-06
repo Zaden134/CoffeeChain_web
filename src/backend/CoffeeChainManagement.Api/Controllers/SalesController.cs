@@ -18,8 +18,14 @@ public class SalesController(ISaleOrderService saleOrderService) : ControllerBas
             return BadRequest("No orders to sync.");
         }
 
-        int syncedCount = await saleOrderService.SyncOrdersAsync(request, cancellationToken);
-        
-        return Ok(new { Message = $"Successfully synced {syncedCount} orders." });
+        try
+        {
+            int syncedCount = await saleOrderService.SyncOrdersAsync(request, cancellationToken);
+            return Ok(new { Message = $"Successfully synced {syncedCount} orders." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { Error = ex.Message });
+        }
     }
 }

@@ -48,9 +48,13 @@ public sealed class PostgresSaleOrderService(CoffeeChainDbContext dbContext) : I
 
             await dbContext.Set<SaleOrder>().AddAsync(saleOrder, cancellationToken);
 
-            // Deduct from inventory based on recipe
+            // Calculate total ingredients required for this order
             var productIds = orderDto.Items.Select(i => i.ProductId).Distinct().ToList();
-            var recipes = await dbContext.Recipes.Include(r => r.Ingredients).Where(r => productIds.Contains(r.ProductId)).ToListAsync(cancellationToken);
+            var recipes = await dbContext.Recipes.Include(r => r.Ingredients)
+                                                 .ThenInclude(ri => ri.Ingredient)
+                                                 .Where(r => productIds.Contains(r.ProductId)).ToListAsync(cancellationToken);
+
+            var requiredIngredients = new Dictionary<Guid, (decimal Quantity, string Name)>();
 
             foreach (var item in orderDto.Items)
             {
@@ -59,13 +63,39 @@ public sealed class PostgresSaleOrderService(CoffeeChainDbContext dbContext) : I
                 {
                     foreach (var ing in recipe.Ingredients)
                     {
-                        var inventoryItem = await dbContext.InventoryItems.FirstOrDefaultAsync(inv => inv.BranchId == orderDto.BranchId && inv.IngredientId == ing.IngredientId, cancellationToken);
-                        if (inventoryItem != null)
+                        if (requiredIngredients.ContainsKey(ing.IngredientId))
                         {
-                            inventoryItem.InStockQuantity -= (ing.RequiredQuantity * item.Quantity);
+                            var existing = requiredIngredients[ing.IngredientId];
+                            requiredIngredients[ing.IngredientId] = (existing.Quantity + (ing.RequiredQuantity * item.Quantity), existing.Name);
+                        }
+                        else
+                        {
+                            requiredIngredients[ing.IngredientId] = (ing.RequiredQuantity * item.Quantity, ing.Ingredient?.Name ?? "Unknown");
                         }
                     }
                 }
+            }
+
+            // Validate inventory
+            var branchInventory = await dbContext.InventoryItems
+                .Where(inv => inv.BranchId == orderDto.BranchId && requiredIngredients.Keys.Contains(inv.IngredientId))
+                .ToListAsync(cancellationToken);
+
+            foreach (var req in requiredIngredients)
+            {
+                var inventoryItem = branchInventory.FirstOrDefault(inv => inv.IngredientId == req.Key);
+                if (inventoryItem == null)
+                {
+                    throw new InvalidOperationException($"Chi nhánh không có nguyên liệu '{req.Value.Name}' trong kho để pha chế.");
+                }
+
+                if (inventoryItem.InStockQuantity - inventoryItem.ReservedQuantity < req.Value.Quantity)
+                {
+                    throw new InvalidOperationException($"Kho chi nhánh không đủ số lượng nguyên liệu '{req.Value.Name}' (Cần: {req.Value.Quantity}, Có thể dùng: {inventoryItem.InStockQuantity - inventoryItem.ReservedQuantity}).");
+                }
+                
+                // Deduct from stock
+                inventoryItem.InStockQuantity -= req.Value.Quantity;
             }
 
             syncedCount++;

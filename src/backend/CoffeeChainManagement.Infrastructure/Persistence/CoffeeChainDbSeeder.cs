@@ -20,6 +20,7 @@ public sealed class CoffeeChainDbSeeder(
         {
             var fallbackBranchId = await ResolveSeedBranchIdAsync(branch1Id, cancellationToken);
             await EnsureSeedProductsAsync(cancellationToken);
+            await EnsureSeedRecipesAndInventoryAsync(cancellationToken);
             await EnsureSeedEmployeeAsync(
                 Guid.Parse("10000000-0000-0000-0000-000000000001"),
                 "admin",
@@ -471,5 +472,141 @@ public sealed class CoffeeChainDbSeeder(
         {
             dbContext.Products.AddRange(productsToAdd);
         }
+    }
+
+    private async Task EnsureSeedRecipesAndInventoryAsync(CancellationToken cancellationToken)
+    {
+        var requiredIngredients = new Dictionary<string, string> // Name -> Unit
+        {
+            { "Trà đen", "g" },
+            { "Trà xanh", "g" },
+            { "Sữa đặc", "ml" },
+            { "Trân châu đen", "g" },
+            { "Bột Matcha", "g" },
+            { "Sữa hạnh nhân", "ml" },
+            { "Cam tươi", "quả" },
+            { "Dưa hấu", "kg" },
+            { "Thơm", "quả" },
+            { "Táo", "quả" },
+            { "Cần tây", "g" },
+            { "Bơ", "kg" },
+            { "Xoài", "kg" },
+            { "Dâu tây", "kg" },
+            { "Mãng cầu", "kg" },
+            { "Socola", "g" },
+            { "Đá viên", "g" }
+        };
+
+        var existingIngredients = await dbContext.Ingredients.ToDictionaryAsync(i => i.Name, i => i, cancellationToken);
+        
+        foreach (var req in requiredIngredients)
+        {
+            if (!existingIngredients.ContainsKey(req.Key))
+            {
+                var newIng = new Ingredient { Id = Guid.NewGuid(), Name = req.Key, Unit = req.Value, ReorderLevel = 10m };
+                dbContext.Ingredients.Add(newIng);
+                existingIngredients[req.Key] = newIng;
+            }
+        }
+        
+        await dbContext.SaveChangesAsync(cancellationToken);
+        
+        // Define recipes mapping Product SKU -> Dictionary<IngredientName, RequiredQty>
+        var recipeDefs = new Dictionary<string, Dictionary<string, int>>
+        {
+            { "CF-BX-01", new() { { "Coffee Beans", 15 }, { "Sữa đặc", 40 }, { "Fresh Milk", 20 }, { "Đá viên", 100 } } },
+            { "CF-DD-02", new() { { "Coffee Beans", 20 }, { "Đá viên", 100 } } },
+            { "CF-SD-03", new() { { "Coffee Beans", 20 }, { "Sữa đặc", 30 }, { "Đá viên", 100 } } },
+            { "CF-LM-04", new() { { "Coffee Beans", 10 }, { "Fresh Milk", 150 } } },
+            { "CF-CP-05", new() { { "Coffee Beans", 10 }, { "Fresh Milk", 120 } } },
+            { "CF-AM-06", new() { { "Coffee Beans", 20 } } },
+            
+            { "MT-TCD-01", new() { { "Trà đen", 10 }, { "Sữa đặc", 20 }, { "Fresh Milk", 50 }, { "Trân châu đen", 50 }, { "Đá viên", 100 } } },
+            { "MT-TX-02", new() { { "Trà xanh", 10 }, { "Sữa đặc", 30 }, { "Trân châu đen", 50 }, { "Đá viên", 100 } } },
+            { "MT-OL-03", new() { { "Trà đen", 10 }, { "Sữa đặc", 20 }, { "Fresh Milk", 40 }, { "Đá viên", 100 } } },
+            { "MT-MC-04", new() { { "Bột Matcha", 5 }, { "Fresh Milk", 100 }, { "Đá viên", 100 } } },
+            { "MT-HN-05", new() { { "Trà đen", 10 }, { "Sữa hạnh nhân", 100 }, { "Đá viên", 100 } } },
+            
+            { "TE-DCS-01", new() { { "Trà đen", 10 }, { "Peach Syrup", 20 }, { "Cam tươi", 1 }, { "Đá viên", 100 } } },
+            { "TE-VND-02", new() { { "Trà đen", 10 }, { "Đá viên", 100 } } },
+            { "TE-OSV-03", new() { { "Trà xanh", 10 }, { "Đá viên", 100 } } },
+            { "TE-HCM-04", new() { { "Trà xanh", 10 }, { "Đá viên", 100 } } },
+            { "TE-LMC-05", new() { { "Trà xanh", 10 }, { "Fresh Milk", 50 }, { "Đá viên", 100 } } },
+            
+            { "JU-DH-01", new() { { "Dưa hấu", 1 }, { "Đá viên", 50 } } },
+            { "JU-CA-02", new() { { "Cam tươi", 2 }, { "Đá viên", 50 } } },
+            { "JU-TC-03", new() { { "Táo", 1 }, { "Cần tây", 50 }, { "Đá viên", 50 } } },
+            { "JU-TH-04", new() { { "Thơm", 1 }, { "Đá viên", 50 } } },
+            
+            { "SM-BO-01", new() { { "Bơ", 1 }, { "Sữa đặc", 20 }, { "Fresh Milk", 50 }, { "Đá viên", 100 } } },
+            { "SM-XO-02", new() { { "Xoài", 1 }, { "Sữa đặc", 20 }, { "Fresh Milk", 50 }, { "Đá viên", 100 } } },
+            { "SM-DA-03", new() { { "Dâu tây", 1 }, { "Sữa đặc", 20 }, { "Fresh Milk", 50 }, { "Đá viên", 100 } } },
+            { "SM-MC-04", new() { { "Mãng cầu", 1 }, { "Sữa đặc", 20 }, { "Fresh Milk", 50 }, { "Đá viên", 100 } } },
+            
+            { "IB-SC-01", new() { { "Socola", 30 }, { "Fresh Milk", 80 }, { "Đá viên", 150 } } }
+        };
+
+        var products = await dbContext.Products.ToListAsync(cancellationToken);
+        
+        foreach (var def in recipeDefs)
+        {
+            var product = products.FirstOrDefault(p => p.Sku == def.Key);
+            if (product != null)
+            {
+                var recipe = await dbContext.Recipes.Include(r => r.Ingredients).FirstOrDefaultAsync(r => r.ProductId == product.Id, cancellationToken);
+                if (recipe == null)
+                {
+                    recipe = new Recipe { Id = Guid.NewGuid(), ProductId = product.Id, Instructions = "Pha chế theo chuẩn." };
+                    dbContext.Recipes.Add(recipe);
+                }
+                
+                foreach (var ingReq in def.Value)
+                {
+                    if (existingIngredients.TryGetValue(ingReq.Key, out var ingredient))
+                    {
+                        if (!recipe.Ingredients.Any(ri => ri.IngredientId == ingredient.Id))
+                        {
+                            recipe.Ingredients.Add(new RecipeIngredient { Id = Guid.NewGuid(), RecipeId = recipe.Id, IngredientId = ingredient.Id, RequiredQuantity = ingReq.Value });
+                        }
+                    }
+                }
+            }
+        }
+        
+        await dbContext.SaveChangesAsync(cancellationToken);
+        
+        var branches = await dbContext.Branches.ToListAsync(cancellationToken);
+        var adminStaff = await dbContext.Employees.FirstOrDefaultAsync(e => e.Username == "admin", cancellationToken);
+        var createdById = adminStaff?.Id ?? Guid.Empty;
+
+        foreach (var branch in branches)
+        {
+            foreach (var ing in existingIngredients.Values)
+            {
+                var invItem = await dbContext.InventoryItems.FirstOrDefaultAsync(i => i.BranchId == branch.Id && i.IngredientId == ing.Id, cancellationToken);
+                if (invItem == null)
+                {
+                    invItem = new InventoryItem { BranchId = branch.Id, IngredientId = ing.Id, InStockQuantity = 5000m, ReservedQuantity = 0m };
+                    dbContext.InventoryItems.Add(invItem);
+                    
+                    dbContext.InventoryTransactions.Add(new InventoryTransaction
+                    {
+                        Id = Guid.NewGuid(),
+                        BranchId = branch.Id,
+                        IngredientId = ing.Id,
+                        Type = TransactionType.Import,
+                        Quantity = 5000,
+                        UnitCost = 10000m,
+                        TransactionAmount = -50000000m,
+                        ReferenceNumber = $"INIT-{branch.Code}-{ing.Name}",
+                        Notes = "Nhập kho ban đầu cho nguyên liệu mới",
+                        CreatedBy = createdById,
+                        CreatedAtUtc = DateTime.UtcNow
+                    });
+                }
+            }
+        }
+        
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 }
