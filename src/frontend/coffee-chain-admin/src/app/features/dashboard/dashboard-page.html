@@ -6,33 +6,29 @@
     <button type="button" (click)="store.load()">Thử lại</button>
   </section>
 } @else if (state().data; as data) {
-  <section class="dashboard-hero">
-    <div>
-      <span class="eyebrow">Home</span>
-      <h1>Doanh thu toàn bộ chuỗi cửa hàng</h1>
-    </div>
+  <div class="dashboard-actions">
     <button type="button" class="refresh-button" (click)="store.load()">
       <span class="material-symbols-outlined">refresh</span>
       Làm mới
     </button>
-  </section>
+  </div>
 
   <section class="kpi-grid">
     <article class="kpi-card kpi-card--primary">
       <span>Doanh thu hôm nay</span>
-      <strong>{{ data.summary.dailyRevenue | currency:'VND':'symbol':'1.0-0' }}</strong>
+      <strong>{{ data.summary.dailyRevenue | number:'1.0-0' }}</strong>
     </article>
     <article class="kpi-card kpi-card--danger">
       <span>Chi phí nhập kho hôm nay</span>
-      <strong>{{ data.summary.dailyInventoryExpense | currency:'VND':'symbol':'1.0-0' }}</strong>
+      <strong>{{ data.summary.dailyInventoryExpense | number:'1.0-0' }}</strong>
     </article>
     <article class="kpi-card">
       <span>Doanh thu ròng hôm nay</span>
-      <strong>{{ data.summary.dailyNetRevenue | currency:'VND':'symbol':'1.0-0' }}</strong>
+      <strong>{{ data.summary.dailyNetRevenue | number:'1.0-0' }}</strong>
     </article>
     <article class="kpi-card">
       <span>Doanh thu ròng tháng</span>
-      <strong>{{ data.summary.monthlyNetRevenue | currency:'VND':'symbol':'1.0-0' }}</strong>
+      <strong>{{ data.summary.monthlyNetRevenue | number:'1.0-0' }}</strong>
     </article>
   </section>
 
@@ -50,7 +46,7 @@
           <div class="bar-row">
             <div class="bar-label">
               <strong>{{ branch.name }}</strong>
-              <span>{{ branch.revenueToday | currency:'VND':'symbol':'1.0-0' }}</span>
+              <span>{{ branch.revenueToday | number:'1.0-0' }}</span>
             </div>
             <div class="bar-track">
               <div class="bar-fill" [style.width.%]="branchRevenuePercent(branch.revenueToday)"></div>
@@ -75,7 +71,7 @@
       <div class="product-list">
         @for (product of data.bestSellingProducts; track product.id) {
           <div class="product-item">
-            <img [src]="product.imageUrl || 'assets/placeholder.png'" [alt]="product.name" />
+            <img [src]="productImageSrc(product)" [alt]="product.name" (error)="useFallbackImage($event, product.category)" />
             <div>
               <strong>{{ product.name }}</strong>
               <span>{{ product.category }} · {{ product.soldQuantity }} ly</span>

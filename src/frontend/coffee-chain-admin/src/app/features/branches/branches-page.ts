@@ -1,4 +1,4 @@
-import { CommonModule, CurrencyPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 
 import { BranchSummary } from '../../core/models/dashboard.models';
@@ -8,7 +8,7 @@ import { BranchApi } from '../../core/services/branch.api';
 @Component({
   selector: 'ccm-branches-page',
   standalone: true,
-  imports: [CommonModule, CurrencyPipe],
+  imports: [CommonModule],
   templateUrl: './branches-page.html',
   styleUrl: './branches-page.css'
 })

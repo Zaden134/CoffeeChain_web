@@ -24,6 +24,14 @@ internal sealed class PostgresBranchService(CoffeeChainDbContext dbContext) : IB
             .ToDictionary(
                 group => group.Key,
                 group => group.Sum(order => order.Items.Sum(item => item.LineTotal)));
+        var inventoryExpenseLookup = await dbContext.InventoryTransactions
+            .AsNoTracking()
+            .Where(transaction => transaction.CreatedAtUtc >= startOfDayUtc)
+            .GroupBy(transaction => transaction.BranchId)
+            .ToDictionaryAsync(
+                group => group.Key,
+                group => group.Sum(transaction => transaction.TransactionAmount),
+                cancellationToken);
 
         var lowStockByBranch = await (
             from inventory in dbContext.InventoryItems.AsNoTracking()
@@ -50,7 +58,7 @@ internal sealed class PostgresBranchService(CoffeeChainDbContext dbContext) : IB
                 branch.Name,
                 branch.Address,
                 branch.ManagerName,
-                revenueLookup.GetValueOrDefault(branch.Id),
+                revenueLookup.GetValueOrDefault(branch.Id) + inventoryExpenseLookup.GetValueOrDefault(branch.Id),
                 lowStockByBranch.GetValueOrDefault(branch.Id),
                 branch.IsActive))
             .ToArray();

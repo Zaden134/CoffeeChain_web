@@ -33,17 +33,13 @@
 }
 
 .brand-mark {
-  display: grid;
   width: 40px;
   height: 40px;
   flex: 0 0 auto;
-  place-items: center;
   border: 1px solid rgba(130, 86, 45, 0.22);
   border-radius: 10px;
   background: #fff;
-  color: #6f3d17;
-  font-size: 1.1rem;
-  font-weight: 900;
+  object-fit: cover;
 }
 
 .brand-copy {

@@ -17,6 +17,12 @@
   color: #5d4736;
 }
 
+.dashboard-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 18px;
+}
+
 .dashboard-state--error {
   display: flex;
   align-items: center;

@@ -58,6 +58,8 @@ public sealed class CoffeeChainDbSeeder(
                 fallbackBranchId,
                 cancellationToken);
             await EnsureSeedInventoryTransactionsAsync(fallbackBranchId, cancellationToken);
+            await EnsureSeedSaleOrdersAsync(cancellationToken);
+            await EnsureInventoryImportAmountsAsync(cancellationToken);
             await dbContext.SaveChangesAsync(cancellationToken);
             return;
         }
@@ -375,11 +377,6 @@ public sealed class CoffeeChainDbSeeder(
 
     private async Task EnsureSeedInventoryTransactionsAsync(Guid branchId, CancellationToken cancellationToken)
     {
-        if (await dbContext.InventoryTransactions.AnyAsync(cancellationToken))
-        {
-            return;
-        }
-
         var coffeeBeansId = await dbContext.Ingredients
             .Where(ingredient => ingredient.Name == "Coffee Beans")
             .Select(ingredient => ingredient.Id)
@@ -398,35 +395,143 @@ public sealed class CoffeeChainDbSeeder(
             return;
         }
 
-        dbContext.InventoryTransactions.AddRange(
-            new InventoryTransaction
+        var seedTransactions = new[]
+        {
+            new
             {
                 Id = Guid.Parse("60000000-0000-0000-0000-000000000001"),
-                BranchId = branchId,
                 IngredientId = coffeeBeansId,
                 Type = TransactionType.Import,
                 Quantity = 18,
                 UnitCost = 120000m,
-                TransactionAmount = -2160000m,
                 ReferenceNumber = "PN-Q1-001",
                 Notes = "Nhap hat ca phe cho chi nhanh Q1",
-                CreatedBy = warehouseStaffId,
                 CreatedAtUtc = DateTime.UtcNow.AddHours(-5)
             },
-            new InventoryTransaction
+            new
             {
                 Id = Guid.Parse("60000000-0000-0000-0000-000000000002"),
-                BranchId = branchId,
                 IngredientId = milkId,
                 Type = TransactionType.Import,
                 Quantity = 25,
                 UnitCost = 32000m,
-                TransactionAmount = -800000m,
                 ReferenceNumber = "PN-Q1-002",
                 Notes = "Nhap sua tuoi",
-                CreatedBy = warehouseStaffId,
                 CreatedAtUtc = DateTime.UtcNow.AddHours(-3)
+            }
+        };
+
+        foreach (var seed in seedTransactions)
+        {
+            var exists = await dbContext.InventoryTransactions
+                .AnyAsync(transaction => transaction.ReferenceNumber == seed.ReferenceNumber, cancellationToken);
+            if (exists)
+            {
+                continue;
+            }
+
+            dbContext.InventoryTransactions.Add(new InventoryTransaction
+            {
+                Id = seed.Id,
+                BranchId = branchId,
+                IngredientId = seed.IngredientId,
+                Type = seed.Type,
+                Quantity = seed.Quantity,
+                UnitCost = seed.UnitCost,
+                TransactionAmount = seed.Type == TransactionType.Import ? -(seed.UnitCost * seed.Quantity) : 0,
+                ReferenceNumber = seed.ReferenceNumber,
+                Notes = seed.Notes,
+                CreatedBy = warehouseStaffId,
+                CreatedAtUtc = seed.CreatedAtUtc
             });
+        }
+    }
+
+    private async Task EnsureInventoryImportAmountsAsync(CancellationToken cancellationToken)
+    {
+        var imports = await dbContext.InventoryTransactions
+            .Where(transaction => transaction.Type == TransactionType.Import)
+            .ToListAsync(cancellationToken);
+
+        foreach (var transaction in imports)
+        {
+            var quantity = Math.Abs(transaction.Quantity);
+            var expectedAmount = -(transaction.UnitCost * quantity);
+            if (transaction.Quantity < 0)
+            {
+                transaction.Quantity = quantity;
+            }
+
+            if (transaction.TransactionAmount != expectedAmount)
+            {
+                transaction.TransactionAmount = expectedAmount;
+                transaction.UpdatedAtUtc = DateTime.UtcNow;
+            }
+        }
+    }
+
+    private async Task EnsureSeedSaleOrdersAsync(CancellationToken cancellationToken)
+    {
+        var todayUtc = DateTime.UtcNow.Date;
+        var hasOrdersToday = await dbContext.SaleOrders
+            .AnyAsync(order => order.Status == OrderStatus.Paid && order.CreatedAtUtc >= todayUtc, cancellationToken);
+        if (hasOrdersToday)
+        {
+            return;
+        }
+
+        var branches = await dbContext.Branches
+            .Where(branch => branch.IsActive)
+            .OrderBy(branch => branch.Code)
+            .Take(3)
+            .ToListAsync(cancellationToken);
+        var products = await dbContext.Products
+            .Where(product => product.IsAvailable)
+            .OrderBy(product => product.Sku)
+            .Take(3)
+            .ToListAsync(cancellationToken);
+        var employeeId = await dbContext.Employees
+            .Where(employee => employee.Username == "cashier.q1" || employee.Username == "manager.q1" || employee.Username == "admin")
+            .OrderBy(employee => employee.Role)
+            .Select(employee => employee.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (branches.Count == 0 || products.Count == 0 || employeeId == Guid.Empty)
+        {
+            return;
+        }
+
+        for (var index = 0; index < branches.Count; index++)
+        {
+            var firstProduct = products[index % products.Count];
+            var secondProduct = products[(index + 1) % products.Count];
+            dbContext.SaleOrders.Add(new SaleOrder
+            {
+                Id = Guid.NewGuid(),
+                BranchId = branches[index].Id,
+                EmployeeId = employeeId,
+                PaymentMethod = index % 2 == 0 ? PaymentMethod.Cash : PaymentMethod.Card,
+                Status = OrderStatus.Paid,
+                CreatedAtUtc = todayUtc.AddHours(8 + (index * 2)),
+                Items =
+                [
+                    new SaleOrderItem
+                    {
+                        ProductId = firstProduct.Id,
+                        ProductName = firstProduct.Name,
+                        Quantity = 6 + index,
+                        UnitPrice = firstProduct.Price
+                    },
+                    new SaleOrderItem
+                    {
+                        ProductId = secondProduct.Id,
+                        ProductName = secondProduct.Name,
+                        Quantity = 3 + index,
+                        UnitPrice = secondProduct.Price
+                    }
+                ]
+            });
+        }
     }
 
     private async Task EnsureSeedProductsAsync(CancellationToken cancellationToken)

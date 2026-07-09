@@ -1,14 +1,3 @@
-<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
-  <div class="max-w-2xl">
-    <h1 class="font-display-lg text-display-lg text-on-surface mb-2 tracking-tight">Audit log</h1>
-    <p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">Theo dõi lịch sử đăng nhập, thay đổi dữ liệu và kết quả thao tác quan trọng.</p>
-  </div>
-  <button type="button" (click)="load()" class="flex items-center justify-center gap-2 px-4 py-2 border border-outline-variant text-on-surface font-label-md font-medium rounded-lg hover:bg-surface-container-high transition-colors bg-white">
-    <span class="material-symbols-outlined text-[18px]">refresh</span>
-    Làm mới
-  </button>
-</div>
-
 @if (error()) {
   <div class="p-4 bg-error-container text-error rounded-lg mb-4">{{ error() }}</div>
 }
@@ -20,7 +9,13 @@
       <input type="search" class="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-surface-container-lowest"
              [ngModel]="searchTerm()" (ngModelChange)="changeSearch($event)" name="auditSearch" placeholder="Tìm action, user, entity, nội dung..." />
     </label>
-    <span class="text-sm text-on-surface-variant">{{ result()?.totalItems ?? 0 }} ban ghi</span>
+    <div class="flex items-center gap-3">
+      <span class="text-sm text-on-surface-variant">{{ result()?.totalItems ?? 0 }} ban ghi</span>
+      <button type="button" (click)="load()" class="flex items-center justify-center gap-2 px-3 py-2 border border-outline-variant text-on-surface font-label-md text-[13px] font-medium rounded-lg hover:bg-surface-container-high transition-colors bg-white">
+        <span class="material-symbols-outlined text-[18px]">refresh</span>
+        Làm mới
+      </button>
+    </div>
   </div>
 
   @if (loading()) {

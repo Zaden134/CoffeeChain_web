@@ -1,4 +1,4 @@
-import { CommonModule, CurrencyPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
@@ -12,7 +12,7 @@ import { ReportsApi } from '../../core/services/reports.api';
 @Component({
   selector: 'ccm-reports-page',
   standalone: true,
-  imports: [CommonModule, CurrencyPipe, FormsModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './reports-page.html',
   styleUrl: './reports-page.css'
 })

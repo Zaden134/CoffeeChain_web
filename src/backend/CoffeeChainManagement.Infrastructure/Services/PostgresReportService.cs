@@ -26,17 +26,39 @@ internal sealed class PostgresReportService(
             .Include(order => order.Items)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
+        var inventoryTransactions = await dbContext.InventoryTransactions
+            .AsNoTracking()
+            .Where(transaction => !effectiveBranchId.HasValue || transaction.BranchId == effectiveBranchId.Value)
+            .Where(transaction => !fromDate.HasValue || transaction.CreatedAtUtc >= fromDate.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc))
+            .Where(transaction => !toDate.HasValue || transaction.CreatedAtUtc <= toDate.Value.ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc))
+            .ToListAsync(cancellationToken);
 
         var branches = await dbContext.Branches.AsNoTracking().ToDictionaryAsync(branch => branch.Id, branch => branch.Name, cancellationToken);
         var products = await dbContext.Products.AsNoTracking().ToDictionaryAsync(product => product.Id, product => product.Name, cancellationToken);
+        var inventoryExpenseByBranch = inventoryTransactions
+            .GroupBy(transaction => transaction.BranchId)
+            .ToDictionary(group => group.Key, group => group.Sum(transaction => transaction.TransactionAmount));
+        var inventoryExpenseByDay = inventoryTransactions
+            .GroupBy(transaction => DateOnly.FromDateTime(transaction.CreatedAtUtc))
+            .ToDictionary(group => group.Key, group => group.Sum(transaction => transaction.TransactionAmount));
 
-        var branchRevenue = orders
+        var ordersByBranch = orders
             .GroupBy(order => order.BranchId)
-            .Select(group => new ReportBranchRevenueDto(
-                group.Key,
-                branches.GetValueOrDefault(group.Key, "Khong ro chi nhanh"),
-                group.Sum(order => order.Items.Sum(item => item.LineTotal)),
-                group.Count()))
+            .ToDictionary(group => group.Key, group => group.ToArray());
+        var branchKeys = ordersByBranch.Keys
+            .Concat(inventoryExpenseByBranch.Keys)
+            .Distinct()
+            .ToArray();
+        var branchRevenue = branchKeys
+            .Select(branchId =>
+            {
+                var branchOrders = ordersByBranch.GetValueOrDefault(branchId) ?? [];
+                return new ReportBranchRevenueDto(
+                    branchId,
+                    branches.GetValueOrDefault(branchId, "Khong ro chi nhanh"),
+                    branchOrders.Sum(order => order.Items.Sum(item => item.LineTotal)) + inventoryExpenseByBranch.GetValueOrDefault(branchId),
+                    branchOrders.Length);
+            })
             .OrderByDescending(item => item.Revenue)
             .ToArray();
 
@@ -51,22 +73,27 @@ internal sealed class PostgresReportService(
             .OrderByDescending(item => item.Quantity)
             .ToArray();
 
-        var dailyRevenue = orders
+        var ordersByDay = orders
             .GroupBy(order => DateOnly.FromDateTime(order.CreatedAtUtc))
-            .Select(group => new ReportDailyRevenueDto(
-                group.Key,
-                group.Sum(order => order.Items.Sum(item => item.LineTotal)),
-                group.Count()))
+            .ToDictionary(group => group.Key, group => group.ToArray());
+        var dayKeys = ordersByDay.Keys
+            .Concat(inventoryExpenseByDay.Keys)
+            .Distinct()
+            .ToArray();
+        var dailyRevenue = dayKeys
+            .Select(date =>
+            {
+                var dayOrders = ordersByDay.GetValueOrDefault(date) ?? [];
+                return new ReportDailyRevenueDto(
+                    date,
+                    dayOrders.Sum(order => order.Items.Sum(item => item.LineTotal)) + inventoryExpenseByDay.GetValueOrDefault(date),
+                    dayOrders.Length);
+            })
             .OrderBy(item => item.Date)
             .ToArray();
 
         var totalRevenue = orders.Sum(order => order.Items.Sum(item => item.LineTotal));
-        var inventoryExpense = await dbContext.InventoryTransactions
-            .AsNoTracking()
-            .Where(transaction => !effectiveBranchId.HasValue || transaction.BranchId == effectiveBranchId.Value)
-            .Where(transaction => !fromDate.HasValue || transaction.CreatedAtUtc >= fromDate.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc))
-            .Where(transaction => !toDate.HasValue || transaction.CreatedAtUtc <= toDate.Value.ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc))
-            .SumAsync(transaction => transaction.TransactionAmount, cancellationToken);
+        var inventoryExpense = inventoryTransactions.Sum(transaction => transaction.TransactionAmount);
         var netRevenue = totalRevenue + inventoryExpense;
         var totalOrders = orders.Count;
         var averageOrderValue = totalOrders == 0 ? 0 : totalRevenue / totalOrders;

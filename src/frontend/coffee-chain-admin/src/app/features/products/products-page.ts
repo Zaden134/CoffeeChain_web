@@ -1,4 +1,4 @@
-import { CommonModule, CurrencyPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -11,7 +11,7 @@ import { ProductApi } from '../../core/services/product.api';
 @Component({
   selector: 'ccm-products-page',
   standalone: true,
-  imports: [CommonModule, CurrencyPipe, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './products-page.html',
   styleUrl: './products-page.css'
 })
@@ -43,6 +43,20 @@ export class ProductsPage {
 
   protected products(): ProductSummary[] {
     return this.result()?.items ?? [];
+  }
+
+  protected productImageSrc(product: ProductSummary): string {
+    return product.imageUrl?.trim() || this.fallbackImage(product.category);
+  }
+
+  protected useFallbackImage(event: Event, category: string): void {
+    const image = event.target as HTMLImageElement;
+    if (image.dataset['fallbackApplied']) {
+      return;
+    }
+
+    image.dataset['fallbackApplied'] = 'true';
+    image.src = this.fallbackImage(category);
   }
 
   protected load(): void {
@@ -162,5 +176,16 @@ export class ProductsPage {
     }
 
     return null;
+  }
+
+  private fallbackImage(category: string): string {
+    const normalized = category.trim().toLowerCase();
+    if (normalized.includes('milk tea')) return 'assets/drinks/milk-tea.svg';
+    if (normalized.includes('coffee')) return 'assets/drinks/coffee.svg';
+    if (normalized.includes('tea')) return 'assets/drinks/tea.svg';
+    if (normalized.includes('juice')) return 'assets/drinks/juice.svg';
+    if (normalized.includes('smoothie')) return 'assets/drinks/smoothie.svg';
+    if (normalized.includes('ice')) return 'assets/drinks/ice-blended.svg';
+    return 'assets/drinks/placeholder.svg';
   }
 }

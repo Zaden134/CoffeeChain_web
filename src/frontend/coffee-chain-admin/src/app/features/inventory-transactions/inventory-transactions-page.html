@@ -1,10 +1,4 @@
-<!-- Page Header -->
-<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
-  <div class="max-w-2xl">
-      <h1 class="font-display-lg text-display-lg md:text-display-lg text-on-surface mb-2 tracking-tight">Lịch sử Nhập / Xuất Kho</h1>
-      <p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">Theo dõi luân chuyển nguyên liệu tại các chi nhánh.</p>
-  </div>
-  <div class="flex items-center gap-3">
+<div class="flex items-center justify-end gap-3 mb-5">
       <button type="button" class="flex items-center justify-center gap-2 px-4 py-2 border border-outline-variant text-on-surface font-label-md text-label-md font-medium rounded-lg hover:bg-surface-container-high transition-colors bg-white" (click)="load()">
           <span class="material-symbols-outlined text-[18px]">refresh</span>
           Làm mới
@@ -13,7 +7,6 @@
           <span class="material-symbols-outlined text-[18px]">add</span>
           Tạo giao dịch
       </button>
-  </div>
 </div>
 
 @if (error()) {
@@ -148,7 +141,7 @@
                               </strong>
                           </td>
                           <td class="px-6 py-4 text-right font-title-md" [class.text-error]="tx.transactionAmount < 0" [class.text-[#137333]]="tx.transactionAmount > 0">
-                              {{ tx.transactionAmount | currency:'VND':'symbol':'1.0-0' }}
+                              {{ tx.transactionAmount | number:'1.0-0' }}
                           </td>
                           <td class="px-6 py-4 text-[13px] text-on-surface-variant">{{ tx.referenceNumber || '-' }}</td>
                           <td class="px-6 py-4 text-[13px] text-on-surface-variant max-w-[200px] truncate" [title]="tx.notes">{{ tx.notes || '-' }}</td>

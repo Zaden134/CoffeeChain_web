@@ -1,22 +1,3 @@
-<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
-  <div class="max-w-2xl">
-    <h1 class="font-display-lg text-display-lg text-on-surface mb-2 tracking-tight">Sản phẩm</h1>
-    <p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">Quản lý menu, giá bán, trạng thái hiển thị và công thức pha chế.</p>
-  </div>
-  <div class="flex items-center gap-3">
-    <button type="button" (click)="load()" class="flex items-center justify-center gap-2 px-4 py-2 border border-outline-variant text-on-surface font-label-md font-medium rounded-lg hover:bg-surface-container-high transition-colors bg-white">
-      <span class="material-symbols-outlined text-[18px]">refresh</span>
-      Làm mới
-    </button>
-    @if (canWrite()) {
-      <button type="button" (click)="startCreate()" class="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white font-label-md font-medium rounded-lg hover:opacity-90 transition-opacity">
-        <span class="material-symbols-outlined text-[18px]">add</span>
-        Thêm sản phẩm
-      </button>
-    }
-  </div>
-</div>
-
 @if (error()) {
   <div class="p-4 bg-error-container text-error rounded-lg mb-4">{{ error() }}</div>
 }
@@ -41,7 +22,7 @@
         @for (product of products(); track product.id) {
           <article class="bg-white rounded-[20px] border border-outline-variant overflow-hidden card-shadow-level-1 flex flex-col h-full">
             <div class="relative w-full aspect-square bg-surface-container overflow-hidden">
-              <img [src]="product.imageUrl || 'assets/placeholder.png'" [alt]="product.name" class="w-full h-full object-cover" />
+              <img [src]="productImageSrc(product)" [alt]="product.name" class="w-full h-full object-cover" (error)="useFallbackImage($event, product.category)" />
               <div class="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wider uppercase border"
                    [class.bg-[#E6F4EA]]="product.isAvailable"
                    [class.text-[#137333]]="product.isAvailable"
@@ -62,7 +43,7 @@
 
               <div class="mt-auto">
                 <div class="flex items-end justify-between mb-4">
-                  <span class="font-headline-md text-headline-md text-primary font-black">{{ product.price | currency:'VND':'symbol':'1.0-0' }}</span>
+                  <span class="font-headline-md text-headline-md text-primary font-black">{{ product.price | number:'1.0-0' }}</span>
                   <div class="flex flex-col items-end">
                     <span class="text-[12px] text-on-surface-variant">Đã bán</span>
                     <span class="font-body-md text-on-surface font-medium">{{ product.soldQuantity }} ly</span>
