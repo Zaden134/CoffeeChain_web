@@ -337,7 +337,7 @@ CI kiểm tra backend và frontend build theo cấu hình trong workflow.
 Repository:
 
 ```text
-https://github.com/Zaden134/KLTN.git
+https://github.com/Zaden134/CoffeeChain_web.git
 ```
 
 Nhánh chính:
