@@ -1,18 +1,35 @@
-# Coffee Chain Management
+# Hệ thống quản lý chuỗi cửa hàng cà phê
 
-Monorepo cho do an tot nghiep quan ly va ban ca phe chuoi cua hang.
+Dự án khóa luận tốt nghiệp xây dựng hệ thống quản trị cho chuỗi cửa hàng cà phê. Hệ thống gồm backend ASP.NET Core, frontend Angular, PostgreSQL, Docker và các luồng quản trị phục vụ vận hành chuỗi.
 
-## Stack
+## Tình Trạng Hiện Tại
 
-- Backend: ASP.NET Core Web API `.NET 8`
+Dự án đã có đầy đủ các phần chính để chạy demo và kiểm thử end-to-end:
+
+- Đăng nhập JWT, refresh token, đăng xuất và đổi mật khẩu.
+- Phân quyền theo vai trò: `Administrator`, `BranchManager`, `Cashier`, `WarehouseStaff`.
+- Quản lý chi nhánh, sản phẩm, công thức, kho, giao dịch kho, nhân viên, khuyến mãi, tuyển dụng, audit log và bảo mật.
+- Trang Home hiển thị KPI doanh thu toàn chuỗi, doanh thu ròng và sản phẩm bán chạy.
+- Báo cáo doanh thu có lọc theo thời gian/chi nhánh, tính cả chi phí nhập kho âm, xuất Excel/PDF.
+- Khuyến mãi hỗ trợ giảm theo phần trăm hoặc số tiền cố định, áp dụng theo toàn hệ thống, chi nhánh, nhóm khách hàng hoặc số điện thoại.
+- Quản lý chi nhánh có nút chi tiết để chỉnh sửa; quản lý chi nhánh chỉ sửa được chi nhánh của mình, admin sửa được tất cả.
+- Frontend đã có icon/logo và ảnh fallback cho đồ uống để không bị vỡ ảnh khi thiếu URL ảnh.
+- Docker compose chạy PostgreSQL, backend và frontend.
+- Có Playwright E2E cơ bản cho luồng admin và tuyển dụng.
+
+## Công Nghệ Sử Dụng
+
+- Backend: `.NET 8`, ASP.NET Core Web API
 - Frontend: `Angular 21`
-- Database: `PostgreSQL`
-- ORM: `EF Core + Npgsql`
-- Auth: `JWT Bearer`
-- Container: `Docker` + `docker compose`
-- Source control: `Git` + `GitHub`
+- Database: `PostgreSQL 17`
+- ORM: `Entity Framework Core + Npgsql`
+- Authentication: `JWT Bearer + Refresh Token`
+- Export báo cáo: `ClosedXML` cho Excel, `QuestPDF` cho PDF
+- E2E: `Playwright`
+- Container: `Docker`, `Docker Compose`
+- CI: GitHub Actions
 
-## Cau truc thu muc
+## Cấu Trúc Thư Mục
 
 ```text
 .
@@ -27,34 +44,73 @@ Monorepo cho do an tot nghiep quan ly va ban ca phe chuoi cua hang.
 |-- docker
 |   |-- backend.Dockerfile
 |   `-- frontend.Dockerfile
-|-- docs
-|-- dotnet-tools.json
+|-- scripts
+|   |-- backup-postgres.ps1
+|   `-- restore-postgres.ps1
+|-- tests
+|-- docker-compose.yml
 |-- CoffeeChainManagement.slnx
-`-- docker-compose.yml
+`-- README.md
 ```
 
-## Y nghia nhanh tung layer backend
+## Ý Nghĩa Các Layer Backend
 
-- `Domain`: entity va enum cua nghiep vu quan ly chi nhanh, menu, POS, kho.
-- `Application`: DTO va interface/use case de frontend/API goi vao.
-- `Infrastructure`: `EF Core + Npgsql`, migrations, seed data, JWT auth implementation.
-- `Api`: endpoint REST, swagger, CORS, auth middleware, startup migration/seed.
+- `Domain`: entity, enum và mô hình nghiệp vụ cốt lõi.
+- `Application`: DTO, interface và contract use case.
+- `Infrastructure`: EF Core, PostgreSQL, migrations, seed data, JWT, audit log và service implementation.
+- `Api`: controller REST, Swagger, CORS, middleware auth, health check, migrate/seed khi startup.
 
-## Chay local khong dung Docker
+## Chạy Dự Án Bằng Docker
 
-### Backend
+Yêu cầu: Docker Desktop đang chạy.
+
+```powershell
+docker compose up --build
+```
+
+Sau khi chạy:
+
+- Frontend: `http://localhost:4200`
+- Backend API trong Docker: `http://localhost:8080`
+- PostgreSQL: `localhost:5432`
+
+## Chạy Local Khi Phát Triển
+
+### 1. Bật PostgreSQL
+
+Có thể bật riêng database bằng Docker:
+
+```powershell
+docker compose up -d postgres
+```
+
+Thông tin mặc định:
+
+- Database: `coffee_chain_management`
+- Username: `postgres`
+- Password: `postgres`
+- Port: `5432`
+
+### 2. Chạy Backend
 
 ```powershell
 dotnet tool restore
 dotnet run --project .\src\backend\CoffeeChainManagement.Api
 ```
 
-App startup se tu dong:
+Khi backend khởi động, hệ thống tự động:
 
-- Apply migration EF Core vao PostgreSQL
-- Seed du lieu dev neu database dang rong
+- Apply EF Core migrations.
+- Seed tài khoản và dữ liệu demo.
+- Tạo dữ liệu sản phẩm, chi nhánh, kho, giao dịch kho, khuyến mãi, tuyển dụng và đơn bán mẫu.
 
-### Frontend
+Backend local thường chạy theo profile trong `launchSettings.json`. Nếu cần ép URL:
+
+```powershell
+dotnet run --project .\src\backend\CoffeeChainManagement.Api --urls http://localhost:5000
+```
+
+### 3. Chạy Frontend
 
 ```powershell
 cd .\src\frontend\coffee-chain-admin
@@ -62,157 +118,230 @@ npm.cmd install
 npm.cmd start
 ```
 
-Frontend mac dinh: `http://localhost:4200`
+Frontend chạy tại:
 
-## EF Core migrations
+```text
+http://localhost:4200
+```
 
-Tao migration moi:
+Proxy frontend đang trỏ API local theo `proxy.conf.json`.
+
+## Tài Khoản Seed Mặc Định
+
+| Vai trò | Tên đăng nhập | Mật khẩu |
+|---|---|---|
+| Administrator | `admin` | `Admin@123` |
+| BranchManager | `manager.q1` | `Manager@123` |
+| Cashier | `cashier.q1` | `Cashier@123` |
+| WarehouseStaff | `warehouse.q1` | `Warehouse@123` |
+
+## Chức Năng Chính
+
+### Xác Thực Và Bảo Mật
+
+- Đăng nhập bằng JWT.
+- Refresh token xoay vòng.
+- Đổi mật khẩu.
+- Admin reset mật khẩu nhân viên.
+- Xem và thu hồi phiên đăng nhập.
+- Audit log các thao tác quan trọng.
+
+### Home
+
+- KPI doanh thu hôm nay.
+- Chi phí nhập kho hôm nay.
+- Doanh thu ròng hôm nay/tháng.
+- Biểu đồ doanh thu theo chi nhánh.
+- Sản phẩm bán chạy.
+
+### Chi Nhánh
+
+- Xem danh sách chi nhánh.
+- Xem doanh thu hôm nay, cảnh báo tồn kho, trạng thái.
+- Bấm `Chi tiết` để sửa thông tin chi nhánh.
+- Admin sửa tất cả chi nhánh.
+- BranchManager chỉ sửa được chi nhánh được phân công.
+- BranchManager không được đổi trạng thái hoạt động của chi nhánh.
+
+### Sản Phẩm Và Công Thức
+
+- Danh sách sản phẩm có phân trang/tìm kiếm.
+- Tạo, sửa, ẩn sản phẩm.
+- Ảnh sản phẩm có fallback theo nhóm đồ uống.
+- Quản lý công thức/định mức nguyên liệu cho từng sản phẩm.
+
+### Kho Và Giao Dịch Kho
+
+- Quản lý tồn kho theo chi nhánh.
+- Tạo/sửa/xóa mục tồn kho.
+- Tạo giao dịch nhập/xuất kho.
+- Giao dịch nhập kho ghi nhận số tiền âm để tính vào doanh thu ròng.
+- WarehouseStaff chỉ thao tác trong chi nhánh của mình.
+
+### Nhân Viên
+
+- Tạo/sửa/vô hiệu hóa nhân viên.
+- Không cho người dùng tự khóa chính mình.
+- Có thể kích hoạt lại tài khoản đã vô hiệu hóa.
+- Phân quyền thao tác theo role và chi nhánh.
+
+### Khuyến Mãi
+
+- Tạo/sửa/xóa khuyến mãi.
+- Giảm theo `%` hoặc số tiền cố định `VND`.
+- Áp dụng theo toàn hệ thống, từng cửa hàng, nhóm khách hàng hoặc số điện thoại khách hàng.
+- Manager chỉ quản lý khuyến mãi trong phạm vi phù hợp.
+
+### Tuyển Dụng
+
+- Quản lý chi nhánh gửi yêu cầu tuyển người cho chi nhánh của mình.
+- Admin xem xét, duyệt hoặc từ chối yêu cầu.
+- Có ghi chú admin khi xử lý.
+
+### Báo Cáo
+
+- Báo cáo doanh thu theo ngày.
+- Báo cáo theo chi nhánh.
+- Sản phẩm bán chạy.
+- Bộ lọc thời gian và chi nhánh.
+- Tính chi phí nhập kho âm vào doanh thu ròng.
+- Export Excel/PDF với tên file có ý nghĩa.
+
+## API Chính
+
+- `POST /api/auth/login`
+- `POST /api/auth/refresh`
+- `POST /api/auth/logout`
+- `GET /api/auth/me`
+- `POST /api/auth/change-password`
+- `GET /api/dashboard/overview`
+- `GET /api/branches`
+- `PUT /api/branches/{id}`
+- `GET /api/products`
+- `GET /api/products/paged`
+- `POST /api/products`
+- `PUT /api/products/{id}`
+- `DELETE /api/products/{id}`
+- `GET /api/inventory`
+- `POST /api/inventory`
+- `GET /api/inventory-transactions`
+- `POST /api/inventory-transactions`
+- `GET /api/employees`
+- `POST /api/employees`
+- `PUT /api/employees/{id}`
+- `DELETE /api/employees/{id}`
+- `GET /api/promotions`
+- `POST /api/promotions`
+- `PUT /api/promotions/{id}`
+- `DELETE /api/promotions/{id}`
+- `GET /api/recruitment-requests`
+- `POST /api/recruitment-requests`
+- `POST /api/recruitment-requests/{id}/approve`
+- `POST /api/recruitment-requests/{id}/reject`
+- `GET /api/reports/sales`
+- `GET /api/reports/sales/export?format=xlsx|pdf`
+- `GET /api/audit-logs`
+- `POST /api/support/requests`
+- `POST /api/sales/sync`
+
+## Health Check
+
+- `GET /health`
+- `GET /health/db`
+- `GET /health/info`
+
+## EF Core Migration
+
+Tạo migration mới:
 
 ```powershell
 dotnet tool restore
 dotnet dotnet-ef migrations add <MigrationName> --project .\src\backend\CoffeeChainManagement.Infrastructure --startup-project .\src\backend\CoffeeChainManagement.Api --output-dir Persistence\Migrations
 ```
 
-Apply migration thu cong:
+Apply migration thủ công:
 
 ```powershell
 dotnet tool restore
 dotnet dotnet-ef database update --project .\src\backend\CoffeeChainManagement.Infrastructure --startup-project .\src\backend\CoffeeChainManagement.Api
 ```
 
-## E2E tests
+Thông thường không cần apply thủ công vì backend đã tự migrate khi startup.
 
-Playwright tests nam trong `src/frontend/coffee-chain-admin/e2e`.
+## Kiểm Thử
 
-Chay backend, frontend va PostgreSQL truoc, sau do:
+### Backend
+
+```powershell
+dotnet build .\src\backend\CoffeeChainManagement.Api\CoffeeChainManagement.Api.csproj /p:PublishAot=false
+dotnet test .\CoffeeChainManagement.slnx
+```
+
+### Frontend
+
+```powershell
+cd .\src\frontend\coffee-chain-admin
+npm.cmd run build -- --configuration development
+```
+
+Build production có thể cần mạng để inline Google Fonts. Nếu máy không có mạng, nên dùng development build để kiểm tra compile.
+
+### Playwright E2E
+
+Chạy PostgreSQL, backend và frontend trước, sau đó:
 
 ```powershell
 cd .\src\frontend\coffee-chain-admin
 npm.cmd run e2e
 ```
 
-Mac dinh test dung `http://localhost:4200`. Neu can doi URL:
+Nếu cần đổi base URL:
 
 ```powershell
 $env:E2E_BASE_URL="http://localhost:4200"
 npm.cmd run e2e
 ```
 
-Tai khoan seed dung trong E2E:
+## Backup Và Restore PostgreSQL
 
-- `admin / Admin@123`
-- `manager.q1 / Manager@123`
-
-## Health va backup
-
-Health endpoints:
-
-- `GET /health`
-- `GET /health/db`
-- `GET /health/info`
-
-Backup PostgreSQL:
+Backup:
 
 ```powershell
 .\scripts\backup-postgres.ps1
 ```
 
-Restore PostgreSQL:
+Restore:
 
 ```powershell
 .\scripts\restore-postgres.ps1 -BackupFile .\backups\coffee-chain-yyyyMMdd-HHmmss.dump -Clean
 ```
 
-## Chay bang Docker
-
-```powershell
-docker compose up --build
-```
-
-## API mau de frontend dung ngay
-
-- `GET /health`
-- `POST /api/auth/login`
-- `GET /api/auth/me`
-- `POST /api/auth/refresh`
-- `POST /api/auth/logout`
-- `GET /api/dashboard/overview`
-- `GET /api/reports/sales`
-- `GET /api/reports/sales/export`
-- `GET /api/branches`
-- `GET /api/products`
-- `GET /api/employees`
-- `GET /api/inventory`
-- `GET /api/inventory/ingredients`
-- `GET /api/promotions`
-- `GET /api/recruitment-requests`
-
-## Tai khoan seed mac dinh
-
-- `admin / Admin@123` -> role `Administrator`
-- `manager.q1 / Manager@123` -> role `BranchManager`
-- `cashier.q1 / Cashier@123` -> role `Cashier`
-- `warehouse.q1 / Warehouse@123` -> role `WarehouseStaff`
-
-## Phan quyen hien tai
-
-- `Administrator`: toan quyen he thong, CRUD nhan vien/kho/khuyen mai, review recruitment, xem bao cao, export report
-- `BranchManager`: xem dashboard, chi nhanh, san pham, kho, nhan vien, khuyen mai, tao recruitment request cho chi nhanh cua minh
-- `Cashier`: login, xem dashboard, san pham, xem khuyen mai dang hoat dong
-- `WarehouseStaff`: dang nhap va duoc mo rong quyen ve sau cho cac tac vu kho
-
-## Frontend hien tai
-
-- Login page goi `POST /api/auth/login`
-- `AuthStore` luu access token, refresh token va profile vao `localStorage`
-- `authGuard` chan route noi bo
-- `guestGuard` chan quay lai trang login khi da dang nhap
-- `authInterceptor` tu dong gan bearer token va refresh token neu access token het han
-- Shell va sitemap frontend duoc phat trien theo mau tham chieu trong file zip:
-- `Dashboard`
-- `Chi nhanh`
-- `San pham`
-- `Kho hang`
-- `Nhan vien`
-- `Bao cao`
-- `Khuyen mai`
-- `Yeu cau tuyen dung`
-
-## Phan tich bao cao
-
-- `GET /api/reports/sales` tra tong hop doanh thu theo ngay, chi nhanh va mon ban chay.
-- `GET /api/reports/sales/export?format=xlsx|pdf` xuat bao cao ra Excel hoac PDF.
-- Frontend `Bao cao` co bo loc ngay/chi nhanh va nut export.
-
-## Hardening
-
-- JWT access token co refresh token xoay vong.
-- `audit_logs` ghi lai thao tac quan trong.
-- `Employees`, `Inventory`, `Promotions`, `Recruitment Requests` co search + phan trang tren UI.
-- Docker frontend build su dung output Angular moi nhat.
-
-## Test
-
-```powershell
-dotnet test .\CoffeeChainManagement.slnx
-```
-
 ## CI/CD
 
-- `.github/workflows/ci.yml` chay `dotnet test` va `npm run build`.
-- `.github/workflows/docker-publish.yml` build va push image neu cau hinh Docker Hub secrets.
+Workflow hiện có:
 
-## Ghi chu cho ban va team
+- `.github/workflows/ci.yml`
 
-- Minh da them comment ngan o dau nhieu file de nhin vao biet file do phuc vu gi.
-- Hien tai `Infrastructure` da dung `EF Core + Npgsql`, migration files va seed dev data vao PostgreSQL luc app startup.
-- Khuyen mai (Promotions) moi duoc bo sung them truong `Code` (nhu `HAPPY15`) va `DiscountAmount` giup chi nhanh co the tao khuyen mai theo ca % lan so tien.
-- Auth dang dung JWT bearer token va role authorization tren cac endpoint chinh.
-- App startup da tach ro `MigrateAsync()` va `SeedAsync()`.
-- Frontend da co login flow, guard, interceptor va bo cuc quan tri theo mau tham chieu.
-- Ung dung WPF POS rieng biet (nam o `../app/CoffeeChainPOS`) da duoc tich hop giao dien Material Design, Background Sync (tu dong cap nhat Menu & Khuyen mai luc 1:00 AM) va ban hang Offline.
+CI kiểm tra backend và frontend build theo cấu hình trong workflow.
 
-## GitHub va Docker Hub
+## Ghi Chú Demo
 
-- Push len GitHub bang branch `main`.
-- Docker Hub co the cau hinh qua secrets `DOCKERHUB_USERNAME` va `DOCKERHUB_TOKEN`.
+- POS/bán hàng có app riêng, frontend admin không cần màn POS.
+- Endpoint `POST /api/sales/sync` dùng để đồng bộ đơn từ POS/app bán hàng vào hệ thống quản trị.
+- Dữ liệu nhập kho là chi phí nên hiển thị số âm và được tính vào doanh thu ròng.
+- Các file ảnh đồ uống fallback nằm trong `src/frontend/coffee-chain-admin/public/assets/drinks`.
+- README này được cập nhật theo trạng thái dự án ngày `13/07/2026`.
+
+## GitHub
+
+Repository:
+
+```text
+https://github.com/Zaden134/KLTN.git
+```
+
+Nhánh chính:
+
+```text
+main
+```

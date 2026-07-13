@@ -1,8 +1,60 @@
 @if (loading()) {
   <div class="flex justify-center p-8 text-on-surface-variant">Đang tải chi nhánh...</div>
-} @else if (error()) {
+} @else if (error() && branches().length === 0) {
   <div class="p-4 bg-error-container text-error rounded-lg mb-4">{{ error() }}</div>
 } @else {
+  @if (error()) {
+    <div class="p-4 bg-error-container text-error rounded-lg mb-4">{{ error() }}</div>
+  }
+
+  @if (success()) {
+    <div class="p-4 bg-[#E6F4EA] text-[#137333] rounded-lg mb-4">{{ success() }}</div>
+  }
+
+  @if (editingBranch(); as branch) {
+    <section class="bg-white rounded-[20px] border border-outline-variant p-5 card-shadow-level-1 mb-5">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-5 pb-4 border-b border-outline-variant/60">
+        <div>
+          <h2 class="font-title-lg text-title-lg text-on-surface font-bold">Chi tiết chi nhánh</h2>
+          <p class="text-[13px] text-on-surface-variant">{{ branch.name }}</p>
+        </div>
+        <button type="button" class="px-4 py-2 border border-outline-variant rounded-lg text-on-surface hover:bg-surface-container-high" (click)="cancelEdit()">
+          Đóng
+        </button>
+      </div>
+
+      <form class="grid grid-cols-1 md:grid-cols-2 gap-4" (ngSubmit)="save()">
+        <label class="flex flex-col gap-1.5">
+          <span class="text-[12px] uppercase text-on-surface-variant font-bold">Mã chi nhánh</span>
+          <input class="px-3 py-2.5 border border-outline-variant rounded-lg" [ngModel]="form().code" (ngModelChange)="form.update(v => ({ ...v, code: $event }))" name="code" />
+        </label>
+        <label class="flex flex-col gap-1.5">
+          <span class="text-[12px] uppercase text-on-surface-variant font-bold">Tên chi nhánh</span>
+          <input class="px-3 py-2.5 border border-outline-variant rounded-lg" [ngModel]="form().name" (ngModelChange)="form.update(v => ({ ...v, name: $event }))" name="name" />
+        </label>
+        <label class="flex flex-col gap-1.5 md:col-span-2">
+          <span class="text-[12px] uppercase text-on-surface-variant font-bold">Địa chỉ</span>
+          <input class="px-3 py-2.5 border border-outline-variant rounded-lg" [ngModel]="form().address" (ngModelChange)="form.update(v => ({ ...v, address: $event }))" name="address" />
+        </label>
+        <label class="flex flex-col gap-1.5">
+          <span class="text-[12px] uppercase text-on-surface-variant font-bold">Quản lý chi nhánh</span>
+          <input class="px-3 py-2.5 border border-outline-variant rounded-lg" [ngModel]="form().managerName" (ngModelChange)="form.update(v => ({ ...v, managerName: $event }))" name="managerName" />
+        </label>
+        <label class="flex items-center gap-3 p-3 border border-outline-variant rounded-lg bg-surface-container-low">
+          <input type="checkbox" [disabled]="authStore.role() !== 'Administrator'" [ngModel]="form().isActive" (ngModelChange)="form.update(v => ({ ...v, isActive: $event }))" name="isActive" />
+          <span class="font-body-md text-on-surface">Chi nhánh đang hoạt động</span>
+        </label>
+
+        <div class="md:col-span-2 flex justify-end gap-3 pt-2">
+          <button type="button" class="px-5 py-2.5 border border-outline-variant rounded-lg text-on-surface hover:bg-surface-container-high" (click)="cancelEdit()" [disabled]="saving()">Hủy</button>
+          <button type="submit" class="px-5 py-2.5 bg-primary text-white rounded-lg disabled:opacity-50" [disabled]="saving()">
+            {{ saving() ? 'Đang lưu...' : 'Lưu thay đổi' }}
+          </button>
+        </div>
+      </form>
+    </section>
+  }
+
   <!-- Branch Cards Grid (Data-Focused Variant) -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-card-gap">
     
@@ -76,7 +128,12 @@
                 </div>
                 <span class="font-body-md text-[13px] text-on-surface font-medium">{{ branch.managerName || 'Chưa phân công' }}</span>
             </div>
-            <button class="text-secondary font-label-md text-label-md font-medium hover:bg-secondary-container/50 px-2 py-1 rounded transition-colors flex items-center gap-1">
+            <button
+                type="button"
+                class="text-secondary font-label-md text-label-md font-medium hover:bg-secondary-container/50 px-2 py-1 rounded transition-colors flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed"
+                [disabled]="!canEdit(branch)"
+                [title]="canEdit(branch) ? 'Mở chi tiết chi nhánh' : 'Bạn chỉ được sửa chi nhánh được phân công'"
+                (click)="startEdit(branch)">
                 Chi tiết <span class="material-symbols-outlined text-[14px]">chevron_right</span>
             </button>
         </div>

@@ -6,4 +6,5 @@ namespace CoffeeChainManagement.Application.Interfaces;
 public interface IBranchService
 {
     Task<IReadOnlyCollection<BranchSummaryDto>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<BranchSummaryDto?> UpdateAsync(Guid id, UpsertBranchRequestDto request, CancellationToken cancellationToken = default);
 }
