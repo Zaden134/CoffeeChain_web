@@ -133,7 +133,6 @@ Proxy frontend đang trỏ API local theo `proxy.conf.json`.
 | Administrator | `admin` | `Admin@123` |
 | BranchManager | `manager.q1` | `Manager@123` |
 | Cashier | `cashier.q1` | `Cashier@123` |
-| WarehouseStaff | `warehouse.q1` | `Warehouse@123` |
 
 ## Chức Năng Chính
 
@@ -185,6 +184,7 @@ Proxy frontend đang trỏ API local theo `proxy.conf.json`.
 - Có thể kích hoạt lại tài khoản đã vô hiệu hóa.
 - Phân quyền thao tác theo role và chi nhánh.
 
+## Nâng cấp
 ### Khuyến Mãi
 
 - Tạo/sửa/xóa khuyến mãi.
