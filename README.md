@@ -184,6 +184,15 @@ Proxy frontend đang trỏ API local theo `proxy.conf.json`.
 - Có thể kích hoạt lại tài khoản đã vô hiệu hóa.
 - Phân quyền thao tác theo role và chi nhánh.
 
+### Báo Cáo
+
+- Báo cáo doanh thu theo ngày.
+- Báo cáo theo chi nhánh.
+- Sản phẩm bán chạy.
+- Bộ lọc thời gian và chi nhánh.
+- Tính chi phí nhập kho âm vào doanh thu ròng.
+- Export Excel/PDF với tên file có ý nghĩa.
+
 ## Nâng cấp
 ### Khuyến Mãi
 
@@ -198,14 +207,7 @@ Proxy frontend đang trỏ API local theo `proxy.conf.json`.
 - Admin xem xét, duyệt hoặc từ chối yêu cầu.
 - Có ghi chú admin khi xử lý.
 
-### Báo Cáo
 
-- Báo cáo doanh thu theo ngày.
-- Báo cáo theo chi nhánh.
-- Sản phẩm bán chạy.
-- Bộ lọc thời gian và chi nhánh.
-- Tính chi phí nhập kho âm vào doanh thu ròng.
-- Export Excel/PDF với tên file có ý nghĩa.
 
 ## API Chính
 
