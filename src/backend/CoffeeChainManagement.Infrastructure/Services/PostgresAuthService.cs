@@ -231,11 +231,15 @@ internal sealed class PostgresAuthService(
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
             var search = query.Search.Trim().ToLower();
+            var matchingRoles = Enum.GetValues<UserRole>()
+                .Where(role => role.ToString().ToLower().Contains(search))
+                .ToArray();
+
             sessionsQuery = sessionsQuery.Where(item =>
                 item.employee.Username.ToLower().Contains(search)
                 || item.employee.FullName.ToLower().Contains(search)
                 || item.employee.Email.ToLower().Contains(search)
-                || item.employee.Role.ToString().ToLower().Contains(search));
+                || matchingRoles.Contains(item.employee.Role));
         }
 
         var totalItems = await sessionsQuery.CountAsync(cancellationToken);
