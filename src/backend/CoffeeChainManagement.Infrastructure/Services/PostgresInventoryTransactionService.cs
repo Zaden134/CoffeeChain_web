@@ -57,46 +57,76 @@ internal sealed class PostgresInventoryTransactionService(
     {
         EnsureWritable(request.BranchId);
 
+        if (request.Quantity <= 0)
+        {
+            throw new InvalidOperationException("Quantity must be greater than zero.");
+        }
+
+        if (request.Type is not (TransactionType.Import or TransactionType.Export))
+        {
+            throw new InvalidOperationException("Only import and export transactions are supported.");
+        }
+
+        if (request.Type == TransactionType.Import && request.UnitCost <= 0)
+        {
+            throw new InvalidOperationException("Unit cost is required for import transactions.");
+        }
+
         var ingredient = await dbContext.Ingredients.FindAsync([request.IngredientId], cancellationToken)
             ?? throw new KeyNotFoundException("Ingredient not found.");
 
         var branch = await dbContext.Branches.FindAsync([request.BranchId], cancellationToken)
             ?? throw new KeyNotFoundException("Branch not found.");
 
+        var inventoryItem = await dbContext.InventoryItems
+            .FirstOrDefaultAsync(i => i.IngredientId == request.IngredientId && i.BranchId == request.BranchId, cancellationToken);
+
+        var signedQuantity = request.Type == TransactionType.Export ? -request.Quantity : request.Quantity;
         var tx = new InventoryTransaction
         {
             IngredientId = request.IngredientId,
             BranchId = request.BranchId,
             Type = request.Type,
-            Quantity = request.Type == TransactionType.Export ? -request.Quantity : request.Quantity,
+            Quantity = signedQuantity,
             UnitCost = request.UnitCost,
             TransactionAmount = request.Type == TransactionType.Import ? -(request.UnitCost * request.Quantity) : 0,
-            ReferenceNumber = request.ReferenceNumber,
-            Notes = request.Notes,
+            ReferenceNumber = request.ReferenceNumber.Trim(),
+            Notes = request.Notes.Trim(),
             CreatedBy = employeeId
         };
 
-        dbContext.InventoryTransactions.Add(tx);
-
-        var inventoryItem = await dbContext.InventoryItems
-            .FirstOrDefaultAsync(i => i.IngredientId == request.IngredientId && i.BranchId == request.BranchId, cancellationToken);
-
-        if (inventoryItem == null)
+        if (inventoryItem is null)
         {
+            if (request.Type == TransactionType.Export)
+            {
+                throw new InvalidOperationException("Cannot export an ingredient that has no inventory in this branch.");
+            }
+
             inventoryItem = new InventoryItem
             {
                 IngredientId = request.IngredientId,
                 BranchId = request.BranchId,
-                InStockQuantity = tx.Quantity,
+                InStockQuantity = request.Quantity,
                 ReservedQuantity = 0
             };
             dbContext.InventoryItems.Add(inventoryItem);
         }
         else
         {
-            inventoryItem.InStockQuantity += tx.Quantity;
+            if (request.Type == TransactionType.Export)
+            {
+                var availableQuantity = inventoryItem.InStockQuantity - inventoryItem.ReservedQuantity;
+                if (request.Quantity > availableQuantity)
+                {
+                    throw new InvalidOperationException($"Cannot export more than available stock. Available: {availableQuantity:N2}.");
+                }
+            }
+
+            inventoryItem.InStockQuantity += signedQuantity;
+            inventoryItem.UpdatedAtUtc = DateTime.UtcNow;
         }
 
+        dbContext.InventoryTransactions.Add(tx);
         await dbContext.SaveChangesAsync(cancellationToken);
         await auditLogService.WriteAsync(
             "INVENTORY_TRANSACTION_CREATE",

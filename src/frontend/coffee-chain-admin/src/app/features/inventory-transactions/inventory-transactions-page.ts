@@ -115,6 +115,10 @@ export class InventoryTransactionsPage {
     });
   }
 
+  protected displayQuantity(quantity: number): number {
+    return Math.abs(quantity);
+  }
+
   protected getTypeName(type: number): string {
     if (type === 1) return 'Nhập kho';
     if (type === 2) return 'Xuất kho';

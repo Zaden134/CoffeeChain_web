@@ -39,7 +39,7 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div class="flex flex-col gap-1.5">
               <label class="font-label-md text-[13px] text-on-surface-variant uppercase tracking-wider">Loại giao dịch <span class="text-error">*</span></label>
-              <select class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-on-surface bg-surface-container-lowest" [ngModel]="form().type" (ngModelChange)="form().type = $event">
+              <select class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-on-surface bg-surface-container-lowest" [ngModel]="form().type" (ngModelChange)="form.update(v => ({ ...v, type: +$event }))">
                   <option [ngValue]="1">📥 Nhập kho (Import)</option>
                   <option [ngValue]="2">📤 Xuất kho (Export)</option>
               </select>
@@ -47,7 +47,7 @@
 
           <div class="flex flex-col gap-1.5">
               <label class="font-label-md text-[13px] text-on-surface-variant uppercase tracking-wider">Chi nhánh <span class="text-error">*</span></label>
-              <select class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-on-surface bg-surface-container-lowest" [ngModel]="form().branchId" (ngModelChange)="form().branchId = $event">
+              <select class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-on-surface bg-surface-container-lowest" [ngModel]="form().branchId" (ngModelChange)="form.update(v => ({ ...v, branchId: $event }))">
                   <option value="">-- Chọn chi nhánh --</option>
                   <option *ngFor="let b of branches()" [value]="b.id">{{ b.name }}</option>
               </select>
@@ -55,7 +55,7 @@
 
           <div class="flex flex-col gap-1.5">
               <label class="font-label-md text-[13px] text-on-surface-variant uppercase tracking-wider">Nguyên liệu <span class="text-error">*</span></label>
-              <select class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-on-surface bg-surface-container-lowest" [ngModel]="form().ingredientId" (ngModelChange)="form().ingredientId = $event">
+              <select class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-on-surface bg-surface-container-lowest" [ngModel]="form().ingredientId" (ngModelChange)="form.update(v => ({ ...v, ingredientId: $event }))">
                   <option value="">-- Chọn nguyên liệu --</option>
                   <option *ngFor="let item of ingredients()" [value]="item.id">{{ item.label }}</option>
               </select>
@@ -63,22 +63,22 @@
 
           <div class="flex flex-col gap-1.5">
               <label class="font-label-md text-[13px] text-on-surface-variant uppercase tracking-wider">Số lượng <span class="text-error">*</span></label>
-              <input type="number" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-on-surface bg-surface-container-lowest" min="1" [ngModel]="form().quantity" (ngModelChange)="form().quantity = $event">
+              <input type="number" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-on-surface bg-surface-container-lowest" min="0.01" step="0.01" [ngModel]="form().quantity" (ngModelChange)="form.update(v => ({ ...v, quantity: +$event }))">
           </div>
 
           <div class="flex flex-col gap-1.5">
               <label class="font-label-md text-[13px] text-on-surface-variant uppercase tracking-wider">Đơn giá nhập</label>
-              <input type="number" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-on-surface bg-surface-container-lowest" min="0" [ngModel]="form().unitCost" (ngModelChange)="form().unitCost = +$event">
+              <input type="number" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-on-surface bg-surface-container-lowest" min="0" [ngModel]="form().unitCost" (ngModelChange)="form.update(v => ({ ...v, unitCost: +$event }))">
           </div>
 
           <div class="flex flex-col gap-1.5">
               <label class="font-label-md text-[13px] text-on-surface-variant uppercase tracking-wider">Mã chứng từ</label>
-              <input type="text" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-on-surface bg-surface-container-lowest" placeholder="Mã phiếu nhập/xuất" [ngModel]="form().referenceNumber" (ngModelChange)="form().referenceNumber = $event">
+              <input type="text" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-on-surface bg-surface-container-lowest" placeholder="Mã phiếu nhập/xuất" [ngModel]="form().referenceNumber" (ngModelChange)="form.update(v => ({ ...v, referenceNumber: $event }))">
           </div>
           
           <div class="flex flex-col gap-1.5 lg:col-span-3">
               <label class="font-label-md text-[13px] text-on-surface-variant uppercase tracking-wider">Ghi chú</label>
-              <input type="text" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-on-surface bg-surface-container-lowest" placeholder="Lý do, nguồn gốc..." [ngModel]="form().notes" (ngModelChange)="form().notes = $event">
+              <input type="text" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-on-surface bg-surface-container-lowest" placeholder="Lý do, nguồn gốc..." [ngModel]="form().notes" (ngModelChange)="form.update(v => ({ ...v, notes: $event }))">
           </div>
       </div>
 
@@ -137,7 +137,7 @@
                           <td class="px-6 py-4 font-body-md text-on-surface">{{ tx.ingredientName }}</td>
                           <td class="px-6 py-4 text-right">
                               <strong class="font-title-md" [class.text-[#137333]]="tx.type === 1" [class.text-error]="tx.type === 2">
-                                  {{ tx.type === 1 ? '+' : (tx.type === 2 ? '-' : '') }}{{ tx.quantity }}
+                                  {{ tx.type === 1 ? '+' : (tx.type === 2 ? '-' : '') }}{{ displayQuantity(tx.quantity) | number:'1.0-2' }}
                               </strong>
                           </td>
                           <td class="px-6 py-4 text-right font-title-md" [class.text-error]="tx.transactionAmount < 0" [class.text-[#137333]]="tx.transactionAmount > 0">

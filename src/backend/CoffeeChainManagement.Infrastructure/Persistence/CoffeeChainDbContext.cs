@@ -140,6 +140,7 @@ public sealed class CoffeeChainDbContext(DbContextOptions<CoffeeChainDbContext> 
         modelBuilder.Entity<InventoryTransaction>(entity =>
         {
             entity.ToTable("inventory_transactions");
+            entity.Property(transaction => transaction.Quantity).HasPrecision(18, 2);
             entity.HasKey(t => t.Id);
             entity.Property(t => t.UnitCost).HasPrecision(18, 2);
             entity.Property(t => t.TransactionAmount).HasPrecision(18, 2);

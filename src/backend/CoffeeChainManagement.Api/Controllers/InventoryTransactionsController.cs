@@ -40,6 +40,10 @@ public sealed class InventoryTransactionsController(IInventoryTransactionService
         {
             return NotFound(new { message = ex.Message });
         }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     private async Task<IActionResult> ExecuteAsync(Func<Task<IActionResult>> action)

@@ -15,8 +15,8 @@ public sealed record CreateInventoryTransactionRequestDto
     [Required]
     public TransactionType Type { get; init; }
 
-    [Range(1, int.MaxValue)]
-    public int Quantity { get; init; }
+    [Range(typeof(decimal), "0.01", "79228162514264337593543950335")]
+    public decimal Quantity { get; init; }
 
     [Range(0, double.MaxValue)]
     public decimal UnitCost { get; init; }
