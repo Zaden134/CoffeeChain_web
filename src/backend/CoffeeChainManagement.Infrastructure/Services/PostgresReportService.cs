@@ -110,7 +110,13 @@ internal sealed class PostgresReportService(
             where inventory.InStockQuantity <= ingredient.ReorderLevel
             select inventory.Id).CountAsync(cancellationToken);
 
-        var activePromotions = await dbContext.Promotions.AsNoTracking().CountAsync(promotion => promotion.IsActive, cancellationToken);
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var activePromotions = await dbContext.Promotions.AsNoTracking().CountAsync(
+            promotion => promotion.IsActive
+                && promotion.StartDate <= today
+                && promotion.EndDate >= today
+                && (!effectiveBranchId.HasValue || promotion.BranchId == null || promotion.BranchId == effectiveBranchId.Value),
+            cancellationToken);
         var pendingRecruitments = await dbContext.RecruitmentRequests.AsNoTracking().CountAsync(request =>
             request.Status == RecruitmentRequestStatus.Pending && (!effectiveBranchId.HasValue || request.BranchId == effectiveBranchId.Value), cancellationToken);
 
