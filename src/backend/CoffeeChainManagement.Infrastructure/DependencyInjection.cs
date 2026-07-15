@@ -31,6 +31,7 @@ public static class DependencyInjection
         });
 
         services.AddHttpContextAccessor();
+        services.AddSingleton<ServerSessionMarker>();
         services.AddDbContext<CoffeeChainDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("PostgreSql")));
 
@@ -62,5 +63,6 @@ public static class DependencyInjection
         var initializer = scope.ServiceProvider.GetRequiredService<IDatabaseInitializer>();
         await initializer.MigrateAsync(cancellationToken);
         await initializer.SeedAsync(cancellationToken);
+        await initializer.RevokeActiveAuthSessionsAsync(cancellationToken);
     }
 }

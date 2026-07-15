@@ -22,6 +22,7 @@ internal sealed class PostgresAuthService(
     IPasswordHasher<Employee> passwordHasher,
     IAuditLogService auditLogService,
     ICurrentUserContext currentUser,
+    ServerSessionMarker serverSession,
     IOptions<JwtOptions> jwtOptions) : IAuthService
 {
     private readonly JwtOptions _jwtOptions = jwtOptions.Value;
@@ -291,7 +292,8 @@ internal sealed class PostgresAuthService(
             new(JwtRegisteredClaimNames.Email, user.Email),
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new(ClaimTypes.Name, user.FullName),
-            new(ClaimTypes.Role, user.Role.ToString())
+            new(ClaimTypes.Role, user.Role.ToString()),
+            new(ServerSessionMarker.ClaimType, serverSession.SessionId)
         };
 
         if (user.BranchId.HasValue)
@@ -352,7 +354,8 @@ internal sealed class PostgresAuthService(
             new(JwtRegisteredClaimNames.Email, user.Email),
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new(ClaimTypes.Name, user.FullName),
-            new(ClaimTypes.Role, user.Role.ToString())
+            new(ClaimTypes.Role, user.Role.ToString()),
+            new(ServerSessionMarker.ClaimType, serverSession.SessionId)
         };
 
         if (user.BranchId.HasValue)

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text;
 using CoffeeChainManagement.Infrastructure;
 using CoffeeChainManagement.Infrastructure.Auth;
@@ -80,6 +81,21 @@ builder.Services
             ValidAudience = jwtOptions.Audience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SigningKey)),
             ClockSkew = TimeSpan.Zero
+        };
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = context =>
+            {
+                var serverSession = context.HttpContext.RequestServices.GetRequiredService<ServerSessionMarker>();
+                var tokenSessionId = context.Principal?.FindFirstValue(ServerSessionMarker.ClaimType);
+
+                if (!string.Equals(tokenSessionId, serverSession.SessionId, StringComparison.Ordinal))
+                {
+                    context.Fail("Server restarted. Please sign in again.");
+                }
+
+                return Task.CompletedTask;
+            }
         };
     });
 builder.Services.AddAuthorization();
