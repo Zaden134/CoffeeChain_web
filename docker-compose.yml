@@ -1,7 +1,6 @@
 services:
   postgres:
     image: postgres:17-alpine
-    container_name: coffee-chain-postgres
     environment:
       POSTGRES_DB: coffee_chain_management
       POSTGRES_USER: postgres
@@ -20,7 +19,6 @@ services:
     build:
       context: .
       dockerfile: docker/backend.Dockerfile
-    container_name: coffee-chain-api
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__PostgreSql: Host=postgres;Port=5432;Database=coffee_chain_management;Username=postgres;Password=postgres
@@ -39,7 +37,6 @@ services:
     build:
       context: .
       dockerfile: docker/frontend.Dockerfile
-    container_name: coffee-chain-admin
     ports:
       - "4200:80"
     depends_on:
